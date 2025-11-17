@@ -24,7 +24,7 @@ import {
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { href: '/', label: 'Panell', icon: LayoutDashboard },
+  { href: '/dashboard', label: 'Panell', icon: LayoutDashboard },
   { href: '/solicituts', label: 'Sol·licituds', icon: ScrollText },
   { href: '/solicituts/nova', label: 'Nova Sol·licitud', icon: PlusCircle },
   { href: '/configuracio', label: 'Configuració', icon: Settings },
@@ -36,7 +36,7 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="border-b">
-        <Link className="flex items-center gap-2 font-semibold" href="/">
+        <Link className="flex items-center gap-2 font-semibold" href="/dashboard">
           <Truck className="h-6 w-6 text-primary" />
           <span className="font-headline text-lg">EnTrans</span>
         </Link>
@@ -49,9 +49,9 @@ export function AppSidebar() {
                 <SidebarMenuButton
                   asChild
                   isActive={
-                    item.href === '/'
-                      ? pathname === '/'
-                      : pathname.startsWith(item.href)
+                    item.href === '/dashboard'
+                      ? pathname === '/dashboard'
+                      : pathname.startsWith(item.href) && item.href !== '/dashboard'
                   }
                 >
                   <a>

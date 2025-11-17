@@ -37,10 +37,21 @@ import { SidebarTrigger, useSidebar } from '../ui/sidebar';
 import { notifications } from '@/lib/data';
 import { formatDistanceToNow } from 'date-fns';
 import { ca } from 'date-fns/locale';
+import { useAuth } from '@/firebase';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 
 export function AppHeader() {
   const { toggleSidebar } = useSidebar();
   const unreadCount = notifications.filter((n) => !n.read).length;
+  const auth = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = () => {
+    signOut(auth).then(() => {
+      router.push('/');
+    });
+  };
 
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
@@ -117,7 +128,7 @@ export function AppHeader() {
             <Link href="#"><UserIcon className="mr-2 h-4 w-4" />Perfil</Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={handleSignOut}>
             <LogOut className="mr-2 h-4 w-4" />
             Tancar sessió
           </DropdownMenuItem>
