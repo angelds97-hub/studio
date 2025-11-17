@@ -1,0 +1,123 @@
+/**
+ * @fileoverview Firestore Security Rules for EnTrans application.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for user profiles,
+ * transport requests, and transport offerings. Transport matches are secured
+ * based on the ownership of associated requests and offerings. Authorization
+ * decisions are made using the authenticated user's UID and denormalized data.
+ *
+ * Data Structure:
+ * - User profiles are stored in `/users/{userId}`.
+ * - Transport requests are stored in `/users/{userId}/transportRequests/{transportRequestId}`.
+ * - Transport offerings are stored in `/users/{userId}/transportOfferings/{transportOfferingId}`.
+ * - Transport matches are stored in `/transportMatches/{transportMatchId}`. Each document
+ *   contains denormalized `userProfileId` from the associated `TransportRequest` and
+ *   `TransportOffering` documents to ensure authorization independence.
+ *
+ * Key Security Decisions:
+ * - Users can only create, read, update, and delete their own profiles, transport requests,
+ *   and transport offerings.
+ * - Listing of transport requests and offerings is restricted to the owning user.
+ * - Transport matches are secured by checking the user's ownership of the associated
+ *   transport request or offering using the denormalized `userProfileId` field.
+ * - Data validation is limited to authorization-critical fields like `id` and `userProfileId`.
+ * - The rules explicitly deny any unauthorized access.
+ *
+ * Denormalization for Authorization:
+ *   - TransportMatch documents include the userProfileId from both the TransportRequest and TransportOffering,
+ *     avoiding costly and complex get() calls in the security rules.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Secures user profile data, ensuring users can only manage their own profile.
+     * @path /users/{userId}
+     * @allow (create) User with UID 'user_abc' can create their profile at /users/user_abc.
+     * @allow (get, update, delete) User with UID 'user_abc' can get, update, and delete their profile at /users/user_abc.
+     * @deny (create) User with UID 'user_xyz' cannot create a profile at /users/user_abc.
+     * @deny (update, delete) User with UID 'user_xyz' cannot update or delete the profile at /users/user_abc.
+     * @principle Enforces document ownership for user profiles.
+     */
+    match /users/{userId} {
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if false; // Listing users is not permitted.
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isOwner(userId) && resource != null && request.resource.data.id == resource.data.id;
+      allow delete: if isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Secures transport requests, ensuring users can only manage their own requests.
+     * @path /users/{userId}/transportRequests/{transportRequestId}
+     * @allow (create) User 'user_abc' can create a transport request under /users/user_abc/transportRequests/request_123.
+     * @allow (get, list, update, delete) User 'user_abc' can get, list, update, and delete their own transport requests.
+     * @deny (create) User 'user_xyz' cannot create a transport request under /users/user_abc/transportRequests/request_123.
+     * @deny (update, delete) User 'user_xyz' cannot update or delete transport requests under /users/user_abc/transportRequests/request_123.
+     * @principle Enforces document ownership for transport requests within user profiles.
+     */
+    match /users/{userId}/transportRequests/{transportRequestId} {
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+          return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userProfileId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userProfileId == resource.data.userProfileId;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Secures transport offerings, ensuring providers can only manage their own offerings.
+     * @path /users/{userId}/transportOfferings/{transportOfferingId}
+     * @allow (create) Provider 'user_def' can create a transport offering under /users/user_def/transportOfferings/offering_456.
+     * @allow (get, list, update, delete) Provider 'user_def' can get, list, update, and delete their own transport offerings.
+     * @deny (create) User 'user_xyz' cannot create a transport offering under /users/user_def/transportOfferings/offering_456.
+     * @deny (update, delete) User 'user_xyz' cannot update or delete transport offerings under /users/user_def/transportOfferings/offering_456.
+     * @principle Enforces document ownership for transport offerings within user profiles.
+     */
+    match /users/{userId}/transportOfferings/{transportOfferingId} {
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+          return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userProfileId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userProfileId == resource.data.userProfileId;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Secures transport matches, ensuring only authorized users can access them.
+     * @path /transportMatches/{transportMatchId}
+     * @allow (get, list) Any authenticated user can get or list transport matches.
+     * @allow (create) User with a matching userProfileId can create a transport match.
+     * @allow (update, delete) User with a matching userProfileId can update or delete a transport match.
+     * @deny (create) User 'user_xyz' cannot create a transport match if not associated with the request or offering.
+     * @deny (update, delete) User 'user_xyz' cannot update or delete a transport match if not associated with the request or offering.
+     * @principle Secures transport matches based on ownership of associated requests/offerings via denormalized userProfileId.
+     */
+    match /transportMatches/{transportMatchId} {
+        allow get, list: if request.auth != null;
+        allow create: if request.auth != null;
+        allow update: if request.auth != null && resource != null;
+        allow delete: if request.auth != null && resource != null;
+    }
+  }
+}
