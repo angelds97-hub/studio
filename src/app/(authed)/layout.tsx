@@ -15,7 +15,7 @@ export default function AuthedLayout({
 
   useEffect(() => {
     if (!isUserLoading && !user) {
-      router.push('/');
+      router.push('/dashboard');
     }
   }, [user, isUserLoading, router]);
 
@@ -27,5 +27,6 @@ export default function AuthedLayout({
     );
   }
 
-  return <AppShell>{children}</AppShell>;
+  // We are removing AppShell because the new layout has a global header.
+  return <div className="container py-8">{children}</div>;
 }

@@ -42,7 +42,6 @@ import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 
 export function AppHeader() {
-  const { toggleSidebar } = useSidebar();
   const unreadCount = notifications.filter((n) => !n.read).length;
   const auth = useAuth();
   const router = useRouter();
