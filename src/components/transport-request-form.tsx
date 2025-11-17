@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -29,7 +30,7 @@ import {
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
-import { CalendarIcon, Sparkles } from 'lucide-react';
+import { CalendarIcon, Sparkles, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { ca } from 'date-fns/locale';
 import { suggestTransportImprovements } from '@/ai/flows/suggest-transport-improvements';
@@ -46,18 +47,18 @@ const formSchema = z.object({
   }),
   origin: z
     .string()
-    .min(2, 'L\'origen ha de tenir almenys 2 caràcters.')
-    .max(50, 'L\'origen no pot tenir més de 50 caràcters.'),
+    .min(2, "L'origen ha de tenir almenys 2 caràcters.")
+    .max(100, "L'origen no pot tenir més de 100 caràcters."),
   destination: z
     .string()
     .min(2, 'La destinació ha de tenir almenys 2 caràcters.')
-    .max(50, 'La destinació no pot tenir més de 50 caràcters.'),
+    .max(100, 'La destinació no pot tenir més de 100 caràcters.'),
   dates: z.object(
     {
-      from: z.date({ required_error: 'La data d\'inici és obligatòria.' }),
+      from: z.date({ required_error: "La data d'inici és obligatòria." }),
       to: z.date().optional(),
     },
-    { required_error: 'Has d\'especificar un rang de dates.' }
+    { required_error: "Has d'especificar un rang de dates." }
   ),
   specialRequirements: z.string().optional(),
 });
@@ -267,10 +268,14 @@ export function TransportRequestForm() {
               name="origin"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Origen</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ex: Barcelona" {...field} />
-                  </FormControl>
+                  <FormLabel>Adreça d'Origen</FormLabel>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <FormControl>
+                      <Input placeholder="Carrer de Sants, 123, Barcelona" {...field} className="pl-10" />
+                    </FormControl>
+                  </div>
+                  <FormDescription>Introdueix l'adreça completa de recollida.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -281,10 +286,14 @@ export function TransportRequestForm() {
               name="destination"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Destinació</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ex: València" {...field} />
-                  </FormControl>
+                  <FormLabel>Adreça de Destinació</FormLabel>
+                   <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <FormControl>
+                      <Input placeholder="Avinguda del Port, 456, València" {...field} className="pl-10" />
+                    </FormControl>
+                  </div>
+                  <FormDescription>Introdueix l'adreça completa de lliurament.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -348,3 +357,5 @@ export function TransportRequestForm() {
     </div>
   );
 }
+
+    
