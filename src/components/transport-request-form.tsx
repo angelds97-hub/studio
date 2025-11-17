@@ -33,10 +33,12 @@ import { CalendarIcon, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { ca } from 'date-fns/locale';
 import { suggestTransportImprovements } from '@/ai/flows/suggest-transport-improvements';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const formSchema = z.object({
   transportType: z.enum(['passatgers', 'càrrega'], {
@@ -118,10 +120,13 @@ async function handleFormSubmit(
 }
 
 export function TransportRequestForm() {
-  const [formState, setFormState] = React.useState<FormState | null>(null);
-  const [isPending, setIsPending] = React.useState(false);
+  const [formState, setFormState] = useState<FormState | null>(null);
+  const [isPending, setIsPending] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const [showMap, setShowMap] = useState(false);
+  const mapImage = PlaceHolderImages.find(img => img.id === 'map-tracking');
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -131,6 +136,17 @@ export function TransportRequestForm() {
       specialRequirements: '',
     },
   });
+
+  const origin = form.watch('origin');
+  const destination = form.watch('destination');
+
+  useEffect(() => {
+    if (origin && origin.length > 2 && destination && destination.length > 2) {
+      setShowMap(true);
+    } else {
+      setShowMap(false);
+    }
+  }, [origin, destination]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsPending(true);
@@ -274,6 +290,23 @@ export function TransportRequestForm() {
               )}
             />
           </div>
+
+           {showMap && mapImage && (
+            <div className="relative w-full aspect-[16/9] rounded-lg overflow-hidden border">
+                <Image
+                    src={mapImage.imageUrl}
+                    alt={mapImage.description}
+                    fill
+                    className="object-cover"
+                    data-ai-hint={mapImage.imageHint}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute bottom-4 left-4 text-white">
+                    <h3 className="font-bold text-xl font-headline">{origin} → {destination}</h3>
+                    <p className="text-sm">Visualització de la ruta</p>
+                </div>
+            </div>
+          )}
 
           <FormField
             control={form.control}
