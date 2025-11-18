@@ -62,9 +62,9 @@
     },
     {
       "id": "reus-city",
-      "description": "Una imatge de la Prioral de Sant Pere de Reus durant un espectacle",
-      "imageUrl": "https://picsum.photos/seed/prioral-reus-espectacle/1080/720",
-      "imageHint": "Reus priory show"
+      "description": "Una imatge de la Prioral de Sant Pere de Reus.",
+      "imageUrl": "https://images.unsplash.com/photo-1604724911072-0453f41ab5a3?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "Reus priory"
     },
     {
       "id": "happy-pig",
