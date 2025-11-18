@@ -23,18 +23,17 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import {
   useAuth,
-  initiateEmailSignUp,
-  initiateEmailSignIn,
   useUser,
   useFirestore,
 } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Truck } from 'lucide-react';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 
 const loginSchema = z.object({
   email: z.string().email('El correu electrònic no és vàlid.'),
@@ -60,6 +59,7 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const { user, isUserLoading } = useUser();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const schema = isRegister ? registerSchema : loginSchema;
 
@@ -73,59 +73,108 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
   });
 
   useEffect(() => {
-    if (user) {
+    if (user && !isProcessing) {
       router.push('/dashboard');
     }
-  }, [user, router]);
+  }, [user, router, isProcessing]);
 
   async function onSubmit(values: z.infer<typeof schema>) {
-    if (!auth) return;
+    if (!auth || !firestore) {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'No s\'ha pogut connectar als serveis d\'autenticació.',
+        });
+        return;
+    }
+    setIsProcessing(true);
+
     try {
       if (isRegister) {
-        const userCredential = await auth.createUserWithEmailAndPassword(values.email, values.password);
-        const newUser = userCredential.user;
+        // --- Registration Flow ---
+        const registrationData = {
+          firstName: (values as z.infer<typeof registerSchema>).firstName,
+          lastName: (values as z.infer<typeof registerSchema>).lastName,
+          email: values.email,
+          status: 'pending',
+          requestedAt: serverTimestamp(),
+        };
 
-        if (firestore && newUser) {
-            const userProfile = {
-                id: newUser.uid,
-                firstName: (values as z.infer<typeof registerSchema>).firstName,
-                lastName: (values as z.infer<typeof registerSchema>).lastName,
-                email: values.email,
-                role: values.email === 'adomen11@xtec.cat' ? 'administrador' : 'client/proveidor',
-                creationDate: serverTimestamp(),
-            };
-            const docRef = doc(firestore, 'users', newUser.uid);
-            setDoc(docRef, userProfile).catch(error => {
-                const permissionError = new FirestorePermissionError({
-                    path: docRef.path,
-                    operation: 'create',
-                    requestResourceData: userProfile,
-                });
-                errorEmitter.emit('permission-error', permissionError);
+        const docRef = doc(collection(firestore, 'registrationRequests'));
+        await setDoc(docRef, registrationData).catch(error => {
+            const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'create',
+                requestResourceData: registrationData,
             });
-        }
+            errorEmitter.emit('permission-error', permissionError);
+            throw new Error("No s'ha pogut enviar la sol·licitud de registre.");
+        });
+
+        toast({
+          title: 'Sol·licitud de registre enviada',
+          description: "La teva sol·licitud ha estat enviada. Rebràs una notificació quan sigui aprovada per un administrador.",
+        });
+        form.reset();
+
       } else {
-        initiateEmailSignIn(auth, values.email, values.password);
+        // --- Login Flow ---
+        const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+        const loggedInUser = userCredential.user;
+
+        const userDocRef = doc(firestore, 'users', loggedInUser.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (!userDoc.exists()) {
+          // If user doc doesn't exist, they are not approved.
+          await signOut(auth);
+          toast({
+            variant: 'destructive',
+            title: 'Inici de sessió fallit',
+            description: "El teu compte no està aprovat o no existeix.",
+          });
+        } else {
+            // User exists, login is successful
+            toast({
+                title: 'Sessió iniciada',
+                description: 'Benvingut/da de nou!',
+            });
+            // The useEffect will handle the redirect to /dashboard
+        }
       }
-      toast({
-        title: isRegister ? 'Registre completat' : 'Sessió iniciada',
-        description: isRegister
-          ? 'El teu compte ha estat creat.'
-          : 'Benvingut/da de nou!',
-      });
     } catch (error: any) {
       console.error(error);
+      const defaultMessage = "Hi ha hagut un problema. Si us plau, intenta-ho de nou.";
+      let description = defaultMessage;
+
+      if (error.code) {
+          switch (error.code) {
+              case 'auth/user-not-found':
+              case 'auth/wrong-password':
+                  description = 'El correu electrònic o la contrasenya són incorrectes.';
+                  break;
+              case 'auth/invalid-credential':
+                  description = 'Les credencials proporcionades no són vàlides.';
+                  break;
+              case 'permission-denied':
+                  description = error.message;
+                  break;
+          }
+      } else if (error.message) {
+          description = error.message;
+      }
+      
       toast({
         variant: 'destructive',
         title: 'Error',
-        description:
-          error.message ||
-          "Hi ha hagut un problema. Si us plau, intenta-ho de nou.",
+        description,
       });
+    } finally {
+        setIsProcessing(false);
     }
   }
 
-  if (isUserLoading || user) {
+  if (isUserLoading || (user && !isProcessing)) {
      return (
       <div className="flex h-screen w-full items-center justify-center">
         <div className="h-16 w-16 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>
@@ -140,11 +189,11 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
             <Truck className="h-12 w-12 text-primary" />
         </Link>
         <CardTitle className="font-headline text-2xl">
-          {isRegister ? 'Crea un nou compte' : 'Benvingut/da a EnTrans'}
+          {isRegister ? 'Sol·licita accés a la plataforma' : 'Benvingut/da a EnTrans'}
         </CardTitle>
         <CardDescription>
           {isRegister
-            ? 'Entra les teves dades per començar.'
+            ? 'Entra les teves dades per sol·licitar un compte.'
             : "Entra les teves credencials per accedir a la plataforma."}
         </CardDescription>
       </CardHeader>
@@ -216,9 +265,9 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
             <Button
               type="submit"
               className="w-full"
-              disabled={form.formState.isSubmitting}
+              disabled={isProcessing}
             >
-              {form.formState.isSubmitting ? (isRegister ? 'Registrant...' : 'Iniciant sessió...') : (isRegister ? 'Registrar-se' : 'Iniciar Sessió')}
+              {isProcessing ? (isRegister ? 'Enviant sol·licitud...' : 'Iniciant sessió...') : (isRegister ? 'Sol·licitar Registre' : 'Iniciar Sessió')}
             </Button>
           </form>
         </Form>
@@ -234,7 +283,7 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
             <>
               No tens un compte?{' '}
               <Link href="/registre" className="underline">
-                Registra't
+                Sol·licita accés
               </Link>
             </>
           )}
@@ -243,3 +292,5 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
     </Card>
   );
 }
+
+    
