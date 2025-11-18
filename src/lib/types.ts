@@ -43,4 +43,15 @@ export type ActiveTransport = {
   progress: number;
 };
 
-    
+export type BlogPost = {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  imageUrl: string;
+  imageHint: string;
+  excerpt: string;
+  authorId: string;
+  createdAt: string;
+  updatedAt: string;
+};
