@@ -22,13 +22,16 @@ import type { UserProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ShieldAlert } from 'lucide-react';
+import React from 'react';
 
 function UsersTable({
   users,
   isLoading,
+  error
 }: {
   users: WithId<UserProfile>[] | null;
   isLoading: boolean;
+  error: Error | null;
 }) {
   if (isLoading) {
     return (
@@ -56,6 +59,18 @@ function UsersTable({
           ))}
         </TableBody>
       </Table>
+    );
+  }
+
+  if (error) {
+     return (
+      <Alert variant="destructive">
+        <ShieldAlert className="h-4 w-4" />
+        <AlertTitle>Error de Permisos</AlertTitle>
+        <AlertDescription>
+          No s'ha pogut carregar la llista d'usuaris. Assegura't que les regles de seguretat de Firestore permeten als administradors llistar usuaris.
+        </AlertDescription>
+      </Alert>
     );
   }
 
@@ -104,6 +119,32 @@ function UsersTable({
   );
 }
 
+function AdminUserManagement() {
+  const firestore = useFirestore();
+
+  const usersQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'users');
+  }, [firestore]);
+
+  const { data: users, isLoading: usersLoading, error: usersError } = useCollection<UserProfile>(usersQuery);
+
+  return (
+     <Card>
+      <CardHeader>
+        <CardTitle>Gestió d'Usuaris</CardTitle>
+        <CardDescription>
+          Visualitza i gestiona els usuaris de la plataforma.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <UsersTable users={users} isLoading={usersLoading} error={usersError} />
+      </CardContent>
+    </Card>
+  );
+}
+
+
 export default function UserManagementPage() {
   const firestore = useFirestore();
   const { user: currentUser } = useUser();
@@ -114,14 +155,6 @@ export default function UserManagementPage() {
   }, [firestore, currentUser]);
 
   const { data: profile, isLoading: profileLoading } = useDoc<UserProfile>(profileRef);
-
-  const usersQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'users');
-  }, [firestore]);
-
-
-  const { data: users, isLoading: usersLoading, error: usersError } = useCollection<UserProfile>(usersQuery);
 
   if (profileLoading) {
      return (
@@ -143,29 +176,5 @@ export default function UserManagementPage() {
     );
   }
 
-  if (usersError) {
-     return (
-      <Alert variant="destructive">
-        <ShieldAlert className="h-4 w-4" />
-        <AlertTitle>Error de Permisos</AlertTitle>
-        <AlertDescription>
-          No s'ha pogut carregar la llista d'usuaris. Assegura't que les regles de seguretat de Firestore permeten als administradors llistar usuaris.
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Gestió d'Usuaris</CardTitle>
-        <CardDescription>
-          Visualitza i gestiona els usuaris de la plataforma.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <UsersTable users={users} isLoading={usersLoading} />
-      </CardContent>
-    </Card>
-  );
+  return <AdminUserManagement />;
 }
