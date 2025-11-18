@@ -121,7 +121,7 @@ export default function UserManagementPage() {
   }, [firestore]);
 
 
-  const { data: users, isLoading: usersLoading } = useCollection<UserProfile>(usersQuery);
+  const { data: users, isLoading: usersLoading, error: usersError } = useCollection<UserProfile>(usersQuery);
 
   if (profileLoading) {
      return (
@@ -138,6 +138,18 @@ export default function UserManagementPage() {
         <AlertTitle>Accés Denegat</AlertTitle>
         <AlertDescription>
           No tens permisos per accedir a aquesta pàgina.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (usersError) {
+     return (
+      <Alert variant="destructive">
+        <ShieldAlert className="h-4 w-4" />
+        <AlertTitle>Error de Permisos</AlertTitle>
+        <AlertDescription>
+          No s'ha pogut carregar la llista d'usuaris. Assegura't que les regles de seguretat de Firestore permeten als administradors llistar usuaris.
         </AlertDescription>
       </Alert>
     );
