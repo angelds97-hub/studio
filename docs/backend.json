@@ -1,5 +1,56 @@
 {
   "entities": {
+    "BlogPost": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BlogPost",
+      "type": "object",
+      "description": "Represents a blog post entry.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the BlogPost entity."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the blog post."
+        },
+        "content": {
+          "type": "string",
+          "description": "The full content of the blog post in Markdown format."
+        },
+        "category": {
+          "type": "string",
+          "description": "The category of the blog post."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of the main image for the blog post."
+        },
+        "imageHint": {
+          "type": "string",
+          "description": "A hint for AI to find a relevant image."
+        },
+        "excerpt": {
+          "type": "string",
+          "description": "A short summary or excerpt of the blog post."
+        },
+        "authorId": {
+          "type": "string",
+          "description": "The ID of the user who authored the post."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time the blog post was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time the blog post was last updated."
+        }
+      },
+      "required": ["id", "title", "content", "authorId", "createdAt", "updatedAt"]
+    },
     "UserProfile": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "UserProfile",
@@ -282,8 +333,24 @@
             }
           ]
         }
+      },
+      {
+        "path": "/blogPosts/{blogPostId}",
+        "definition": {
+          "entityName": "BlogPost",
+          "schema": {
+            "$ref": "#/backend/entities/BlogPost"
+          },
+          "description": "Stores blog post articles.",
+          "params": [
+            {
+              "name": "blogPostId",
+              "description": "The unique ID of the blog post."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore data structure is designed to support the EnTrans application's core features, including transport requests, offerings, and matching. It prioritizes authorization independence and clear security rules by adhering to the principles outlined in the prompt. User profiles are stored under the `/users/{userId}` path, providing clear ownership. Transport requests and offerings are stored as subcollections of user profiles (`/users/{userId}/transportRequests` and `/users/{userId}/transportOfferings`), reinforcing ownership and enabling simple security rules based on `request.auth.uid == userId`. Transport matches are stored in a top-level `/transportMatches` collection. To ensure authorization independence, the `userProfileId` of both the `TransportRequest` and `TransportOffering` are denormalized into each `TransportMatch` document. This avoids the need for complex `get()` calls in the security rules to verify ownership. This design facilitates secure list operations (QAPs) by segregating data based on ownership. Each user can only list transport requests and offerings under their own user ID, ensuring that they cannot access data they are not authorized to see. The membership map approach is not applicable here, as there is no collaborative data."
+    "reasoning": "The Firestore data structure is designed to support the EnTrans application's core features, including transport requests, offerings, and matching. It prioritizes authorization independence and clear security rules by adhering to the principles outlined in the prompt. User profiles are stored under the `/users/{userId}` path, providing clear ownership. Transport requests and offerings are stored as subcollections of user profiles (`/users/{userId}/transportRequests` and `/users/{userId}/transportOfferings`), reinforcing ownership and enabling simple security rules based on `request.auth.uid == userId`. Transport matches are stored in a top-level `/transportMatches` collection. To ensure authorization independence, the `userProfileId` of both the `TransportRequest` and `TransportOffering` are denormalized into each `TransportMatch` document. This avoids the need for complex `get()` calls in the security rules to verify ownership. A new top-level collection `/blogPosts` has been added to store blog articles. This design facilitates secure list operations (QAPs) by segregating data based on ownership. Each user can only list transport requests and offerings under their own user ID, ensuring that they cannot access data they are not authorized to see. The membership map approach is not applicable here, as there is no collaborative data."
   }
 }

@@ -35,7 +35,7 @@ import {
 import { format } from 'date-fns';
 import { ca } from 'date-fns/locale';
 
-export default function Home() {
+export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-8">
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">

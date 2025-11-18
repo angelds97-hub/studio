@@ -4,6 +4,7 @@ import { AppShell } from '@/components/layout/app-shell';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { AppHeader } from '@/components/layout/header';
 
 export default function AuthedLayout({
   children,
@@ -15,7 +16,7 @@ export default function AuthedLayout({
 
   useEffect(() => {
     if (!isUserLoading && !user) {
-      router.push('/dashboard');
+      router.push('/');
     }
   }, [user, isUserLoading, router]);
 
@@ -27,6 +28,10 @@ export default function AuthedLayout({
     );
   }
 
-  // We are removing AppShell because the new layout has a global header.
-  return <div className="container py-8">{children}</div>;
+  return (
+    <AppShell>
+      <AppHeader />
+      <div className="p-4 sm:p-6 lg:p-8">{children}</div>
+    </AppShell>
+  );
 }

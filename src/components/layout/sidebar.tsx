@@ -20,13 +20,14 @@ import {
   PlusCircle,
   Settings,
   Truck,
+  Newspaper,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/dashboard', label: 'Panell', icon: LayoutDashboard },
   { href: '/solicituts', label: 'Sol·licituds', icon: ScrollText },
-  { href: '/solicituts/nova', label: 'Nova Sol·licitud', icon: PlusCircle },
+  { href: '/dashboard/blog', label: 'Blog', icon: Newspaper },
   { href: '/configuracio', label: 'Configuració', icon: Settings },
 ];
 
@@ -50,8 +51,8 @@ export function AppSidebar() {
                   asChild
                   isActive={
                     item.href === '/dashboard'
-                      ? pathname === '/dashboard'
-                      : pathname.startsWith(item.href) && item.href !== '/dashboard'
+                      ? pathname === item.href
+                      : pathname.startsWith(item.href)
                   }
                 >
                   <a>
@@ -65,6 +66,15 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="mt-auto">
+         <Separator className="my-2" />
+         <div className="p-2">
+            <Button size="sm" className="w-full" asChild>
+                <Link href="/solicituts/nova">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Nova Sol·licitud
+                </Link>
+            </Button>
+         </div>
         <Separator className="my-2" />
         <Card className="shadow-none border-none bg-transparent">
           <CardHeader className="p-2 pt-0">

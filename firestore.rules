@@ -14,6 +14,7 @@
  * - Transport matches are stored in `/transportMatches/{transportMatchId}`. Each document
  *   contains denormalized `userProfileId` from the associated `TransportRequest` and
  *   `TransportOffering` documents to ensure authorization independence.
+ * - Blog posts are stored in `/blogPosts/{blogPostId}`.
  *
  * Key Security Decisions:
  * - Users can only create, read, update, and delete their own profiles, transport requests,
@@ -21,6 +22,7 @@
  * - Listing of transport requests and offerings is restricted to the owning user.
  * - Transport matches are secured by checking the user's ownership of the associated
  *   transport request or offering using the denormalized `userProfileId` field.
+ * - Blog posts can be read by anyone, but only created, updated, and deleted by authenticated users.
  * - Data validation is limited to authorization-critical fields like `id` and `userProfileId`.
  * - The rules explicitly deny any unauthorized access.
  *
@@ -118,6 +120,27 @@ service cloud.firestore {
         allow create: if request.auth != null;
         allow update: if request.auth != null && resource != null;
         allow delete: if request.auth != null && resource != null;
+    }
+
+    /**
+     * @description Secures blog posts.
+     * @path /blogPosts/{blogPostId}
+     * @allow (get, list) Anyone can read blog posts.
+     * @allow (create, update, delete) Only authenticated users can manage blog posts.
+     * @principle Public read access, restricted write access.
+     */
+    match /blogPosts/{blogPostId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isAuthor() {
+          return request.auth.uid == resource.data.authorId;
+      }
+      
+      allow get, list: if true;
+      allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
+      allow update, delete: if isSignedIn() && isAuthor();
     }
   }
 }
