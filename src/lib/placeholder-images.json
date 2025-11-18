@@ -59,6 +59,18 @@
       "description": "Logo for Càrrega Ràpida",
       "imageUrl": "https://images.unsplash.com/photo-1623738244303-a645cef7aafa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxsb2dvJTIwbWluaW1hbGlzdHxlbnwwfHx8fDE3NjMzNzAxNTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "logo minimalist"
+    },
+    {
+      "id": "reus-city",
+      "description": "An image of the city of Reus",
+      "imageUrl": "https://picsum.photos/seed/reus-city/600/400",
+      "imageHint": "Reus city"
+    },
+    {
+      "id": "happy-pig",
+      "description": "A happy pig",
+      "imageUrl": "https://images.unsplash.com/photo-1484613220808-172ca2e512ae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxoYXBweSUyMHBpZ3xlbnwwfHx8fDE3NjM0OTc0MDJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "happy pig"
     }
   ]
 }
