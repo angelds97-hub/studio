@@ -249,7 +249,6 @@ function RecentRequestsTable({
                       Veure detalls
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>Contactar client</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </TableCell>
@@ -307,5 +306,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
