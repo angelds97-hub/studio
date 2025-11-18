@@ -106,7 +106,7 @@ function BlogPostsTable({
               <Badge variant="outline">{post.category}</Badge>
             </TableCell>
             <TableCell>
-              {format(new Date(post.createdAt), 'dd MMM, yyyy', {
+              {post.createdAt && format(new Date(post.createdAt), 'dd MMM, yyyy', {
                 locale: ca,
               })}
             </TableCell>
@@ -137,7 +137,7 @@ export default function BlogManagementPage() {
   const firestore = useFirestore();
 
   const postsQuery = useMemoFirebase(() => {
-    if (!user) return null;
+    if (!user || !firestore) return null;
     return query(
         collection(firestore, 'blogPosts'), 
         where('authorId', '==', user.uid),

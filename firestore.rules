@@ -23,6 +23,7 @@
  * - Transport matches are secured by checking the user's ownership of the associated
  *   transport request or offering using the denormalized `userProfileId` field.
  * - Blog posts can be read by anyone, but only created, updated, and deleted by authenticated users.
+ *   Listing blog posts is restricted to the author of the posts.
  * - Data validation is limited to authorization-critical fields like `id` and `userProfileId`.
  * - The rules explicitly deny any unauthorized access.
  *
@@ -139,7 +140,7 @@ service cloud.firestore {
       }
       
       allow get: if true;
-      allow list: if isSignedIn();
+      allow list: if isSignedIn() && request.query.where.size() == 1 && request.query.where[0][0] == "authorId" && request.query.where[0][1] == "==" && request.query.where[0][2] == request.auth.uid;
       allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
       allow update, delete: if isSignedIn() && isAuthor();
     }
