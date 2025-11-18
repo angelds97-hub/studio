@@ -35,6 +35,15 @@ export type UserProfile = {
   creationDate: string;
 };
 
+export type RegistrationRequest = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  status: 'pending';
+  requestedAt: any; // serverTimestamp
+};
+
 export type Notification = {
   id: string;
   icon: React.ElementType;

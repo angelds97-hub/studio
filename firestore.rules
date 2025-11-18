@@ -15,6 +15,7 @@
  *   contains denormalized `userProfileId` from the associated `TransportRequest` and
  *   `TransportOffering` documents to ensure authorization independence.
  * - Blog posts are stored in `/blogPosts/{blogPostId}`.
+ * - Registration requests are stored in `/registrationRequests/{requestId}`.
  *
  * Key Security Decisions:
  * - Users can only create, read, update, and delete their own profiles.
@@ -46,8 +47,13 @@ service cloud.firestore {
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin();
       allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isOwner(userId) && resource != null && request.resource.data.id == resource.data.id;
-      allow delete: if isOwner(userId) && resource != null;
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin() && resource.data.id != request.auth.uid;
+    }
+
+    match /registrationRequests/{requestId} {
+      allow create: if true; // Anyone can request to register
+      allow read, list, delete: if isAdmin();
     }
 
     match /users/{userId}/transportRequests/{transportRequestId} {
@@ -86,7 +92,7 @@ service cloud.firestore {
           return request.auth.uid == resource.data.authorId;
       }
       
-      allow get: if true;
+      allow read: if true;
       allow list: if true;
       allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
       allow update, delete: if isSignedIn() && isAuthor();
