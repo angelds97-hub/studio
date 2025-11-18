@@ -74,21 +74,10 @@
           "description": "The user's email address.",
           "format": "email"
         },
-        "phone": {
+        "role": {
           "type": "string",
-          "description": "The user's phone number."
-        },
-        "address": {
-          "type": "string",
-          "description": "The user's address."
-        },
-        "userType": {
-          "type": "string",
-          "description": "The type of user (e.g., 'transport_requester', 'transport_provider')."
-        },
-        "companyName": {
-          "type": "string",
-          "description": "The name of the company the user is associated with, if applicable."
+          "description": "The role of the user, which determines their access level.",
+          "enum": ["administrador", "treballador", "client/proveidor", "extern"]
         },
         "creationDate": {
           "type": "string",
@@ -101,7 +90,7 @@
         "firstName",
         "lastName",
         "email",
-        "userType"
+        "role"
       ]
     },
     "TransportRequest": {

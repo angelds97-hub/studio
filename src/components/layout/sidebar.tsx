@@ -21,18 +21,33 @@ import {
   Settings,
   Truck,
   Newspaper,
+  Users
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useUser, useFirestore } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { useDoc } from '@/firebase/firestore/use-doc';
+import type { UserProfile } from '@/lib/types';
 
-const navItems = [
-  { href: '/dashboard', label: 'Panell', icon: LayoutDashboard },
-  { href: '/solicituts', label: 'Sol·licituds', icon: ScrollText },
-  { href: '/dashboard/blog', label: 'Blog', icon: Newspaper },
-  { href: '/configuracio', label: 'Configuració', icon: Settings },
-];
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const { data: userProfile } = useDoc<UserProfile>(
+    user && firestore ? doc(firestore, 'users', user.uid) : null
+  );
+
+  const navItems = [
+    { href: '/dashboard', label: 'Panell', icon: LayoutDashboard, roles: ['administrador', 'treballador', 'client/proveidor', 'extern'] },
+    { href: '/solicituts', label: 'Sol·licituds', icon: ScrollText, roles: ['administrador', 'treballador', 'client/proveidor'] },
+    { href: '/dashboard/blog', label: 'Blog', icon: Newspaper, roles: ['administrador', 'treballador', 'extern'] },
+    { href: '/dashboard/usuaris', label: 'Usuaris', icon: Users, roles: ['administrador'] },
+    { href: '/configuracio', label: 'Configuració', icon: Settings, roles: ['administrador', 'treballador', 'client/proveidor', 'extern'] },
+  ];
+
+  const filteredNavItems = navItems.filter(item => userProfile && item.roles.includes(userProfile.role));
+
 
   return (
     <Sidebar>
@@ -44,7 +59,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent className="flex-1">
         <SidebarMenu>
-          {navItems.map((item) => (
+          {filteredNavItems.map((item) => (
             <SidebarMenuItem key={item.href}>
               <Link href={item.href}>
                 <SidebarMenuButton

@@ -26,6 +26,15 @@ export type User = {
   avatarUrl: string;
 };
 
+export type UserProfile = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: 'administrador' | 'treballador' | 'client/proveidor' | 'extern';
+  creationDate: string;
+};
+
 export type Notification = {
   id: string;
   icon: React.ElementType;

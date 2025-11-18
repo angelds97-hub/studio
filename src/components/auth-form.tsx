@@ -26,11 +26,15 @@ import {
   initiateEmailSignUp,
   initiateEmailSignIn,
   useUser,
+  useFirestore,
 } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect } from 'react';
 import { Truck } from 'lucide-react';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const loginSchema = z.object({
   email: z.string().email('El correu electrònic no és vàlid.'),
@@ -38,7 +42,8 @@ const loginSchema = z.object({
 });
 
 const registerSchema = z.object({
-  name: z.string().min(2, 'El nom ha de tenir almenys 2 caràcters.'),
+  firstName: z.string().min(2, 'El nom ha de tenir almenys 2 caràcters.'),
+  lastName: z.string().min(2, 'El cognom ha de tenir almenys 2 caràcters.'),
   email: z.string().email('El correu electrònic no és vàlid.'),
   password: z
     .string()
@@ -51,6 +56,7 @@ type AuthFormProps = {
 
 export function AuthForm({ isRegister = false }: AuthFormProps) {
   const auth = useAuth();
+  const firestore = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
   const { user, isUserLoading } = useUser();
@@ -62,7 +68,7 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
     defaultValues: {
       email: '',
       password: '',
-      ...(isRegister && { name: '' }),
+      ...(isRegister && { firstName: '', lastName: '' }),
     },
   });
 
@@ -73,16 +79,38 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
   }, [user, router]);
 
   async function onSubmit(values: z.infer<typeof schema>) {
+    if (!auth) return;
     try {
       if (isRegister) {
-        initiateEmailSignUp(auth, values.email, values.password);
+        const userCredential = await auth.createUserWithEmailAndPassword(values.email, values.password);
+        const newUser = userCredential.user;
+
+        if (firestore && newUser) {
+            const userProfile = {
+                id: newUser.uid,
+                firstName: (values as z.infer<typeof registerSchema>).firstName,
+                lastName: (values as z.infer<typeof registerSchema>).lastName,
+                email: values.email,
+                role: values.email === 'adomen11@xtec.cat' ? 'administrador' : 'client/proveidor',
+                creationDate: serverTimestamp(),
+            };
+            const docRef = doc(firestore, 'users', newUser.uid);
+            setDoc(docRef, userProfile).catch(error => {
+                const permissionError = new FirestorePermissionError({
+                    path: docRef.path,
+                    operation: 'create',
+                    requestResourceData: userProfile,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
+        }
       } else {
         initiateEmailSignIn(auth, values.email, values.password);
       }
       toast({
         title: isRegister ? 'Registre completat' : 'Sessió iniciada',
         description: isRegister
-          ? 'T\'hem enviat un correu de verificació.'
+          ? 'El teu compte ha estat creat.'
           : 'Benvingut/da de nou!',
       });
     } catch (error: any) {
@@ -108,9 +136,9 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
   return (
     <Card>
       <CardHeader className="text-center">
-        <div className="mx-auto mb-4">
+        <Link href="/inici" className="mx-auto mb-4">
             <Truck className="h-12 w-12 text-primary" />
-        </div>
+        </Link>
         <CardTitle className="font-headline text-2xl">
           {isRegister ? 'Crea un nou compte' : 'Benvingut/da a EnTrans'}
         </CardTitle>
@@ -124,19 +152,36 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {isRegister && (
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nom</FormLabel>
-                    <FormControl>
-                      <Input placeholder="El teu nom" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                    control={form.control}
+                    name="firstName"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Nom</FormLabel>
+                        <FormControl>
+                            <Input placeholder="El teu nom" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="lastName"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Cognom</FormLabel>
+                        <FormControl>
+                            <Input placeholder="El teu cognom" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                </div>
+              </>
             )}
             <FormField
               control={form.control}
@@ -173,7 +218,7 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
               className="w-full"
               disabled={form.formState.isSubmitting}
             >
-              {isRegister ? 'Registrar-se' : 'Iniciar Sessió'}
+              {form.formState.isSubmitting ? (isRegister ? 'Registrant...' : 'Iniciant sessió...') : (isRegister ? 'Registrar-se' : 'Iniciar Sessió')}
             </Button>
           </form>
         </Form>

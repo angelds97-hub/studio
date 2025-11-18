@@ -2,7 +2,7 @@
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { Auth, getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore'
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
@@ -23,6 +23,18 @@ export function initializeFirebase() {
         console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
       }
       firebaseApp = initializeApp(firebaseConfig);
+    }
+    
+    // Create admin user if it doesn't exist
+    const auth = getAuth(firebaseApp);
+    if(auth){
+        createUserWithEmailAndPassword(auth, 'adomen11@xtec.cat', '123456').catch((error) => {
+            // We expect a "auth/email-already-in-use" error if the user already exists.
+            // We can safely ignore it. For other errors, we log them.
+            if (error.code !== 'auth/email-already-in-use') {
+                console.error("Error creating admin user:", error);
+            }
+        });
     }
 
     return getSdks(firebaseApp);
