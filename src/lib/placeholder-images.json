@@ -62,9 +62,9 @@
     },
     {
       "id": "reus-city",
-      "description": "Una imatge de la Plaça del Mercadal de Reus",
-      "imageUrl": "https://images.unsplash.com/photo-1603533842638-42f494639f04?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNzk2NTZ8MHwxfHNlYXJjaHwxfHxyZXVzJTIwY2l0eXxlbnwwfHx8fDE3MjE4OTg0MDN8MA&ixlib=rb-4.0.3&q=80&w=1080",
-      "imageHint": "Reus city square"
+      "description": "Una imatge de la Prioral de Sant Pere de Reus durant un espectacle",
+      "imageUrl": "https://picsum.photos/seed/prioral-reus-espectacle/1080/720",
+      "imageHint": "Reus priory show"
     },
     {
       "id": "happy-pig",
