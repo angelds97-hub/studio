@@ -1,13 +1,12 @@
 export type TransportRequest = {
   id: string;
-  requester: User;
+  userProfileId: string;
   transportType: 'passatgers' | 'càrrega';
   origin: string;
   destination: string;
-  dates: { from: Date; to: Date };
+  dates: { from: string; to: string }; // Changed to string to match firestore
   specialRequirements: string;
   status: 'oberta' | 'assignada' | 'completada';
-  offersCount: number;
 };
 
 export type TransportOffer = {
@@ -43,3 +42,5 @@ export type ActiveTransport = {
   status: 'recollint' | 'en trànsit' | 'lliurat';
   progress: number;
 };
+
+    
