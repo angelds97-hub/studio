@@ -3,7 +3,49 @@
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { Auth, getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore'
+import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+
+async function createAdminUser(auth: Auth, firestore: any) {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, 'adomen11@xtec.cat', '123456');
+    const user = userCredential.user;
+    
+    // Now create the user profile document in Firestore
+    const userDocRef = doc(firestore, 'users', user.uid);
+    await setDoc(userDocRef, {
+      id: user.uid,
+      firstName: 'Admin',
+      lastName: 'User',
+      email: 'adomen11@xtec.cat',
+      role: 'administrador',
+      creationDate: serverTimestamp(),
+    });
+
+  } catch (error: any) {
+    if (error.code === 'auth/email-already-in-use') {
+      // If user exists in Auth, ensure their Firestore doc also exists.
+      // This is a recovery mechanism in case the Firestore doc creation failed before.
+      if (auth.currentUser && auth.currentUser.email === 'adomen11@xtec.cat') {
+        const adminUser = auth.currentUser;
+        const userDocRef = doc(firestore, 'users', adminUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (!userDoc.exists()) {
+           await setDoc(userDocRef, {
+            id: adminUser.uid,
+            firstName: 'Admin',
+            lastName: 'User',
+            email: 'adomen11@xtec.cat',
+            role: 'administrador',
+            creationDate: serverTimestamp(),
+          });
+        }
+      }
+    } else {
+      console.error("Error creating admin user:", error);
+    }
+  }
+}
+
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
@@ -25,17 +67,11 @@ export function initializeFirebase() {
       firebaseApp = initializeApp(firebaseConfig);
     }
     
-    // Create admin user if it doesn't exist
     const auth = getAuth(firebaseApp);
-    if(auth){
-        createUserWithEmailAndPassword(auth, 'adomen11@xtec.cat', '123456').catch((error) => {
-            // We expect a "auth/email-already-in-use" error if the user already exists.
-            // We can safely ignore it. For other errors, we log them.
-            if (error.code !== 'auth/email-already-in-use') {
-                console.error("Error creating admin user:", error);
-            }
-        });
-    }
+    const firestore = getFirestore(firebaseApp);
+    
+    // Create admin user and their firestore document
+    createAdminUser(auth, firestore);
 
     return getSdks(firebaseApp);
   }
