@@ -137,13 +137,12 @@ export default function BlogManagementPage() {
   const firestore = useFirestore();
 
   const postsQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
+    if (!firestore) return null;
     return query(
-        collection(firestore, 'blogPosts'), 
-        where('authorId', '==', user.uid),
+        collection(firestore, 'blogPosts'),
         orderBy('createdAt', 'desc')
     );
-  }, [firestore, user]);
+  }, [firestore]);
 
   const { data: posts, isLoading } = useCollection<BlogPost>(postsQuery);
 

@@ -139,8 +139,7 @@ service cloud.firestore {
           return request.auth.uid == resource.data.authorId;
       }
       
-      allow get: if true;
-      allow list: if isSignedIn() && request.query.where.size() == 1 && request.query.where[0][0] == "authorId" && request.query.where[0][1] == "==" && request.query.where[0][2] == request.auth.uid;
+      allow get, list: if true;
       allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
       allow update, delete: if isSignedIn() && isAuthor();
     }
