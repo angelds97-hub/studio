@@ -79,7 +79,7 @@ export default function HomePage() {
       </section>
 
       {/* New Images Section */}
-      <section className="py-16 bg-background">
+      <section className="py-16 bg-secondary">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold font-headline">Imatges Addicionals</h2>
@@ -123,7 +123,7 @@ export default function HomePage() {
       </section>
 
        {/* CTA Section */}
-       <section className="py-16 bg-secondary">
+       <section className="py-16 bg-background">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold font-headline mb-4">Preparat per començar?</h2>
           <p className="text-muted-foreground max-w-xl mx-auto mb-8">Crea un compte avui mateix i descobreix la forma més senzilla de gestionar els teus transports.</p>
