@@ -2,46 +2,62 @@
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { Auth, getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { Auth, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword as firebaseSignIn } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 
-async function createAdminUser(auth: Auth, firestore: any) {
+async function ensureAdminUser(auth: Auth, firestore: any) {
+  const adminEmail = 'adomen11@xtec.cat';
+  const adminPassword = '123456';
+
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, 'adomen11@xtec.cat', '123456');
+    // Intenta iniciar sessió primer per veure si ja existeix
+    try {
+      const userCredential = await firebaseSignIn(auth, adminEmail, adminPassword);
+      const user = userCredential.user;
+      const userDocRef = doc(firestore, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+      if (!userDoc.exists()) {
+        // L'usuari existeix a Auth però no a Firestore, el creem
+        await setDoc(userDocRef, {
+          id: user.uid,
+          firstName: 'Admin',
+          lastName: 'User',
+          email: adminEmail,
+          role: 'administrador',
+          creationDate: serverTimestamp(),
+        });
+      }
+       // Tanquem la sessió per no interferir amb el login de l'usuari
+      await auth.signOut();
+      return;
+    } catch (error: any) {
+       if (error.code !== 'auth/user-not-found' && error.code !== 'auth/invalid-credential') {
+        throw error;
+      }
+      // Si l'usuari no existeix, el creem
+    }
+    
+    // Creació de l'usuari si no existeix
+    const userCredential = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
     const user = userCredential.user;
     
-    // Now create the user profile document in Firestore
     const userDocRef = doc(firestore, 'users', user.uid);
     await setDoc(userDocRef, {
       id: user.uid,
       firstName: 'Admin',
       lastName: 'User',
-      email: 'adomen11@xtec.cat',
+      email: adminEmail,
       role: 'administrador',
       creationDate: serverTimestamp(),
     });
+     // Tanquem la sessió per no interferir amb el login de l'usuari
+    await auth.signOut();
 
   } catch (error: any) {
     if (error.code === 'auth/email-already-in-use') {
-      // If user exists in Auth, ensure their Firestore doc also exists.
-      // This is a recovery mechanism in case the Firestore doc creation failed before.
-      if (auth.currentUser && auth.currentUser.email === 'adomen11@xtec.cat') {
-        const adminUser = auth.currentUser;
-        const userDocRef = doc(firestore, 'users', adminUser.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (!userDoc.exists()) {
-           await setDoc(userDocRef, {
-            id: adminUser.uid,
-            firstName: 'Admin',
-            lastName: 'User',
-            email: 'adomen11@xtec.cat',
-            role: 'administrador',
-            creationDate: serverTimestamp(),
-          });
-        }
-      }
+       // Aquest cas ja està cobert per la lògica d'inici de sessió inicial
     } else {
-      console.error("Error creating admin user:", error);
+      console.error("Error greu assegurant l'usuari administrador:", error);
     }
   }
 }
@@ -49,35 +65,26 @@ async function createAdminUser(auth: Auth, firestore: any) {
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
+  let firebaseApp;
   if (!getApps().length) {
-    // Important! initializeApp() is called without any arguments because Firebase App Hosting
-    // integrates with the initializeApp() function to provide the environment variables needed to
-    // populate the FirebaseOptions in production. It is critical that we attempt to call initializeApp()
-    // without arguments.
-    let firebaseApp;
     try {
-      // Attempt to initialize via Firebase App Hosting environment variables
       firebaseApp = initializeApp();
     } catch (e) {
-      // Only warn in production because it's normal to use the firebaseConfig to initialize
-      // during development
-      if (process.env.NODE_ENV === "production") {
+       if (process.env.NODE_ENV === "production") {
         console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
       }
       firebaseApp = initializeApp(firebaseConfig);
     }
-    
-    const auth = getAuth(firebaseApp);
-    const firestore = getFirestore(firebaseApp);
-    
-    // Create admin user and their firestore document
-    createAdminUser(auth, firestore);
-
-    return getSdks(firebaseApp);
+  } else {
+    firebaseApp = getApp();
   }
+  
+  const auth = getAuth(firebaseApp);
+  const firestore = getFirestore(firebaseApp);
+  
+  ensureAdminUser(auth, firestore);
 
-  // If already initialized, return the SDKs with the already initialized App
-  return getSdks(getApp());
+  return getSdks(firebaseApp);
 }
 
 export function getSdks(firebaseApp: FirebaseApp) {
