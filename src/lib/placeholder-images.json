@@ -32,9 +32,9 @@
     },
     {
       "id": "cargo-transport",
-      "description": "Image representing cargo transport",
-      "imageUrl": "https://images.unsplash.com/photo-1528797249377-0257bfb1a183?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHx0cnVjayUyMGhpZ2h3YXl8ZW58MHx8fHwxNzYzMzE0MjY1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "truck highway"
+      "description": "Imatge d'un camió Volvo davant de la Prioral de Reus.",
+      "imageUrl": "https://picsum.photos/seed/volvo-reus/1200/800",
+      "imageHint": "Volvo truck Reus"
     },
     {
       "id": "passenger-transport",
