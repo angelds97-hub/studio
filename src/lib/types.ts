@@ -4,8 +4,8 @@ export type TransportRequest = {
   transportType: 'passatgers' | 'càrrega';
   origin: string;
   destination: string;
-  dates: { from: string; to: string }; // Changed to string to match firestore
-  specialRequirements: string;
+  dates: { from: string; to?: string };
+  specialRequirements?: string;
   status: 'oberta' | 'assignada' | 'completada';
 };
 

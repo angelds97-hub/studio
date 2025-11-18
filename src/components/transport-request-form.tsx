@@ -34,14 +34,20 @@ import { CalendarIcon, Sparkles, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { ca } from 'date-fns/locale';
 import { suggestTransportImprovements } from '@/ai/flows/suggest-transport-improvements';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useTransition } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useFirestore, useUser } from '@/firebase';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import type { TransportRequest } from '@/lib/types';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
-const formSchema = z.object({
+
+const transportRequestSchema = z.object({
   transportType: z.enum(['passatgers', 'càrrega'], {
     required_error: 'Has de seleccionar un tipus de transport.',
   }),
@@ -63,74 +69,21 @@ const formSchema = z.object({
   specialRequirements: z.string().optional(),
 });
 
-type FormState = {
-  message: string;
-  suggestions?: string;
-  isError?: boolean;
-};
-
-async function handleFormSubmit(
-  prevState: FormState,
-  formData: FormData
-): Promise<FormState> {
-  const validatedFields = formSchema.safeParse({
-    transportType: formData.get('transportType'),
-    origin: formData.get('origin'),
-    destination: formData.get('destination'),
-    dates: {
-      from: new Date(formData.get('dates.from') as string),
-      to: formData.get('dates.to')
-        ? new Date(formData.get('dates.to') as string)
-        : undefined,
-    },
-    specialRequirements: formData.get('specialRequirements'),
-  });
-
-  if (!validatedFields.data) {
-    return {
-      message: 'Dades invàlides. Si us plau, corregeix els errors.',
-      isError: true,
-    };
-  }
-
-  try {
-    const { suggestedImprovements } = await suggestTransportImprovements({
-      transportType: validatedFields.data.transportType,
-      origin: validatedFields.data.origin,
-      destination: validatedFields.data.destination,
-      dates: `${format(validatedFields.data.dates.from, 'PPP', {
-        locale: ca,
-      })} - ${
-        validatedFields.data.dates.to
-          ? format(validatedFields.data.dates.to, 'PPP', { locale: ca })
-          : 'Obert'
-      }`,
-      specialRequirements: validatedFields.data.specialRequirements ?? 'Cap',
-    });
-
-    return {
-      message: 'Sol·licitud creada amb èxit!',
-      suggestions: suggestedImprovements,
-    };
-  } catch (error) {
-    return {
-      message: 'Error en generar suggeriments. Intenta-ho de nou.',
-      isError: true,
-    };
-  }
-}
 
 export function TransportRequestForm() {
-  const [formState, setFormState] = useState<FormState | null>(null);
-  const [isPending, setIsPending] = useState(false);
+  const { user } = useUser();
+  const firestore = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
+
+  const [isPending, startTransition] = useTransition();
+  const [suggestions, setSuggestions] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
   const mapImage = PlaceHolderImages.find(img => img.id === 'map-tracking');
 
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof transportRequestSchema>>({
+    resolver: zodResolver(transportRequestSchema),
     defaultValues: {
       origin: '',
       destination: '',
@@ -149,32 +102,77 @@ export function TransportRequestForm() {
     }
   }, [origin, destination]);
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsPending(true);
-    const formData = new FormData();
-    Object.entries(values).forEach(([key, value]) => {
-      if (key === 'dates' && typeof value === 'object' && value !== null) {
-        if (value.from) formData.append('dates.from', value.from.toISOString());
-        if (value.to) formData.append('dates.to', value.to.toISOString());
-      } else if (value !== undefined && value !== null) {
-        formData.append(key, String(value));
+  async function onSubmit(values: z.infer<typeof transportRequestSchema>) {
+     if (!user || !firestore) {
+      toast({
+        variant: 'destructive',
+        title: 'Error d\'autenticació',
+        description: 'Has d\'iniciar sessió per crear una sol·licitud.',
+      });
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        const newRequest: Omit<TransportRequest, 'id'> = {
+          userProfileId: user.uid,
+          transportType: values.transportType,
+          origin: values.origin,
+          destination: values.destination,
+          dates: {
+            from: values.dates.from.toISOString(),
+            ...(values.dates.to && { to: values.dates.to.toISOString() }),
+          },
+          specialRequirements: values.specialRequirements,
+          status: 'oberta',
+        };
+
+        const collectionRef = collection(firestore, 'users', user.uid, 'transportRequests');
+        await addDoc(collectionRef, {
+            ...newRequest,
+            createdAt: serverTimestamp(),
+        }).catch(error => {
+            const permissionError = new FirestorePermissionError({
+                path: collectionRef.path,
+                operation: 'create',
+                requestResourceData: newRequest,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            throw new Error("No s'ha pogut desar la sol·licitud.");
+        });
+
+        toast({
+          title: 'Sol·licitud Creada amb Èxit',
+          description: 'La teva sol·licitud ha estat creada correctament.',
+        });
+
+        const { suggestedImprovements } = await suggestTransportImprovements({
+            transportType: values.transportType,
+            origin: values.origin,
+            destination: values.destination,
+            dates: `${format(values.dates.from, 'PPP', {
+                locale: ca,
+            })} - ${
+                values.dates.to
+                ? format(values.dates.to, 'PPP', { locale: ca })
+                : 'Obert'
+            }`,
+            specialRequirements: values.specialRequirements ?? 'Cap',
+        });
+
+        setSuggestions(suggestedImprovements);
+        
+        setTimeout(() => router.push('/dashboard'), 3000);
+
+      } catch (error) {
+        console.error(error);
+        toast({
+          variant: 'destructive',
+          title: 'Error en crear la sol·licitud',
+          description: (error as Error).message || "Hi ha hagut un problema. Si us plau, intenta-ho de nou.",
+        });
       }
     });
-
-    const result = await handleFormSubmit(formState!, formData);
-    setFormState(result);
-    setIsPending(false);
-
-    toast({
-      title: result.isError ? 'Error' : 'Sol·licitud Creada',
-      description: result.message,
-      variant: result.isError ? 'destructive' : 'default',
-    });
-
-    if (!result.isError) {
-      form.reset();
-      setTimeout(() => router.push('/solicituts'), 2000);
-    }
   }
 
   return (
@@ -341,8 +339,8 @@ export function TransportRequestForm() {
         </form>
       </Form>
 
-      {formState?.suggestions && (
-        <Card className="bg-accent/30 border-accent">
+      {suggestions && (
+        <Card className="bg-accent/30 border-accent mt-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="text-accent-foreground h-5 w-5" />
@@ -350,12 +348,10 @@ export function TransportRequestForm() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-accent-foreground/90 whitespace-pre-wrap">{formState.suggestions}</p>
+            <p className="text-sm text-accent-foreground/90 whitespace-pre-wrap">{suggestions}</p>
           </CardContent>
         </Card>
       )}
     </div>
   );
 }
-
-    

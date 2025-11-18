@@ -30,7 +30,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Truck } from 'lucide-react';
-import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, serverTimestamp, getDoc, addDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
@@ -73,10 +73,12 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
   });
 
   useEffect(() => {
-    if (user && !isProcessing) {
+    // Aquest useEffect només s'executa si l'usuari ja està logat al carregar el component.
+    // La redirecció després del login es gestiona dins del 'onSubmit'.
+    if (user && !isUserLoading && !isProcessing) {
       router.push('/dashboard');
     }
-  }, [user, router, isProcessing]);
+  }, [user, isUserLoading, router, isProcessing]);
 
   async function onSubmit(values: z.infer<typeof schema>) {
     if (!auth || !firestore) {
@@ -100,10 +102,11 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
           requestedAt: serverTimestamp(),
         };
 
-        const docRef = doc(collection(firestore, 'registrationRequests'));
-        await setDoc(docRef, registrationData).catch(error => {
+        const collectionRef = collection(firestore, 'registrationRequests');
+        addDoc(collectionRef, registrationData)
+        .catch(error => {
             const permissionError = new FirestorePermissionError({
-                path: docRef.path,
+                path: collectionRef.path,
                 operation: 'create',
                 requestResourceData: registrationData,
             });
@@ -139,7 +142,7 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
                 title: 'Sessió iniciada',
                 description: 'Benvingut/da de nou!',
             });
-            // The useEffect will handle the redirect to /dashboard
+            router.push('/dashboard');
         }
       }
     } catch (error: any) {
@@ -151,10 +154,8 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
           switch (error.code) {
               case 'auth/user-not-found':
               case 'auth/wrong-password':
-                  description = 'El correu electrònic o la contrasenya són incorrectes.';
-                  break;
               case 'auth/invalid-credential':
-                  description = 'Les credencials proporcionades no són vàlides.';
+                  description = 'El correu electrònic o la contrasenya són incorrectes.';
                   break;
               case 'permission-denied':
                   description = error.message;
@@ -292,5 +293,3 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
     </Card>
   );
 }
-
-    

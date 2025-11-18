@@ -223,7 +223,7 @@ function RecentRequestsTable({
               </Badge>
             </TableCell>
             <TableCell className="text-right">
-              {format(new Date(request.dates.from), 'dd MMM, yyyy', {
+              {request.dates.from && format(new Date(request.dates.from), 'dd MMM, yyyy', {
                 locale: ca,
               })}
             </TableCell>
@@ -265,7 +265,7 @@ export default function DashboardPage() {
   const firestore = useFirestore();
 
   const requestsQuery = useMemoFirebase(() => {
-    if (!user) return null;
+    if (!user || !firestore) return null;
     return query(
         collection(firestore, 'users', user.uid, 'transportRequests'), 
         orderBy('dates.from', 'desc'), 
