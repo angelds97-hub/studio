@@ -98,7 +98,7 @@ export default function HomePage() {
                       data-ai-hint={reusImage.imageHint}
                     />
                   </div>
-                  <h3 className="text-xl font-semibold mt-4">Una Imatge de Reus</h3>
+                  <h3 className="text-xl font-semibold mt-4">{reusImage.description}</h3>
                 </CardContent>
               </Card>
             )}
