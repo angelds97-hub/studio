@@ -16,8 +16,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { useCollection, useFirestore, useUser } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { useCollection, useFirestore, useUser, useMemoFirebase, useDoc } from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -108,15 +108,20 @@ export default function UserManagementPage() {
   const firestore = useFirestore();
   const { user: currentUser } = useUser();
 
-  const { data: profile, isLoading: profileLoading } = useDoc<UserProfile>(
-    firestore && currentUser
-      ? doc(firestore, 'users', currentUser.uid)
-      : null
-  );
+  const profileRef = useMemoFirebase(() => {
+    if (!firestore || !currentUser) return null;
+    return doc(firestore, 'users', currentUser.uid);
+  }, [firestore, currentUser]);
 
-  const { data: users, isLoading: usersLoading } = useCollection<UserProfile>(
-    firestore ? collection(firestore, 'users') : null
-  );
+  const { data: profile, isLoading: profileLoading } = useDoc<UserProfile>(profileRef);
+
+  const usersQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'users');
+  }, [firestore]);
+
+
+  const { data: users, isLoading: usersLoading } = useCollection<UserProfile>(usersQuery);
 
   if (profileLoading) {
      return (
