@@ -73,12 +73,10 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
   });
 
   useEffect(() => {
-    // Aquest useEffect només s'executa si l'usuari ja està logat al carregar el component.
-    // La redirecció després del login es gestiona dins del 'onSubmit'.
-    if (user && !isUserLoading && !isProcessing) {
+    if (user && !isUserLoading) {
       router.push('/dashboard');
     }
-  }, [user, isUserLoading, router, isProcessing]);
+  }, [user, isUserLoading, router]);
 
   async function onSubmit(values: z.infer<typeof schema>) {
     if (!auth || !firestore) {
@@ -186,7 +184,7 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
   return (
     <Card>
       <CardHeader className="text-center">
-        <Link href="/inici" className="mx-auto mb-4">
+        <Link href="/" className="mx-auto mb-4">
             <Truck className="h-12 w-12 text-primary" />
         </Link>
         <CardTitle className="font-headline text-2xl">
@@ -276,7 +274,7 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
           {isRegister ? (
             <>
               Ja tens un compte?{' '}
-              <Link href="/" className="underline">
+              <Link href="/login" className="underline">
                 Inicia sessió
               </Link>
             </>

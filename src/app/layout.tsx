@@ -1,30 +1,36 @@
+'use client';
+
 import type { Metadata } from 'next';
 import { Toaster } from '@/components/ui/toaster';
-import { FirebaseClientProvider } from '@/firebase';
+import { FirebaseClientProvider, useUser } from '@/firebase';
 import './globals.css';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Truck, Facebook, Twitter, Linkedin, Menu, LogIn, UserPlus } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
-export const metadata: Metadata = {
-  title: 'EnTrans - La teva plataforma de transports',
-  description: 'Contracta transports de manera fàcil i ràpida.',
-};
+// Metadata can be defined in a Server Component layout, but not here.
+// export const metadata: Metadata = {
+//   title: 'EnTrans - La teva plataforma de transports',
+//   description: 'Contracta transports de manera fàcil i ràpida.',
+// };
 
 const navLinks = [
-  { href: '/inici', label: 'Inici' },
+  { href: '/', label: 'Inici' },
   { href: '/serveis', label: 'Serveis' },
   { href: '/blog', label: 'Blog' },
   { href: '/contacte', label: 'Contacte' },
 ];
 
 function SiteHeader() {
+  const { user } = useUser();
+  const isLoggedIn = !!user;
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center">
         <div className="mr-4 hidden md:flex">
-          <Link href="/inici" className="mr-6 flex items-center space-x-2">
+          <Link href="/" className="mr-6 flex items-center space-x-2">
             <Truck className="h-6 w-6 text-primary" />
             <span className="hidden font-bold sm:inline-block font-headline">
               EnTrans
@@ -54,7 +60,7 @@ function SiteHeader() {
                 </SheetTrigger>
                 <SheetContent side="left">
                 <div className="flex flex-col gap-4 p-4">
-                    <Link href="/inici" className="flex items-center space-x-2">
+                    <Link href="/" className="flex items-center space-x-2">
                          <Truck className="h-6 w-6 text-primary" />
                         <span className="font-bold font-headline">EnTrans</span>
                     </Link>
@@ -66,27 +72,40 @@ function SiteHeader() {
                         ))}
                     </nav>
                      <div className="mt-auto flex flex-col gap-2">
+                      {isLoggedIn ? (
                         <Button asChild>
-                            <Link href="/"><LogIn className="mr-2 h-4 w-4"/> Iniciar Sessió</Link>
+                            <Link href="/dashboard">Àrea Client</Link>
                         </Button>
-                        <Button asChild variant="outline">
-                           <Link href="/registre"><UserPlus className="mr-2 h-4 w-4"/> Registrar-se</Link>
-                        </Button>
+                      ) : (
+                        <>
+                          <Button asChild>
+                              <Link href="/login"><LogIn className="mr-2 h-4 w-4"/> Iniciar Sessió</Link>
+                          </Button>
+                          <Button asChild variant="outline">
+                             <Link href="/registre"><UserPlus className="mr-2 h-4 w-4"/> Registrar-se</Link>
+                          </Button>
+                        </>
+                      )}
                      </div>
                 </div>
                 </SheetContent>
             </Sheet>
            </div>
           <nav className="hidden md:flex items-center gap-2">
-            <Button asChild variant="ghost">
-                <Link href="/">Iniciar Sessió</Link>
-            </Button>
-            <Button asChild>
-                <Link href="/registre">Registrar-se</Link>
-            </Button>
-             <Button asChild>
-                <Link href="/dashboard">Àrea Client</Link>
-            </Button>
+            {isLoggedIn ? (
+              <Button asChild>
+                  <Link href="/dashboard">Àrea Client</Link>
+              </Button>
+            ) : (
+              <>
+                <Button asChild variant="ghost">
+                    <Link href="/login">Iniciar Sessió</Link>
+                </Button>
+                <Button asChild>
+                    <Link href="/registre">Registrar-se</Link>
+                </Button>
+              </>
+            )}
           </nav>
         </div>
       </div>
@@ -100,7 +119,7 @@ function SiteFooter() {
             <div className="container py-12 px-4 md:px-6">
                 <div className="grid gap-8 md:grid-cols-4">
                     <div className="space-y-4">
-                         <Link href="/inici" className="flex items-center space-x-2">
+                         <Link href="/" className="flex items-center space-x-2">
                             <Truck className="h-7 w-7 text-primary" />
                             <span className="font-bold text-xl font-headline">EnTrans</span>
                         </Link>
@@ -158,6 +177,8 @@ export default function RootLayout({
   return (
     <html lang="ca" suppressHydrationWarning>
       <head>
+        <title>EnTrans - La teva plataforma de transports</title>
+        <meta name="description" content="Contracta transports de manera fàcil i ràpida." />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"

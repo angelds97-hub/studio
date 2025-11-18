@@ -16,7 +16,7 @@ export default function AuthedLayout({
 
   useEffect(() => {
     if (!isUserLoading && !user) {
-      router.push('/');
+      router.push('/login');
     }
   }, [user, isUserLoading, router]);
 
@@ -30,8 +30,8 @@ export default function AuthedLayout({
 
   return (
     <AppShell>
-      <AppHeader />
-      <div className="p-4 sm:p-6 lg:p-8">{children}</div>
+      {/* AppHeader is now part of the AppShell for simplicity, or could be here if needed */}
+      <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
     </AppShell>
   );
 }
