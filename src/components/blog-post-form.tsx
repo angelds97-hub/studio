@@ -14,12 +14,17 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { BlogPost } from '@/lib/types';
-import { useEffect } from 'react';
+import dynamic from 'next/dynamic';
+import { Skeleton } from './ui/skeleton';
+
+const RichTextEditor = dynamic(() => import('./rich-text-editor').then(mod => mod.RichTextEditor), { 
+  ssr: false,
+  loading: () => <Skeleton className="h-[250px] w-full" />
+});
 
 const blogPostSchema = z.object({
   title: z
@@ -87,7 +92,7 @@ export function BlogPostForm({ authorId, initialData }: BlogPostFormProps) {
         imageUrl: `https://picsum.photos/seed/${encodeURIComponent(
             data.imageHint.split(' ').join('-')
         )}/600/400`,
-        excerpt: data.content.substring(0, 150) + '...',
+        excerpt: data.content.substring(0, 150).replace(/<[^>]*>?/gm, '') + '...',
         updatedAt: new Date().toISOString(),
       });
        toast({
@@ -101,7 +106,7 @@ export function BlogPostForm({ authorId, initialData }: BlogPostFormProps) {
             imageUrl: `https://picsum.photos/seed/${encodeURIComponent(
                 data.imageHint.split(' ').join('-')
             )}/600/400`,
-            excerpt: data.content.substring(0, 150) + '...',
+            excerpt: data.content.substring(0, 150).replace(/<[^>]*>?/gm, '') + '...',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
         });
@@ -170,11 +175,7 @@ export function BlogPostForm({ authorId, initialData }: BlogPostFormProps) {
             <FormItem>
               <FormLabel>Contingut</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Escriu aquí el teu article. Pots utilitzar Markdown per al format."
-                  className="min-h-[250px]"
-                  {...field}
-                />
+                 <RichTextEditor {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

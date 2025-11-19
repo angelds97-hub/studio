@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* React Quill Editor Styles */
+@import 'react-quill/dist/quill.snow.css';
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -84,5 +87,14 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  .ql-editor {
+    @apply min-h-[250px];
+  }
+  .ql-toolbar.ql-snow {
+    @apply rounded-t-md border-input;
+  }
+  .ql-container.ql-snow {
+    @apply rounded-b-md border-input;
   }
 }
