@@ -18,6 +18,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import type { BlogPost } from '@/lib/types';
+import { useEffect } from 'react';
 
 const blogPostSchema = z.object({
   title: z
@@ -41,12 +43,15 @@ type BlogPostFormValues = z.infer<typeof blogPostSchema>;
 
 interface BlogPostFormProps {
   authorId: string;
+  initialData?: BlogPost;
 }
 
-export function BlogPostForm({ authorId }: BlogPostFormProps) {
+export function BlogPostForm({ authorId, initialData }: BlogPostFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const isEditMode = !!initialData;
 
   const form = useForm<BlogPostFormValues>({
     resolver: zodResolver(blogPostSchema),
@@ -58,26 +63,54 @@ export function BlogPostForm({ authorId }: BlogPostFormProps) {
     },
   });
 
+  useEffect(() => {
+    if (initialData) {
+      form.reset({
+        title: initialData.title,
+        category: initialData.category,
+        imageHint: initialData.imageHint,
+        content: initialData.content,
+      });
+    }
+  }, [initialData, form]);
+
   const onSubmit = async (data: BlogPostFormValues) => {
     setIsSubmitting(true);
     
     // In a real app, this would submit to a backend.
     // For this demo, we'll just show a success message.
-    console.log("New post data:", {
+    if (isEditMode) {
+       console.log("Updated post data:", {
+        id: initialData.id,
         ...data,
         authorId,
         imageUrl: `https://picsum.photos/seed/${encodeURIComponent(
             data.imageHint.split(' ').join('-')
         )}/600/400`,
         excerpt: data.content.substring(0, 150) + '...',
-        createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-    });
+      });
+       toast({
+        title: 'Article actualitzat!',
+        description: "L'entrada del blog s'ha desat correctament (simulació).",
+      });
+    } else {
+        console.log("New post data:", {
+            ...data,
+            authorId,
+            imageUrl: `https://picsum.photos/seed/${encodeURIComponent(
+                data.imageHint.split(' ').join('-')
+            )}/600/400`,
+            excerpt: data.content.substring(0, 150) + '...',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        });
 
-    toast({
-        title: 'Article creat!',
-        description: "La teva nova entrada de blog s'ha publicat correctament (simulació).",
-    });
+        toast({
+            title: 'Article creat!',
+            description: "La teva nova entrada de blog s'ha publicat correctament (simulació).",
+        });
+    }
 
     router.push('/dashboard/blog');
     setIsSubmitting(false);
@@ -148,7 +181,7 @@ export function BlogPostForm({ authorId }: BlogPostFormProps) {
           )}
         />
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Publicant...' : 'Publicar Article'}
+          {isSubmitting ? (isEditMode ? 'Desant...' : 'Publicant...') : (isEditMode ? 'Desar Canvis' : 'Publicar Article')}
         </Button>
       </form>
     </Form>

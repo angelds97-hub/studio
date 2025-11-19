@@ -78,7 +78,9 @@ function BlogPostsTable({ posts }: { posts: BlogPost[] }) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Accions</DropdownMenuLabel>
-                  <DropdownMenuItem>Editar</DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href={`/dashboard/blog/editar/${post.id}`}>Editar</Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem>Eliminar</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
