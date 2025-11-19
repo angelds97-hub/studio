@@ -89,22 +89,6 @@ export function AppSidebar() {
                 </Link>
             </Button>
          </div>
-        <Separator className="my-2" />
-        <Card className="shadow-none border-none bg-transparent">
-          <CardHeader className="p-2 pt-0">
-            <CardTitle className="text-base font-semibold">
-              Actualitza a Pro
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-2 pt-0">
-            <div className="text-xs text-muted-foreground mb-4">
-              Aconsegueix més funcions i seguiment il·limitat.
-            </div>
-            <Button size="sm" className="w-full">
-              Actualitzar
-            </Button>
-          </CardContent>
-        </Card>
       </SidebarFooter>
     </Sidebar>
   );
