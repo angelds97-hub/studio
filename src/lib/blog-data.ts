@@ -20,7 +20,7 @@ export const blogPosts: BlogPost[] = [
 <p>Amb projectes com el desenvolupament de noves zones logístiques i la millora contínua de les infraestructures, Reus està preparada per afrontar els reptes del futur. La ciutat no només és un punt de pas, sinó un veritable centre de valor afegit on la logística i el transport són motors de creixement econòmic per a tota la regió.</p>
         `,
         category: 'Logística',
-        imageUrl: 'https://images.unsplash.com/photo-1604724911072-0453f41ab5a3?q=80&w=1974&auto=format&fit=crop',
+        imageUrl: 'https://images.unsplash.com/photo-1604724911072-0453f41ab5a3?q=80&w=800&h=600&auto=format&fit=crop',
         imageHint: 'Reus church',
         excerpt: 'Descobreix per què la ubicació i les infraestructures de Reus la converteixen en un punt clau per al transport de mercaderies a Catalunya.',
         authorId: 'user-1', // Albert Domenech (Fundador)
