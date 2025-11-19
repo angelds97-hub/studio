@@ -12,7 +12,6 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import {
   LayoutDashboard,
@@ -56,7 +55,7 @@ export function AppSidebar() {
       <SidebarHeader className="border-b">
         <Link className="flex items-center gap-2 font-semibold" href="/dashboard">
           <Truck className="h-6 w-6 text-primary" />
-          <span className="font-headline text-lg">EnTrans</span>
+          <span className="font-headline text-lg group-data-[state=collapsed]:hidden">EnTrans</span>
         </Link>
       </SidebarHeader>
       <SidebarContent className="flex-1">
@@ -72,7 +71,7 @@ export function AppSidebar() {
                   }
                 >
                     <item.icon className="h-4 w-4" />
-                    <span>{item.label}</span>
+                    <span className="group-data-[state=collapsed]:hidden">{item.label}</span>
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
@@ -81,11 +80,11 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter className="mt-auto">
          <Separator className="my-2" />
-         <div className="p-2">
-            <Button size="sm" className="w-full" asChild>
+         <div className="p-2 group-data-[state=collapsed]:p-0 group-data-[state=collapsed]:w-fit group-data-[state=collapsed]:mx-auto">
+            <Button size="sm" className="w-full group-data-[state=collapsed]:w-8 group-data-[state=collapsed]:h-8 group-data-[state=collapsed]:p-0" asChild>
                 <Link href="/solicituts/nova">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Nova Sol·licitud
+                    <PlusCircle className="mr-2 h-4 w-4 group-data-[state=collapsed]:mr-0" />
+                    <span className="group-data-[state=collapsed]:hidden">Nova Sol·licitud</span>
                 </Link>
             </Button>
          </div>
