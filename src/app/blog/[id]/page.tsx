@@ -46,7 +46,7 @@ export default function BlogPostPage({ params }: { params: { id: string } }) {
 
       {post.imageUrl && (
         <div className="relative aspect-video rounded-lg overflow-hidden mb-8">
-          <Image src={post.imageUrl} alt={post.title} width={1200} height={800} className="object-cover w-full h-full" data-ai-hint={post.imageHint} priority />
+          <Image src={post.imageUrl} alt={post.title} fill className="object-cover w-full h-full" data-ai-hint={post.imageHint} priority />
         </div>
       )}
 

@@ -16,7 +16,7 @@ function BlogPostList({ blogPosts }: { blogPosts: BlogPost[] }) {
         <Card key={post.id} className="overflow-hidden flex flex-col">
           {post.imageUrl && (
             <div className="relative aspect-video">
-              <Image src={post.imageUrl} alt={post.title} width={600} height={400} className="object-cover w-full h-full" data-ai-hint={post.imageHint} />
+              <Image src={post.imageUrl} alt={post.title} fill className="object-cover" data-ai-hint={post.imageHint} />
             </div>
           )}
           <CardHeader>
