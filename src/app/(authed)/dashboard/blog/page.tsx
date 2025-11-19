@@ -26,54 +26,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useUser, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where, orderBy } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 import { format } from 'date-fns';
 import { ca } from 'date-fns/locale';
-import { Skeleton } from '@/components/ui/skeleton';
+import { blogPosts } from '@/lib/blog-data';
 
-function BlogPostsTable({
-  posts,
-  isLoading,
-}: {
-  posts: WithId<BlogPost>[] | null;
-  isLoading: boolean;
-}) {
-  if (isLoading) {
-    return (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Títol</TableHead>
-            <TableHead>Categoria</TableHead>
-            <TableHead>Data de Creació</TableHead>
-            <TableHead>
-              <span className="sr-only">Accions</span>
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {[...Array(3)].map((_, i) => (
-            <TableRow key={i}>
-              <TableCell>
-                <Skeleton className="h-5 w-48" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-6 w-24" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-5 w-24" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-8 w-8 ml-auto" />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    );
-  }
+function BlogPostsTable({ posts }: { posts: BlogPost[] }) {
 
   if (!posts || posts.length === 0) {
     return (
@@ -133,18 +91,6 @@ function BlogPostsTable({
 }
 
 export default function BlogManagementPage() {
-  const { user } = useUser();
-  const firestore = useFirestore();
-
-  const postsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(
-        collection(firestore, 'blogPosts'),
-        orderBy('createdAt', 'desc')
-    );
-  }, [firestore]);
-
-  const { data: posts, isLoading } = useCollection<BlogPost>(postsQuery);
 
   return (
     <Card>
@@ -165,7 +111,7 @@ export default function BlogManagementPage() {
         </div>
       </CardHeader>
       <CardContent>
-        <BlogPostsTable posts={posts} isLoading={isLoading} />
+        <BlogPostsTable posts={blogPosts} />
       </CardContent>
     </Card>
   );

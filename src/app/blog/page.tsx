@@ -1,46 +1,15 @@
 'use client';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 import { format } from 'date-fns';
 import { ca } from 'date-fns/locale';
-import { Skeleton } from "@/components/ui/skeleton";
-import type { WithId } from '@/firebase/firestore/use-collection';
+import { blogPosts } from "@/lib/blog-data";
 
-function BlogPostsSkeleton() {
-  return (
-    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {[...Array(3)].map((_, i) => (
-        <Card key={i} className="overflow-hidden flex flex-col">
-          <div className="relative aspect-video bg-muted">
-             <Skeleton className="h-full w-full" />
-          </div>
-          <CardHeader>
-            <Skeleton className="h-6 w-24 mb-2" />
-            <Skeleton className="h-7 w-3/4" />
-          </CardHeader>
-          <CardContent className="flex-1">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full mt-2" />
-            <Skeleton className="h-4 w-2/3 mt-2" />
-          </CardContent>
-          <CardFooter className="flex justify-between items-center text-sm">
-            <Skeleton className="h-5 w-24" />
-            <Skeleton className="h-5 w-20" />
-          </CardFooter>
-        </Card>
-      ))}
-    </div>
-  );
-}
-
-function BlogPostList({ blogPosts }: { blogPosts: WithId<BlogPost>[] }) {
+function BlogPostList({ blogPosts }: { blogPosts: BlogPost[] }) {
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
       {blogPosts && blogPosts.map(post => (
@@ -77,17 +46,6 @@ function BlogPostList({ blogPosts }: { blogPosts: WithId<BlogPost>[] }) {
 
 
 export default function BlogPage() {
-    const firestore = useFirestore();
-
-    const postsQuery = useMemoFirebase(() => {
-        if (!firestore) return null;
-        return query(
-            collection(firestore, 'blogPosts'),
-            orderBy('createdAt', 'desc')
-        );
-    }, [firestore]);
-
-    const { data: blogPosts, isLoading } = useCollection<BlogPost>(postsQuery);
 
     return (
         <div className="container py-12">
@@ -96,9 +54,7 @@ export default function BlogPage() {
             <p className="text-lg text-muted-foreground mt-4 max-w-3xl mx-auto">Notícies, tendències i consells sobre el món del transport i la logística.</p>
         </div>
 
-        {isLoading ? (
-            <BlogPostsSkeleton />
-        ) : blogPosts ? (
+        {blogPosts ? (
             <BlogPostList blogPosts={blogPosts} />
         ) : (
            <div className="text-center py-10 text-muted-foreground">

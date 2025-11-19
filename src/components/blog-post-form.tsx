@@ -17,11 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { useFirestore } from '@/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useState } from 'react';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 
 const blogPostSchema = z.object({
   title: z
@@ -48,7 +44,6 @@ interface BlogPostFormProps {
 }
 
 export function BlogPostForm({ authorId }: BlogPostFormProps) {
-  const firestore = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,57 +59,28 @@ export function BlogPostForm({ authorId }: BlogPostFormProps) {
   });
 
   const onSubmit = async (data: BlogPostFormValues) => {
-    if (!firestore) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'No s\'ha pogut connectar a la base de dades.',
-      });
-      return;
-    }
-
     setIsSubmitting(true);
+    
+    // In a real app, this would submit to a backend.
+    // For this demo, we'll just show a success message.
+    console.log("New post data:", {
+        ...data,
+        authorId,
+        imageUrl: `https://picsum.photos/seed/${encodeURIComponent(
+            data.imageHint.split(' ').join('-')
+        )}/600/400`,
+        excerpt: data.content.substring(0, 150) + '...',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    });
 
-    const newPost = {
-      ...data,
-      authorId,
-      imageUrl: `https://picsum.photos/seed/${encodeURIComponent(
-        data.imageHint.split(' ').join('-')
-      )}/600/400`,
-      excerpt: data.content.substring(0, 150) + '...',
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    };
+    toast({
+        title: 'Article creat!',
+        description: "La teva nova entrada de blog s'ha publicat correctament (simulació).",
+    });
 
-    const collectionRef = collection(firestore, 'blogPosts');
-    addDoc(collectionRef, newPost)
-      .then((docRef) => {
-        toast({
-          title: 'Article creat!',
-          description: "La teva nova entrada de blog s'ha publicat correctament.",
-        });
-        router.push('/dashboard/blog');
-      })
-      .catch((error) => {
-        console.error('Error afegint el document: ', error);
-         const permissionError = new FirestorePermissionError({
-            path: collectionRef.path,
-            operation: 'create',
-            requestResourceData: newPost,
-        });
-
-        errorEmitter.emit('permission-error', permissionError);
-
-        toast({
-          variant: 'destructive',
-          title: 'Uh oh! Alguna cosa ha anat malament.',
-          description:
-            "No s'ha pogut desar l'article. Si us plau, intenta-ho de nou.",
-        });
-      })
-      .finally(() => {
-        setIsSubmitting(false);
-      });
+    router.push('/dashboard/blog');
+    setIsSubmitting(false);
   };
 
   return (
