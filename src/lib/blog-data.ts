@@ -4,20 +4,29 @@ import { subDays } from 'date-fns';
 export const blogPosts: BlogPost[] = [
     {
         id: 'reus-transport-catalunya',
-        title: 'Reus: Un Nus Estratègic per al Transport de Mercaderies a Catalunya',
+        title: 'Reus: El Cor Logístic del Sud de Catalunya',
         content: `
-<p>Reus, coneguda històricament pel seu dinamisme comercial i la producció d'aiguardent, s'ha consolidat en les darreres dècades com un punt clau en el mapa logístic de Catalunya. La seva ubicació privilegiada, a prop del Port de Tarragona i de l'aeroport, juntament amb una xarxa de comunicacions terrestres de primer nivell, la converteixen en un enclavament estratègic per al transport de mercaderies.</p>
-<h3>Una Posició Geogràfica Privilegiada</h3>
-<p>Situada al cor del Camp de Tarragona, Reus gaudeix d'accés directe a importants eixos viaris com l'AP-7, que connecta tot el corredor mediterrani, i l'A-27, que facilita la comunicació amb l'interior de la península. Aquesta connectivitat permet a les empreses de transport optimitzar les seves rutes, reduir costos i garantir lliuraments més ràpids i eficients.</p>
-<h3>Infraestructures al Servei de la Logística</h3>
-<p>L'àrea d'influència de Reus compta amb infraestructures modernes que donen suport a l'activitat logística:</p>
+<p>Reus, més enllà de ser coneguda pel seu modernisme i el seu dinamisme comercial, s'ha erigit com una peça fonamental en el tauler logístic de Catalunya. La seva ubicació estratègica i una xarxa d'infraestructures de primer nivell la converteixen en el motor del transport de mercaderies al sud del país.</p>
+
+<img src="https://picsum.photos/seed/reus-map/800/400" alt="Mapa estratègic de Reus" class="rounded-lg my-6" data-ai-hint="map catalonia" />
+
+<h3>Una Cruïlla de Camins Privilegiada</h3>
+<p>Situada al cor del Camp de Tarragona, Reus gaudeix d'un accés directe a eixos viaris vitals com l'AP-7, la principal autopista del corredor mediterrani, i l'A-27, que connecta la costa amb l'interior de la península. Aquesta connectivitat permet a les empreses de transport optimitzar rutes, escurçar temps de lliurament i, en conseqüència, reduir costos operatius.</p>
+
+<img src="https://picsum.photos/seed/truck-highway/800/400" alt="Camió en autopista" class="rounded-lg my-6" data-ai-hint="truck highway" />
+
+<h3>Sinergies amb Infraestructures Clau</h3>
+<p>El potencial de Reus es multiplica gràcies a la seva proximitat a dues infraestructures cabdals:</p>
 <ul>
-    <li><strong>El Port de Tarragona:</strong> Un dels ports més importants de la Mediterrània, especialitzat en productes químics, agroalimentaris i càrrega general.</li>
-    <li><strong>L'Aeroport de Reus:</strong> Facilita el transport aeri de mercaderies urgents i d'alt valor afegit.</li>
-    <li><strong>Polígons Industrials:</strong> Com el CIM Camp, dissenyat específicament per a activitats logístiques i de transport, oferint espais i serveis adaptats a les necessitats del sector.</li>
+    <li><strong>El Port de Tarragona:</strong> A pocs quilòmetres, és un dels ports més importants de la Mediterrània, líder en el tràfic de productes agroalimentaris i químics. Aquesta proximitat facilita enormement les operacions d'importació i exportació.</li>
+    <li><strong>L'Aeroport de Reus:</strong> Actua com un complement perfecte per al transport urgent de mercaderies i paqueteria, connectant la regió amb destinacions nacionals i internacionals.</li>
 </ul>
-<h3>El Futur del Transport a Reus</h3>
-<p>Amb projectes com el desenvolupament de noves zones logístiques i la millora contínua de les infraestructures, Reus està preparada per afrontar els reptes del futur. La ciutat no només és un punt de pas, sinó un veritable centre de valor afegit on la logística i el transport són motors de creixement econòmic per a tota la regió.</p>
+<p>Aquesta combinació de transport terrestre, marítim i aeri crea un ecosistema logístic integral, on Reus funciona com el centre neuràlgic que ho connecta tot.</p>
+
+<img src="https://picsum.photos/seed/tarragona-port/800/400" alt="Port de Tarragona" class="rounded-lg my-6" data-ai-hint="port cargo" />
+
+<h3>Un Futur Orientat a la Innovació</h3>
+<p>Amb la constant expansió de polígons industrials com el CIM Camp i l'aposta per la digitalització del sector, Reus no només consolida la seva posició actual, sinó que mira cap al futur. La ciutat està preparada per liderar la transformació del sector logístic, adoptant noves tecnologies i pràctiques més sostenibles per afrontar els reptes de demà.</p>
         `,
         category: 'Logística',
         imageUrl: 'https://images.unsplash.com/photo-1604724911072-0453f41ab5a3?q=80&w=800&h=600&auto=format&fit=crop',
