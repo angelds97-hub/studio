@@ -1,3 +1,4 @@
+
 import type { BlogPost } from './types';
 import { subDays } from 'date-fns';
 
@@ -29,8 +30,8 @@ export const blogPosts: BlogPost[] = [
 <p>Amb la constant expansió de polígons industrials com el CIM Camp i l'aposta per la digitalització del sector, Reus no només consolida la seva posició actual, sinó que mira cap al futur. La ciutat està preparada per liderar la transformació del sector logístic, adoptant noves tecnologies i pràctiques més sostenibles per afrontar els reptes de demà.</p>
         `,
         category: 'Logística',
-        imageUrl: 'https://images.unsplash.com/photo-1604724911072-0453f41ab5a3?q=80&w=800&h=600&auto=format&fit=crop',
-        imageHint: 'Reus church',
+        imageUrl: 'https://images.unsplash.com/photo-1579563315904-fb151c6b0b69?q=80&w=800&h=600&auto=format&fit=crop',
+        imageHint: 'cargo truck',
         excerpt: 'Descobreix per què la ubicació i les infraestructures de Reus la converteixen en un punt clau per al transport de mercaderies a Catalunya.',
         authorId: 'user-1', // Albert Domenech (Fundador)
         createdAt: subDays(new Date(), 5).toISOString(),
