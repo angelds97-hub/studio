@@ -1,9 +1,9 @@
+/* React Quill Editor Styles */
+@import 'react-quill/dist/quill.snow.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* React Quill Editor Styles */
-@import 'react-quill/dist/quill.snow.css';
 
 @layer base {
   :root {
