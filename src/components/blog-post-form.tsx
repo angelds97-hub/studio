@@ -176,6 +176,13 @@ export function BlogPostForm({ authorId, initialData }: BlogPostFormProps) {
                   {...field}
                 />
               </FormControl>
+               <FormDescription>
+                Pots utilitzar etiquetes HTML bàsiques per formatar el text. Per exemple:
+                {' '}<code>&lt;h3&gt;Subtítol&lt;/h3&gt;</code>,
+                {' '}<code>&lt;p&gt;Paràgraf.&lt;/p&gt;</code>,
+                {' '}<code>&lt;strong&gt;Negreta&lt;/strong&gt;</code>,
+                {' '}o <code>&lt;ul&gt;&lt;li&gt;Element de llista&lt;/li&gt;&lt;/ul&gt;</code>.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
