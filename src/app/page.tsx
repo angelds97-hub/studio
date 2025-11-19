@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 export default function HomePage() {
-  const heroImage = PlaceHolderImages.find(img => img.id === 'cargo-transport');
+  const heroImage = PlaceHolderImages.find(img => img.id === 'hero-truck');
 
   const services = [
     {
@@ -29,7 +29,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative w-full h-[60vh] text-white">
+      <section className="relative w-full h-[60vh] bg-gray-900 text-white">
         {heroImage && (
           <Image
             src={heroImage.imageUrl}
@@ -40,11 +40,11 @@ export default function HomePage() {
             priority
           />
         )}
-        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 bg-black/60" />
         <div className="relative h-full flex flex-col items-center justify-center text-center p-4">
-          <h1 className="text-4xl md:text-6xl font-bold font-headline mb-4">La teva solució logística de confiança</h1>
+          <h1 className="text-4xl md:text-6xl font-bold font-headline mb-4 leading-tight">La teva solució logística de confiança</h1>
           <p className="text-lg md:text-xl max-w-3xl mb-8">Connectem les teves necessitats de transport amb els millors professionals del sector. Ràpid, fàcil i segur.</p>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4 justify-center">
             <Button size="lg" asChild>
               <Link href="/solicituts/nova">Sol·licita un transport</Link>
             </Button>

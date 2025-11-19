@@ -31,10 +31,10 @@
       "imageHint": "woman smiling"
     },
     {
-      "id": "cargo-transport",
-      "description": "Imatge d'un camió de càrrega genèric",
-      "imageUrl": "https://images.unsplash.com/photo-1579563315904-fb151c6b0b69?q=80&w=800&h=600&auto=format&fit=crop",
-      "imageHint": "cargo truck"
+      "id": "hero-truck",
+      "description": "Imatge d'un camió de càrrega per la portada",
+      "imageUrl": "https://images.unsplash.com/photo-1611746351408-c0a1346be8e8?q=80&w=1200&h=800&auto=format&fit=crop",
+      "imageHint": "truck highway"
     },
     {
       "id": "passenger-transport",
@@ -85,9 +85,9 @@
       "imageHint": "port cargo"
     },
     {
-      "id": "reus-truck",
-      "description": "Camió de càrrega a Reus",
-      "imageUrl": "https://images.unsplash.com/photo-1579563315904-fb151c6b0b69?q=80&w=800&auto=format&fit=crop",
+      "id": "cargo-transport",
+      "description": "Imatge d'un camió de càrrega genèric",
+      "imageUrl": "https://images.unsplash.com/photo-1579563315904-fb151c6b0b69?q=80&w=800&h=600&auto=format&fit=crop",
       "imageHint": "cargo truck"
     }
   ]
