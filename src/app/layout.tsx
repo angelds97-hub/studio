@@ -1,6 +1,7 @@
 'use client';
 
 import type { Metadata } from 'next';
+import { Inter, Space_Grotesk } from 'next/font/google';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider, useUser } from '@/firebase';
 import './globals.css';
@@ -8,6 +9,19 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Truck, Facebook, Twitter, Linkedin, Menu, LogIn, UserPlus } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { cn } from '@/lib/utils';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-space-grotesk',
+  display: 'swap',
+});
 
 // Metadata can be defined in a Server Component layout, but not here.
 // export const metadata: Metadata = {
@@ -176,24 +190,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ca" suppressHydrationWarning>
+    <html lang="ca" suppressHydrationWarning className={cn(inter.variable, spaceGrotesk.variable)}>
       <head>
         <title>EnTrans - La teva plataforma de transports</title>
         <meta name="description" content="Contracta transports de manera fàcil i ràpida." />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap"
-          rel="stylesheet"
-        />
       </head>
       <body className="font-body antialiased">
         <FirebaseClientProvider>
