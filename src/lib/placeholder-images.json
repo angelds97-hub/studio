@@ -32,9 +32,9 @@
     },
     {
       "id": "cargo-transport",
-      "description": "Imatge d'un camió Volvo davant de la Prioral de Reus.",
-      "imageUrl": "https://picsum.photos/seed/volvo-reus/1200/800",
-      "imageHint": "Volvo truck Reus"
+      "description": "Imatge d'un camió de càrrega genèric",
+      "imageUrl": "https://images.unsplash.com/photo-1579563315904-fb151c6b0b69?q=80&w=800&h=600&auto=format&fit=crop",
+      "imageHint": "cargo truck"
     },
     {
       "id": "passenger-transport",
@@ -63,8 +63,26 @@
     {
       "id": "reus-city",
       "description": "Una imatge de la Prioral de Sant Pere de Reus.",
-      "imageUrl": "https://images.unsplash.com/photo-1604724911072-0453f41ab5a3?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageUrl": "https://images.unsplash.com/photo-1604724911072-0453f41ab5a3?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       "imageHint": "Reus church"
+    },
+    {
+      "id": "reus-map",
+      "description": "Mapa de la zona de Reus.",
+      "imageUrl": "https://images.unsplash.com/photo-1672267273792-7cd919624a26?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxtYXAlMjBjYXRhbG9uaWF8ZW58MHx8fHwxNzYzNTYyNzU2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "map catalonia"
+    },
+    {
+      "id": "truck-highway",
+      "description": "Camió en una autopista.",
+      "imageUrl": "https://images.unsplash.com/photo-1611746351408-c0a1346be8e8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHx0cnVjayUyMGhpZ2h3YXl8ZW58MHx8fHwxNzYzNTUzNTgyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "truck highway"
+    },
+    {
+      "id": "tarragona-port",
+      "description": "Port de càrrega de Tarragona.",
+      "imageUrl": "https://images.unsplash.com/photo-1614571272828-2d8289ff8fc0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8cG9ydCUyMGNhcmdvfGVufDB8fHx8MTc2MzU2Mjc1Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "port cargo"
     },
     {
       "id": "happy-pig",
