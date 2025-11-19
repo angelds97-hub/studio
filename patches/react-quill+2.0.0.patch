@@ -1,0 +1,202 @@
+diff --git a/node_modules/react-quill/lib/component.js b/node_modules/react-quill/lib/component.js
+index 53c8c73..f952f4b 100644
+--- a/node_modules/react-quill/lib/component.js
++++ b/node_modules/react-quill/lib/component.js
+@@ -324,7 +324,7 @@ class QuillComponent extends React.Component {
+ 	 */
+ 	getEditor: function() {
+ 		if (!this.editor) throw new Error('The editor is not initialized.');
+-		return this.editor;
++		return this.editor.current;
+ 	},
+ 
+ 	/**
+@@ -332,10 +332,10 @@ class QuillComponent extends React.Component {
+ 	 * for the editor.
+ 	 */
+ 	getEditingArea: function() {
+-		if (!this.editingArea) throw new Error('The editing area is not available.');
+-		// This is required to tell Flow that editingArea is not a general
+-		// HTMLDivElement, but a specific type of div that holds a Quill editor.
+-		return this.editingArea;
++		if (!this.editingArea.current) throw new Error('The editing area is not available.');
++		// N.B. The DOM node is passed within a `current` property.
++		//      See https://reactjs.org/docs/refs-and-the-dom.html
++		return this.editingArea.current;
+ 	},
+ 
+ 	/**
+@@ -361,7 +361,7 @@ class QuillComponent extends React.Component {
+ 		var editor = this.getEditor();
+ 		if (source === 'user') {
+ 			// Prevent an infinite loop by trying to update the editor state
+-			// while it is still being updated, in a controlled component.
++			// while it is still being updated in a controlled component.
+ 			this.lastDeltaChangeSet = delta;
+ 			editor.updateContents(delta, source);
+ 		}
+@@ -375,10 +375,10 @@ class QuillComponent extends React.Component {
+ 		this.setEditorContents(this.getEditor(), this.props.value);
+ 	},
+ 
+-	setEditorContents: function(editor, value) {
++	setEditorContents: function(editor, value) { // eslint-disable-line
+ 		// Restore editor from delta, given in props
+ 		if (value instanceof this.Quill.sources.Delta) {
+-			editor.setContents(value, 'api');
++			editor.setContents(value, 'user');
+ 		// Restore editor from string, given in props
+ 		} else if (typeof value === 'string') {
+ 			var delta = editor.clipboard.convert(value);
+@@ -404,7 +404,7 @@ class QuillComponent extends React.Component {
+ 	onEditorChangeText: function(value, delta, source, editor) {
+ 		// We keep storing the current value in a variable instead of parsing
+ 		// from the DOM, to avoid a potential race condition where `getHTML` is
+-		// called before the latest change is applied to the DOM.
++		// called before the latest change is applied to the DOM.å
+ 		var currentContents = this.getEditorContents();
+ 
+ 		// We update the component's value if the change was not caused by
+diff --git a/node_modules/react-quill/lib/index.js b/node_modules/react-quill/lib/index.js
+index 403b9b4..605b4b1 100644
+--- a/node_modules/react-quill/lib/index.js
++++ b/node_modules/react-quill/lib/index.js
+@@ -10,13 +10,10 @@
+ 
+ var QuillComponent = require('./component');
+ 
+-var findDOMNode = require('react-dom').findDOMNode;
+ var Quill = require('quill');
+ 
+ var QuillMixin = {
+-
+ 	/**
+-	 * Expose the Quill editor on the component.
+ 	 *
+ 	 * @param {Quill} editor
+ 	 */
+@@ -45,11 +42,7 @@
+ 	 * @return {Quill}
+ 	 */
+ 	getEditor: function() {
+-		if (!this.editor) {
+-			throw new Error('The editor is not initialized.');
+-		}
+-		return this.editor;
++		return QuillComponent.prototype.getEditor.call(this);
+ 	},
+ 
+ 	/**
+@@ -60,11 +53,7 @@
+ 	 * @return {DOMElement}
+ 	 */
+ 	getEditingArea: function() {
+-		if (!this.editingArea) {
+-			throw new Error('The editing area is not available');
+-		}
+-		return findDOMNode(this.editingArea);
++		return QuillComponent.prototype.getEditingArea.call(this);
+ 	},
+ 
+ 	/**
+diff --git a/node_modules/react-quill/src/component.jsx b/node_modules/react-quill/src/component.jsx
+index 10e017a..338d99c 100644
+--- a/node_modules/react-quill/src/component.jsx
++++ b/node_modules/react-quill/src/component.jsx
+@@ -348,7 +348,7 @@ class QuillComponent extends React.Component {
+ 	 */
+ 	getEditor(): Quill {
+ 		if (!this.editor) throw new Error('The editor is not initialized.');
+-		return this.editor;
++		return this.editor.current;
+ 	},
+ 
+ 	/**
+@@ -356,10 +356,10 @@ class QuillComponent extends React.Component {
+ 	 * for the editor.
+ 	 */
+ 	getEditingArea(): HTMLDivElement {
+-		if (!this.editingArea) throw new Error('The editing area is not available.');
+-		// This is required to tell Flow that editingArea is not a general
+-		// HTMLDivElement, but a specific type of div that holds a Quill editor.
+-		return this.editingArea;
++		if (!this.editingArea.current) throw new Error('The editing area is not available.');
++		// N.B. The DOM node is passed within a `current` property.
++		//      See https://reactjs.org/docs/refs-and-the-dom.html
++		return this.editingArea.current;
+ 	},
+ 
+ 	/**
+@@ -385,7 +385,7 @@ class QuillComponent extends React.Component {
+ 		const editor = this.getEditor();
+ 		if (source === 'user') {
+ 			// Prevent an infinite loop by trying to update the editor state
+-			// while it is still being updated, in a controlled component.
++			// while it is still being updated in a controlled component.
+ 			this.lastDeltaChangeSet = delta;
+ 			editor.updateContents(delta, source);
+ 		}
+@@ -399,10 +399,10 @@ class QuillComponent extends React.Component {
+ 		this.setEditorContents(this.getEditor(), this.props.value);
+ 	}
+ 
+-	setEditorContents(editor: Quill, value: Value) {
++	setEditorContents(editor: Quill, value: Value) { // eslint-disable-line
+ 		// Restore editor from delta, given in props
+ 		if (value instanceof this.Quill.sources.Delta) {
+-			editor.setContents(value, 'api');
++			editor.setContents(value, 'user');
+ 		// Restore editor from string, given in props
+ 		} else if (typeof value === 'string') {
+ 			const delta = editor.clipboard.convert(value);
+@@ -428,7 +428,7 @@ class QuillComponent extends React.Component {
+ 	onEditorChangeText = (value:string, delta:Delta, source:Sources, editor:Quill) => {
+ 		// We keep storing the current value in a variable instead of parsing
+ 		// from the DOM, to avoid a potential race condition where `getHTML` is
+-		// called before the latest change is applied to the DOM.
++		// called before the latest change is applied to the DOM.å
+ 		const currentContents = this.getEditorContents();
+ 
+ 		// We update the component's value if the change was not caused by
+diff --git a/node_modules/react-quill/src/index.jsx b/node_modules/react-quill/src/index.jsx
+index 548c3f5..83de3d1 100644
+--- a/node_modules/react-quill/src/index.jsx
++++ b/node_modules/react-quill/src/index.jsx
+@@ -10,13 +10,10 @@
+ 
+ import QuillComponent from './component.jsx';
+ 
+-import { findDOMNode } from 'react-dom';
+ import Quill from 'quill';
+ 
+ const QuillMixin = {
+-
+ 	/**
+-	 * Expose the Quill editor on the component.
+ 	 *
+ 	 * @param {Quill} editor
+ 	 */
+@@ -45,11 +42,7 @@ const QuillMixin = {
+ 	 * @return {Quill}
+ 	 */
+ 	getEditor(): Quill {
+-		if (!this.editor) {
+-			throw new Error('The editor is not initialized.');
+-		}
+-		return this.editor;
++		return QuillComponent.prototype.getEditor.call(this);
+ 	},
+ 
+ 	/**
+@@ -60,11 +53,7 @@ const QuillMixin = {
+ 	 * @return {DOMElement}
+ 	 */
+ 	getEditingArea(): Element {
+-		if (!this.editingArea) {
+-			throw new Error('The editing area is not available');
+-		}
+-		return findDOMNode(this.editingArea);
++		return QuillComponent.prototype.getEditingArea.call(this);
+ 	},
+ 
+ 	/**
