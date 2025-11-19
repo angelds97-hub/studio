@@ -18,13 +18,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import type { BlogPost } from '@/lib/types';
-import dynamic from 'next/dynamic';
 import { Skeleton } from './ui/skeleton';
-
-const RichTextEditor = dynamic(() => import('./rich-text-editor').then(mod => mod.RichTextEditor), { 
-  ssr: false,
-  loading: () => <Skeleton className="h-[250px] w-full" />
-});
+import { Textarea } from './ui/textarea';
 
 const blogPostSchema = z.object({
   title: z
@@ -175,7 +170,11 @@ export function BlogPostForm({ authorId, initialData }: BlogPostFormProps) {
             <FormItem>
               <FormLabel>Contingut</FormLabel>
               <FormControl>
-                 <RichTextEditor {...field} />
+                <Textarea
+                  placeholder="Escriu aquí el teu article..."
+                  className="min-h-[250px]"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

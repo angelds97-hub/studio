@@ -88,13 +88,4 @@
     @apply bg-background text-foreground;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
-  .ql-editor {
-    @apply min-h-[250px];
-  }
-  .ql-toolbar.ql-snow {
-    @apply rounded-t-md border-input;
-  }
-  .ql-container.ql-snow {
-    @apply rounded-b-md border-input;
-  }
 }
