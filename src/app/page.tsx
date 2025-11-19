@@ -7,8 +7,6 @@ import Link from "next/link";
 
 export default function HomePage() {
   const heroImage = PlaceHolderImages.find(img => img.id === 'cargo-transport');
-  const reusImage = PlaceHolderImages.find(img => img.id === 'reus-city');
-  const pigImage = PlaceHolderImages.find(img => img.id === 'happy-pig');
 
   const services = [
     {
@@ -78,52 +76,8 @@ export default function HomePage() {
           </div>
       </section>
 
-      {/* New Images Section */}
-      <section className="py-16 bg-secondary">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold font-headline">Imatges Addicionals</h2>
-            <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">Una petita mostra visual.</p>
-          </div>
-          <div className="grid md:grid-cols-2 gap-8">
-            {reusImage && (
-              <Card>
-                <CardContent className="p-4">
-                  <div className="relative aspect-video">
-                    <Image
-                      src={reusImage.imageUrl}
-                      alt={reusImage.description}
-                      fill
-                      className="object-cover rounded-md"
-                      data-ai-hint={reusImage.imageHint}
-                    />
-                  </div>
-                  <h3 className="text-xl font-semibold mt-4">{reusImage.description}</h3>
-                </CardContent>
-              </Card>
-            )}
-            {pigImage && (
-              <Card>
-                <CardContent className="p-4">
-                  <div className="relative aspect-video">
-                    <Image
-                      src={pigImage.imageUrl}
-                      alt={pigImage.description}
-                      fill
-                      className="object-cover rounded-md"
-                      data-ai-hint={pigImage.imageHint}
-                    />
-                  </div>
-                  <h3 className="text-xl font-semibold mt-4">Un Porquet Feliç</h3>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </div>
-      </section>
-
        {/* CTA Section */}
-       <section className="py-16 bg-background">
+       <section className="py-16 bg-secondary">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold font-headline mb-4">Preparat per començar?</h2>
           <p className="text-muted-foreground max-w-xl mx-auto mb-8">Crea un compte avui mateix i descobreix la forma més senzilla de gestionar els teus transports.</p>
