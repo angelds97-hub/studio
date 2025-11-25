@@ -4,14 +4,13 @@ import * as React from "react"
 import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { cva, type VariantProps } from "class-variance-authority"
 import { X } from "lucide-react"
+import { Slot } from '@radix-ui/react-slot'
 
 import { cn } from "@/lib/utils"
 
 const Sheet = SheetPrimitive.Root
 
 const SheetTrigger = SheetPrimitive.Trigger
-
-const SheetClose = SheetPrimitive.Close
 
 const SheetPortal = SheetPrimitive.Portal
 
@@ -125,6 +124,18 @@ const SheetDescription = React.forwardRef<
   />
 ))
 SheetDescription.displayName = SheetPrimitive.Description.displayName
+
+
+const SheetClose = React.forwardRef<
+  React.ElementRef<typeof SheetPrimitive.Close>,
+  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Close>
+>(({ asChild, ...props }, ref) => {
+  const Comp = asChild ? Slot : SheetPrimitive.Close;
+  return <Comp ref={ref} {...props} />;
+});
+
+SheetClose.displayName = SheetPrimitive.Close.displayName;
+
 
 export {
   Sheet,
