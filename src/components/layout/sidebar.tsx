@@ -10,7 +10,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  useSidebar,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -33,7 +32,6 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { user } = useUser();
   const firestore = useFirestore();
-  const { isMobile } = useSidebar();
 
   const userProfileRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -52,23 +50,21 @@ export function AppSidebar() {
 
   const filteredNavItems = navItems.filter(item => userProfile && item.roles.includes(userProfile.role));
 
-  const NavLink = isMobile ? SheetClose : 'div';
-
   return (
     <Sidebar>
       <SidebarHeader className="border-b">
-         <NavLink asChild>
+         <SheetClose asChild>
             <Link className="flex items-center gap-2 font-semibold" href="/dashboard">
               <Truck className="h-6 w-6 text-primary" />
               <span className="font-headline text-lg group-data-[state=collapsed]:hidden">EnTrans</span>
             </Link>
-        </NavLink>
+        </SheetClose>
       </SidebarHeader>
       <SidebarContent className="flex-1">
         <SidebarMenu>
           {filteredNavItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-               <NavLink asChild>
+               <SheetClose asChild>
                   <Link href={item.href}>
                     <SidebarMenuButton
                       isActive={
@@ -81,7 +77,7 @@ export function AppSidebar() {
                         <span className="group-data-[state=collapsed]:hidden">{item.label}</span>
                     </SidebarMenuButton>
                   </Link>
-              </NavLink>
+              </SheetClose>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
@@ -89,14 +85,14 @@ export function AppSidebar() {
       <SidebarFooter className="mt-auto">
          <Separator className="my-2" />
          <div className="p-2 group-data-[state=collapsed]:p-0 group-data-[state=collapsed]:w-fit group-data-[state=collapsed]:mx-auto">
-            <NavLink asChild>
+            <SheetClose asChild>
                 <Button size="sm" className="w-full group-data-[state=collapsed]:w-8 group-data-[state=collapsed]:h-8 group-data-[state=collapsed]:p-0" asChild>
                     <Link href="/solicituts/nova">
                         <PlusCircle className="mr-2 h-4 w-4 group-data-[state=collapsed]:mr-0" />
                         <span className="group-data-[state=collapsed]:hidden">Nova Sol·licitud</span>
                     </Link>
                 </Button>
-            </NavLink>
+            </SheetClose>
          </div>
       </SidebarFooter>
     </Sidebar>
