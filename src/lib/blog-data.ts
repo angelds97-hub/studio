@@ -11,6 +11,34 @@ const truckHighwayImage = PlaceHolderImages.find(p => p.id === 'truck-highway');
 
 export const blogPosts: BlogPost[] = [
     {
+        id: 'optimizant-rutes',
+        title: 'Optimizant Rutes: Claus per a un Transport Més Eficient',
+        content: `
+<p>L'optimització de rutes és un dels pilars fonamentals per a qualsevol empresa de transport que busqui millorar la seva eficiència, reduir costos i minimitzar el seu impacte mediambiental. En un món cada cop més competitiu, cada minut i cada quilòmetre compten.</p>
+
+<h3>Tecnologia al Servei de la Logística</h3>
+<p>Avui dia, disposem d'eines tecnològiques avançades que ens permeten analitzar variables en temps real, com el trànsit, les condicions meteorològiques o les restriccions de circulació. L'ús de software especialitzat en la planificació de rutes permet a les empreses dissenyar trajectes més intel·ligents, evitar embussos i garantir els lliuraments en els terminis acordats.</p>
+
+<h3>Més enllà del Camí Més Curt</h3>
+<p>Optimitzar una ruta no sempre significa triar el camí més curt. Cal tenir en compte factors com:</p>
+<ul>
+    <li><strong>El consum de combustible:</strong> Evitar pendents pronunciats o zones de trànsit dens pot estalviar una quantitat significativa de combustible.</li>
+    <li><strong>Els horaris de lliurament:</strong> Planificar les rutes per adaptar-se a les finestres de lliurament dels clients és crucial per a la satisfacció del servei.</li>
+    <li><strong>La seguretat:</strong> Prioritzar carreteres en bon estat i evitar zones conflictives millora la seguretat tant del conductor com de la mercaderia.</li>
+</ul>
+
+<h3>Un Benefici per a Tothom</h3>
+<p>Una bona optimització de rutes no només beneficia l'empresa de transport. Els clients reben les seves mercaderies més ràpid, es redueixen les emissions de CO2 i, en general, es contribueix a una mobilitat més sostenible i eficient per a tota la societat.</p>
+        `,
+        category: 'Eficiència',
+        imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSs5jOMVXpvl5ow8uAd8TXP3n-GWvVKPUUdDA&s',
+        imageHint: 'truck sunset highway',
+        excerpt: 'Descobreix com la tecnologia i una planificació intel·ligent poden transformar les operacions de transport, estalviant temps i diners.',
+        authorId: 'user-1',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    },
+    {
         id: 'reus-transport-catalunya',
         title: 'Reus: El Cor Logístic del Sud de Catalunya',
         content: `
