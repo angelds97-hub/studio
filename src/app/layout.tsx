@@ -65,7 +65,7 @@ function SiteHeader() {
         </div>
 
         <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-           <div className="md:hidden">
+           <div className="md:hidden flex-1">
             <Sheet>
                 <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
@@ -109,20 +109,28 @@ function SiteHeader() {
                 </SheetContent>
             </Sheet>
            </div>
-          <nav className="hidden md:flex items-center gap-2">
-            {isLoggedIn ? (
-              <Button asChild>
+           
+          <div className="md:hidden flex-1 flex justify-center">
+            <Link href="/" className="flex items-center space-x-2">
+              <Truck className="h-6 w-6 text-primary" />
+              <span className="font-bold font-headline">EnTrans</span>
+            </Link>
+          </div>
+
+          <nav className="flex items-center gap-2 flex-1 justify-end">
+             {isLoggedIn ? (
+              <Button asChild className="hidden md:flex">
                   <Link href="/dashboard">Àrea Client</Link>
               </Button>
             ) : (
-              <>
+              <div className="hidden md:flex gap-2">
                 <Button asChild variant="ghost">
                     <Link href="/login">Iniciar Sessió</Link>
                 </Button>
                 <Button asChild>
                     <Link href="/registre">Registrar-se</Link>
                 </Button>
-              </>
+              </div>
             )}
           </nav>
         </div>
@@ -211,5 +219,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-    
