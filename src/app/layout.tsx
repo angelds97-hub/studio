@@ -8,7 +8,7 @@ import './globals.css';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Truck, Facebook, Twitter, Linkedin, Menu, LogIn, UserPlus } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 
 const inter = Inter({
@@ -73,7 +73,10 @@ function SiteHeader() {
                     <span className="sr-only">Obrir menú</span>
                 </Button>
                 </SheetTrigger>
-                <SheetContent side="left">
+                <SheetContent side="left" className="p-0">
+                  <SheetHeader className="p-4">
+                      <SheetTitle className="sr-only">Menú de navegació</SheetTitle>
+                  </SheetHeader>
                 <div className="flex flex-col gap-4 p-4">
                     <Link href="/" className="flex items-center space-x-2">
                          <Truck className="h-6 w-6 text-primary" />
@@ -208,3 +211,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+    
