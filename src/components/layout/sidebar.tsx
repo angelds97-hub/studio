@@ -10,6 +10,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -31,6 +32,7 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { user } = useUser();
   const firestore = useFirestore();
+  const { setOpenMobile } = useSidebar();
 
   const userProfileRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -49,11 +51,14 @@ export function AppSidebar() {
 
   const filteredNavItems = navItems.filter(item => userProfile && item.roles.includes(userProfile.role));
 
+  const handleLinkClick = () => {
+    setOpenMobile(false);
+  };
 
   return (
     <Sidebar>
       <SidebarHeader className="border-b">
-        <Link className="flex items-center gap-2 font-semibold" href="/dashboard">
+        <Link className="flex items-center gap-2 font-semibold" href="/dashboard" onClick={handleLinkClick}>
           <Truck className="h-6 w-6 text-primary" />
           <span className="font-headline text-lg group-data-[state=collapsed]:hidden">EnTrans</span>
         </Link>
@@ -62,7 +67,7 @@ export function AppSidebar() {
         <SidebarMenu>
           {filteredNavItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <Link href={item.href}>
+              <Link href={item.href} onClick={handleLinkClick}>
                 <SidebarMenuButton
                   isActive={
                     item.href === '/dashboard'
@@ -82,7 +87,7 @@ export function AppSidebar() {
          <Separator className="my-2" />
          <div className="p-2 group-data-[state=collapsed]:p-0 group-data-[state=collapsed]:w-fit group-data-[state=collapsed]:mx-auto">
             <Button size="sm" className="w-full group-data-[state=collapsed]:w-8 group-data-[state=collapsed]:h-8 group-data-[state=collapsed]:p-0" asChild>
-                <Link href="/solicituts/nova">
+                <Link href="/solicituts/nova" onClick={handleLinkClick}>
                     <PlusCircle className="mr-2 h-4 w-4 group-data-[state=collapsed]:mr-0" />
                     <span className="group-data-[state=collapsed]:hidden">Nova Sol·licitud</span>
                 </Link>
