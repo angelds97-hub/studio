@@ -22,15 +22,15 @@ export default function BlogPostPage() {
     const { id } = params;
 
     // In a real app, you would fetch from the DB.
-    // For static export, we get the data from the mock file.
+    // For static export, we get the data from the mock file as a fallback.
     const { blogPosts: mockBlogPosts } = require('@/lib/blog-data');
-    const post = mockBlogPosts.find((p: BlogPost) => p.id === id);
+    const staticPost = mockBlogPosts.find((p: BlogPost) => p.id === id);
 
 
     const authorRef = useMemoFirebase(() => {
-        if (!firestore || !post?.authorId) return null;
-        return doc(firestore, 'users', post.authorId);
-    }, [firestore, post?.authorId]);
+        if (!firestore || !staticPost?.authorId) return null;
+        return doc(firestore, 'users', staticPost.authorId);
+    }, [firestore, staticPost?.authorId]);
 
     const { data: author, isLoading: authorLoading } = useDoc<UserProfile>(authorRef);
 
@@ -39,7 +39,7 @@ export default function BlogPostPage() {
         return doc(firestore, 'blogPosts', id as string);
      }, [firestore, id]));
 
-    const displayPost = postFromDb || post;
+    const displayPost = postFromDb || staticPost;
 
 
     if (postLoading || authorLoading) {
