@@ -15,7 +15,8 @@ import { Label } from '@/components/ui/label';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
-import { useForm, zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
   Form,
