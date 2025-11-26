@@ -7,12 +7,49 @@ import { ArrowRight } from "lucide-react";
 import type { BlogPost } from '@/lib/types';
 import { format } from 'date-fns';
 import { ca } from 'date-fns/locale';
-import { blogPosts } from "@/lib/blog-data";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection } from 'firebase/firestore';
+import { Skeleton } from "@/components/ui/skeleton";
 
-function BlogPostList({ blogPosts }: { blogPosts: BlogPost[] }) {
+function BlogPostList({ blogPosts, isLoading }: { blogPosts: WithId<BlogPost>[] | null, isLoading: boolean }) {
+
+  if (isLoading) {
+    return (
+       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {[...Array(3)].map((_, i) => (
+             <Card key={i} className="overflow-hidden flex flex-col">
+                <Skeleton className="aspect-video w-full" />
+                <CardHeader>
+                    <Skeleton className="h-5 w-20 mb-2" />
+                    <Skeleton className="h-6 w-full" />
+                </CardHeader>
+                <CardContent className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-4/5" />
+                </CardContent>
+                <CardFooter>
+                     <Skeleton className="h-4 w-24" />
+                </CardFooter>
+             </Card>
+          ))}
+       </div>
+    );
+  }
+  
+  if (!blogPosts || blogPosts.length === 0) {
+      return (
+           <div className="text-center py-10 text-muted-foreground">
+                <h3 className="mt-2 text-lg font-semibold">No s'han trobat articles</h3>
+                <p className="mt-1 text-sm">
+                    Aviat hi haurà notícies i novetats.
+                </p>
+           </div>
+      )
+  }
+
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {blogPosts && blogPosts.map(post => (
+      {blogPosts.map(post => (
         <Card key={post.id} className="overflow-hidden flex flex-col">
           {post.imageUrl && (
             <div className="relative aspect-video">
@@ -46,6 +83,14 @@ function BlogPostList({ blogPosts }: { blogPosts: BlogPost[] }) {
 
 
 export default function BlogPage() {
+    const firestore = useFirestore();
+    
+    const blogPostsQuery = useMemoFirebase(() => {
+        if (!firestore) return null;
+        return collection(firestore, 'blogPosts');
+    }, [firestore]);
+
+    const { data: blogPosts, isLoading } = useCollection<BlogPost>(blogPostsQuery);
 
     return (
         <div className="container py-12">
@@ -54,16 +99,8 @@ export default function BlogPage() {
             <p className="text-lg text-muted-foreground mt-4 max-w-3xl mx-auto">Notícies, tendències i consells sobre el món del transport i la logística.</p>
         </div>
 
-        {blogPosts ? (
-            <BlogPostList blogPosts={blogPosts} />
-        ) : (
-           <div className="text-center py-10 text-muted-foreground">
-                <h3 className="mt-2 text-lg font-semibold">No s'han trobat articles</h3>
-                <p className="mt-1 text-sm">
-                    Aviat hi haurà notícies i novetats.
-                </p>
-           </div>
-        )}
+        <BlogPostList blogPosts={blogPosts} isLoading={isLoading} />
+        
         </div>
     );
 }

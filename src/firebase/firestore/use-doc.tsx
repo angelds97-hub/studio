@@ -10,9 +10,8 @@ import {
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import type { WithId } from '@/lib/types';
 
-/** Utility type to add an 'id' field to a given type T. */
-type WithId<T> = T & { id: string };
 
 /**
  * Interface for the return value of the useDoc hook.
@@ -63,7 +62,17 @@ export function useDoc<T = any>(
       memoizedDocRef,
       (snapshot: DocumentSnapshot<DocumentData>) => {
         if (snapshot.exists()) {
-          setData({ ...(snapshot.data() as T), id: snapshot.id });
+          const docData = snapshot.data();
+          const serverTimestampFields: Record<string, any> = {};
+
+          // Convert Firestore Timestamps to ISO strings
+          Object.keys(docData).forEach(key => {
+            if (docData[key]?.toDate) { // Check if it's a Timestamp
+              serverTimestampFields[key] = docData[key].toDate().toISOString();
+            }
+          });
+
+          setData({ ...docData as T, ...serverTimestampFields, id: snapshot.id });
         } else {
           // Document does not exist
           setData(null);

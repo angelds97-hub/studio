@@ -11,9 +11,8 @@ import {
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import type { WithId } from '@/lib/types';
 
-/** Utility type to add an 'id' field to a given type T. */
-export type WithId<T> = T & { id: string };
 
 /**
  * Interface for the return value of the useCollection hook.
@@ -78,7 +77,17 @@ export function useCollection<T = any>(
       (snapshot: QuerySnapshot<DocumentData>) => {
         const results: ResultItemType[] = [];
         for (const doc of snapshot.docs) {
-          results.push({ ...(doc.data() as T), id: doc.id });
+          const docData = doc.data();
+          const serverTimestampFields: Record<string, any> = {};
+          
+          // Convert Firestore Timestamps to ISO strings
+          Object.keys(docData).forEach(key => {
+            if (docData[key]?.toDate) { // Check if it's a Timestamp
+              serverTimestampFields[key] = docData[key].toDate().toISOString();
+            }
+          });
+          
+          results.push({ ...(docData as T), ...serverTimestampFields, id: doc.id });
         }
         setData(results);
         setError(null);

@@ -1,4 +1,3 @@
-
 import type { BlogPost } from './types';
 import { subDays } from 'date-fns';
 import { PlaceHolderImages } from './placeholder-images';
@@ -9,6 +8,7 @@ const reusTruckImage = PlaceHolderImages.find(p => p.id === 'cargo-truck');
 const tarragonaPortImage = PlaceHolderImages.find(p => p.id === 'tarragona-port');
 const truckHighwayImage = PlaceHolderImages.find(p => p.id === 'truck-highway');
 
+// This file is now a mock/backup. The data is fetched from Firestore.
 export const blogPosts: BlogPost[] = [
     {
         id: 'optimizant-rutes',

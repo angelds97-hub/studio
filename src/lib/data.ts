@@ -1,6 +1,11 @@
-import type { TransportRequest, User, Notification, ActiveTransport, TransportOffer } from './types';
+import type { TransportRequest, User, Notification, ActiveTransport, TransportOffer, UserProfile } from './types';
 import { Truck, Users, CheckCircle, Bell } from 'lucide-react';
 import { subDays, addDays } from 'date-fns';
+
+
+// THIS FILE CONTAINS MOCK DATA.
+// IN A REAL APPLICATION, THIS DATA WOULD BE FETCHED FROM A DATABASE.
+
 
 export const mainUser: User = {
   name: 'Admin',
@@ -14,47 +19,52 @@ export const users: { [key: string]: User } = {
   'user-4': { name: 'Laura Molins', avatarUrl: 'https://picsum.photos/seed/user4/100/100' },
 };
 
-export const transportRequests: TransportRequest[] = [
+// This is now used as mock data for pages that are not yet connected to Firestore.
+export const transportRequests: (TransportRequest & {requester: User, offersCount: number})[] = [
   {
     id: 'req-1',
+    userProfileId: 'user-1-id',
     requester: users['user-1'],
     transportType: 'càrrega',
     origin: 'Barcelona',
     destination: 'València',
-    dates: { from: new Date(), to: addDays(new Date(), 3) },
+    dates: { from: new Date().toISOString(), to: addDays(new Date(), 3).toISOString() },
     specialRequirements: 'Necessita refrigeració. Palets de fruita.',
     status: 'oberta',
     offersCount: 3,
   },
   {
     id: 'req-2',
+    userProfileId: 'user-2-id',
     requester: users['user-2'],
     transportType: 'passatgers',
     origin: 'Girona',
     destination: 'Lleida',
-    dates: { from: addDays(new Date(), 5), to: addDays(new Date(), 5) },
+    dates: { from: addDays(new Date(), 5).toISOString(), to: addDays(new Date(), 5).toISOString() },
     specialRequirements: 'Grup de 15 persones. Anada i tornada el mateix dia.',
     status: 'oberta',
     offersCount: 1,
   },
   {
     id: 'req-3',
+    userProfileId: 'user-3-id',
     requester: users['user-3'],
     transportType: 'càrrega',
     origin: 'Tarragona',
     destination: 'Madrid',
-    dates: { from: addDays(new Date(), 10), to: addDays(new Date(), 12) },
+    dates: { from: addDays(new Date(), 10).toISOString(), to: addDays(new Date(), 12).toISOString() },
     specialRequirements: 'Material fràgil. Assegurança addicional requerida.',
     status: 'assignada',
     offersCount: 5,
   },
   {
     id: 'req-4',
+    userProfileId: 'user-4-id',
     requester: users['user-4'],
     transportType: 'càrrega',
     origin: 'Sabadell',
     destination: 'Saragossa',
-    dates: { from: subDays(new Date(), 2), to: subDays(new Date(), 1) },
+    dates: { from: subDays(new Date(), 2).toISOString(), to: subDays(new Date(), 1).toISOString() },
     specialRequirements: 'Entrega urgent de paqueteria.',
     status: 'completada',
     offersCount: 2,

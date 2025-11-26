@@ -1,13 +1,14 @@
-import { transportRequests, transportOffers as allOffers } from "@/lib/data";
-import { notFound } from "next/navigation";
+'use client';
+
+import { notFound, useParams } from 'next/navigation';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import {
   Calendar,
   MapPin,
@@ -16,26 +17,96 @@ import {
   Star,
   CheckCircle,
   FileText,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { ca } from "date-fns/locale";
-import Image from "next/image";
-import { Separator } from "@/components/ui/separator";
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
+import { ca } from 'date-fns/locale';
+import Image from 'next/image';
+import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
-import { OfferSummary } from "@/components/offer-summary";
+import { OfferSummary } from '@/components/offer-summary';
+import { useDoc, useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { TransportRequest, UserProfile, TransportOffer } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
+import { transportOffers as allOffers } from '@/lib/data'; // Keep mock offers for now
 
-export default function TransportDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const request = transportRequests.find((r) => r.id === params.id);
-  const offers = allOffers[params.id] || [];
+export default function TransportDetailPage() {
+  const params = useParams();
+  const { id } = params;
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  // Fetch the transport request
+  const requestRef = useMemoFirebase(() => {
+    if (!firestore || !user || !id) return null;
+    // Assuming the user viewing this is the one who created it.
+    // In a real app, you might have different logic for admins etc.
+    return doc(firestore, 'users', user.uid, 'transportRequests', id as string);
+  }, [firestore, user, id]);
+
+  const { data: request, isLoading: requestLoading } =
+    useDoc<TransportRequest>(requestRef);
+
+  // Fetch the profile of the user who made the request
+  const requesterProfileRef = useMemoFirebase(() => {
+    if (!firestore || !request?.userProfileId) return null;
+    return doc(firestore, 'users', request.userProfileId);
+  }, [firestore, request?.userProfileId]);
+
+  const { data: requesterProfile, isLoading: requesterLoading } =
+    useDoc<UserProfile>(requesterProfileRef);
+
+  // Mock offers for now as they are not in Firestore structure
+  const offers = allOffers[id as keyof typeof allOffers] || [];
+
+  if (requestLoading || requesterLoading) {
+    return (
+      <div className="grid gap-8 md:grid-cols-3">
+        <div className="md:col-span-2 space-y-8">
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-8 w-1/2" />
+                    <Skeleton className="h-4 w-1/4" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-10 w-32" />
+                </CardContent>
+            </Card>
+            <Card>
+                 <CardHeader>
+                    <Skeleton className="h-8 w-1/3" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <Skeleton className="h-24 w-full" />
+                    <Skeleton className="h-24 w-full" />
+                </CardContent>
+            </Card>
+        </div>
+        <div className="md:col-span-1">
+            <Card>
+                 <CardHeader>
+                    <Skeleton className="h-7 w-24" />
+                </CardHeader>
+                <CardContent>
+                     <Skeleton className="h-16 w-full" />
+                </CardContent>
+            </Card>
+        </div>
+      </div>
+    );
+  }
 
   if (!request) {
     notFound();
   }
+
+  const requesterName = requesterProfile
+    ? `${requesterProfile.firstName} ${requesterProfile.lastName}`
+    : 'Carregant...';
+  const requesterAvatar = requesterProfile?.avatarUrl || `https://avatar.vercel.sh/${requesterProfile?.email}.png`;
+
 
   return (
     <div className="grid gap-8 md:grid-cols-3">
@@ -47,7 +118,16 @@ export default function TransportDetailPage({
             </CardTitle>
             <div className="flex items-center justify-between">
               <CardDescription>ID: {request.id}</CardDescription>
-               <Badge variant={request.status === 'completada' ? 'default' : request.status === 'assignada' ? 'secondary' : 'outline'} className="capitalize">
+              <Badge
+                variant={
+                  request.status === 'completada'
+                    ? 'default'
+                    : request.status === 'assignada'
+                    ? 'secondary'
+                    : 'outline'
+                }
+                className="capitalize"
+              >
                 {request.status}
               </Badge>
             </div>
@@ -58,14 +138,16 @@ export default function TransportDetailPage({
                 <User className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-muted-foreground">Client</p>
-                  <p className="font-medium">{request.requester.name}</p>
+                  <p className="font-medium">{requesterName}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Truck className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-muted-foreground">Tipus de Transport</p>
-                  <p className="font-medium capitalize">{request.transportType}</p>
+                  <p className="font-medium capitalize">
+                    {request.transportType}
+                  </p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -82,36 +164,46 @@ export default function TransportDetailPage({
                 <div>
                   <p className="text-muted-foreground">Dates</p>
                   <p className="font-medium">
-                    {format(request.dates.from, "d MMM yyyy", { locale: ca })} -{" "}
-                    {format(request.dates.to, "d MMM yyyy", { locale: ca })}
+                    {format(new Date(request.dates.from), 'd MMM yyyy', { locale: ca })}{' '}
+                    -{' '}
+                    {request.dates.to ? format(new Date(request.dates.to), 'd MMM yyyy', { locale: ca }) : 'Oberta'}
                   </p>
                 </div>
               </div>
             </div>
-             {request.specialRequirements && (
-                <div className="space-y-2">
-                    <h4 className="font-medium">Requisits Especials</h4>
-                    <p className="text-sm text-muted-foreground bg-secondary/50 p-3 rounded-md">{request.specialRequirements}</p>
-                </div>
-             )}
+            {request.specialRequirements && (
+              <div className="space-y-2">
+                <h4 className="font-medium">Requisits Especials</h4>
+                <p className="text-sm text-muted-foreground bg-secondary/50 p-3 rounded-md">
+                  {request.specialRequirements}
+                </p>
+              </div>
+            )}
           </CardContent>
-           <div className="p-6 pt-0">
-             <Link href={`/transports/${request.id}/seguiment`}>
-               <Button>Anar al Seguiment</Button>
+          <div className="p-6 pt-0">
+            <Link href={`/transports/${request.id}/seguiment`}>
+              <Button>Anar al Seguiment</Button>
             </Link>
-           </div>
+          </div>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Ofertes Rebudes ({offers.length})</CardTitle>
-             <CardDescription>Aquestes són les ofertes que han enviat els transportistes.</CardDescription>
+            <CardTitle className="font-headline">
+              Ofertes Rebudes ({offers.length})
+            </CardTitle>
+            <CardDescription>
+              Aquestes són les ofertes que han enviat els transportistes.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {offers.length > 0 && <OfferSummary offers={offers} />}
             <Separator />
             {offers.map((offer) => (
-              <div key={offer.id} className="flex flex-col sm:flex-row gap-4 justify-between rounded-lg border p-4">
+              <div
+                key={offer.id}
+                className="flex flex-col sm:flex-row gap-4 justify-between rounded-lg border p-4"
+              >
                 <div className="flex gap-4">
                   <Image
                     src={offer.company.logoUrl}
@@ -127,23 +219,31 @@ export default function TransportDetailPage({
                       <Star className="w-4 h-4 fill-accent text-accent" />
                       <span>{offer.company.rating}</span>
                     </div>
-                     <p className="text-sm text-muted-foreground">{offer.vehicle}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {offer.vehicle}
+                    </p>
                   </div>
                 </div>
                 <div className="flex sm:flex-col items-end justify-between sm:justify-start gap-2">
-                    <div className="text-lg font-bold text-right">{offer.price}€</div>
-                    <Button size="sm">
-                        <CheckCircle className="mr-2 h-4 w-4" /> Acceptar Oferta
-                    </Button>
+                  <div className="text-lg font-bold text-right">
+                    {offer.price}€
+                  </div>
+                  <Button size="sm">
+                    <CheckCircle className="mr-2 h-4 w-4" /> Acceptar Oferta
+                  </Button>
                 </div>
               </div>
             ))}
-             {offers.length === 0 && (
-                <div className="text-center py-10 text-muted-foreground">
-                    <FileText className="mx-auto h-12 w-12" />
-                    <h3 className="mt-2 text-lg font-semibold">No hi ha ofertes</h3>
-                    <p className="mt-1 text-sm">Encara no s'ha rebut cap oferta per a aquesta sol·licitud.</p>
-                </div>
+            {offers.length === 0 && (
+              <div className="text-center py-10 text-muted-foreground">
+                <FileText className="mx-auto h-12 w-12" />
+                <h3 className="mt-2 text-lg font-semibold">
+                  No hi ha ofertes
+                </h3>
+                <p className="mt-1 text-sm">
+                  Encara no s'ha rebut cap oferta per a aquesta sol·licitud.
+                </p>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -151,23 +251,27 @@ export default function TransportDetailPage({
 
       <div className="md:col-span-1 space-y-8">
         <Card>
-            <CardHeader>
-                <CardTitle>Client</CardTitle>
-            </CardHeader>
-            <CardContent className="flex items-center gap-4">
-                 <Image
-                    src={request.requester.avatarUrl}
-                    alt={`Avatar de ${request.requester.name}`}
-                    width={56}
-                    height={56}
-                    className="rounded-full w-14 h-14"
-                    data-ai-hint="person portrait"
-                  />
-                  <div>
-                    <p className="font-semibold">{request.requester.name}</p>
-                    <p className="text-sm text-muted-foreground">Membre des de 2023</p>
-                  </div>
-            </CardContent>
+          <CardHeader>
+            <CardTitle>Client</CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center gap-4">
+            <Image
+              src={requesterAvatar}
+              alt={`Avatar de ${requesterName}`}
+              width={56}
+              height={56}
+              className="rounded-full w-14 h-14"
+              data-ai-hint="person portrait"
+            />
+            <div>
+              <p className="font-semibold">{requesterName}</p>
+              {requesterProfile?.creationDate && (
+                <p className="text-sm text-muted-foreground">
+                  Membre des de {format(new Date(requesterProfile.creationDate), 'yyyy')}
+                </p>
+              )}
+            </div>
+          </CardContent>
         </Card>
       </div>
     </div>

@@ -29,16 +29,77 @@ import {
 import type { BlogPost } from '@/lib/types';
 import { format } from 'date-fns';
 import { ca } from 'date-fns/locale';
-import { blogPosts } from '@/lib/blog-data';
+import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { collection, deleteDoc, doc } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
 
-function BlogPostsTable({ posts }: { posts: BlogPost[] }) {
+function BlogPostsTable({
+  posts,
+  isLoading,
+}: {
+  posts: WithId<BlogPost>[] | null;
+  isLoading: boolean;
+}) {
+  const firestore = useFirestore();
+  const { toast } = useToast();
+
+  const handleDelete = async (postId: string) => {
+    if (!firestore) return;
+    if (!window.confirm("Estàs segur que vols eliminar aquest article? Aquesta acció no es pot desfer.")) return;
+    
+    try {
+      await deleteDoc(doc(firestore, 'blogPosts', postId));
+      toast({
+        title: 'Article eliminat',
+        description: 'L\'entrada del blog ha estat eliminada correctament.',
+      });
+    } catch (error) {
+       toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'No s\'ha pogut eliminar l\'article.',
+      });
+      console.error(error);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Títol</TableHead>
+            <TableHead>Categoria</TableHead>
+            <TableHead>Data de Creació</TableHead>
+            <TableHead>
+              <span className="sr-only">Accions</span>
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {[...Array(3)].map((_, i) => (
+            <TableRow key={i}>
+              <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+              <TableCell><Skeleton className="h-6 w-24" /></TableCell>
+              <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+              <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+  }
 
   if (!posts || posts.length === 0) {
     return (
       <div className="text-center py-10 text-muted-foreground">
-        <h3 className="mt-2 text-lg font-semibold">No hi ha cap article al blog</h3>
+        <h3 className="mt-2 text-lg font-semibold">
+          No hi ha cap article al blog
+        </h3>
         <p className="mt-1 text-sm">
-          Comença a compartir notícies i novetats creant la teva primera entrada.
+          Comença a compartir notícies i novetats creant la teva primera
+          entrada.
         </p>
       </div>
     );
@@ -64,9 +125,10 @@ function BlogPostsTable({ posts }: { posts: BlogPost[] }) {
               <Badge variant="outline">{post.category}</Badge>
             </TableCell>
             <TableCell>
-              {post.createdAt && format(new Date(post.createdAt), 'dd MMM, yyyy', {
-                locale: ca,
-              })}
+              {post.createdAt &&
+                format(new Date(post.createdAt), 'dd MMM, yyyy', {
+                  locale: ca,
+                })}
             </TableCell>
             <TableCell>
               <DropdownMenu>
@@ -79,9 +141,16 @@ function BlogPostsTable({ posts }: { posts: BlogPost[] }) {
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Accions</DropdownMenuLabel>
                   <DropdownMenuItem asChild>
-                    <Link href={`/dashboard/blog/editar/${post.id}`}>Editar</Link>
+                    <Link href={`/dashboard/blog/editar/${post.id}`}>
+                      Editar
+                    </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>Eliminar</DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-red-600"
+                    onClick={() => handleDelete(post.id)}
+                  >
+                    Eliminar
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </TableCell>
@@ -93,6 +162,15 @@ function BlogPostsTable({ posts }: { posts: BlogPost[] }) {
 }
 
 export default function BlogManagementPage() {
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const blogPostsQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return collection(firestore, 'blogPosts');
+  }, [firestore, user]);
+
+  const { data: blogPosts, isLoading } = useCollection<BlogPost>(blogPostsQuery);
 
   return (
     <Card>
@@ -113,7 +191,7 @@ export default function BlogManagementPage() {
         </div>
       </CardHeader>
       <CardContent>
-        <BlogPostsTable posts={blogPosts} />
+        <BlogPostsTable posts={blogPosts} isLoading={isLoading} />
       </CardContent>
     </Card>
   );

@@ -24,32 +24,46 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { SidebarTrigger, useSidebar } from '../ui/sidebar';
+import { SidebarTrigger } from '../ui/sidebar';
 import { notifications } from '@/lib/data';
 import { formatDistanceToNow } from 'date-fns';
 import { ca } from 'date-fns/locale';
-import { useAuth } from '@/firebase';
+import { useAuth, useDoc, useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
+import { doc } from 'firebase/firestore';
+import type { UserProfile } from '@/lib/types';
+
 
 export function AppHeader() {
   const unreadCount = notifications.filter((n) => !n.read).length;
   const auth = useAuth();
+  const { user } = useUser();
+  const firestore = useFirestore();
   const router = useRouter();
+
+  const userProfileRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [user, firestore]);
+
+  const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
 
   const handleSignOut = () => {
     signOut(auth).then(() => {
       router.push('/');
     });
+  };
+  
+  const getInitials = () => {
+    if (userProfile) {
+      return `${userProfile.firstName.charAt(0)}${userProfile.lastName.charAt(0)}`;
+    }
+    return 'U';
   };
 
   return (
@@ -111,8 +125,8 @@ export function AppHeader() {
         <DropdownMenuTrigger asChild>
           <Button variant="secondary" size="icon" className="rounded-full">
             <Avatar className="h-8 w-8">
-              <AvatarImage src="https://picsum.photos/seed/user-main/100/100" alt="@admin" />
-              <AvatarFallback>AD</AvatarFallback>
+              <AvatarImage src={userProfile?.avatarUrl} alt={userProfile?.email} />
+              <AvatarFallback>{getInitials()}</AvatarFallback>
             </Avatar>
             <span className="sr-only">Obrir menú d'usuari</span>
           </Button>

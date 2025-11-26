@@ -17,9 +17,18 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import type { BlogPost } from '@/lib/types';
-import { Skeleton } from './ui/skeleton';
+import type { BlogPost, WithId } from '@/lib/types';
 import { Textarea } from './ui/textarea';
+import { useFirestore } from '@/firebase';
+import {
+  collection,
+  doc,
+  addDoc,
+  setDoc,
+  serverTimestamp,
+} from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const blogPostSchema = z.object({
   title: z
@@ -43,14 +52,15 @@ type BlogPostFormValues = z.infer<typeof blogPostSchema>;
 
 interface BlogPostFormProps {
   authorId: string;
-  initialData?: BlogPost;
+  initialData?: WithId<BlogPost>;
 }
 
 export function BlogPostForm({ authorId, initialData }: BlogPostFormProps) {
   const { toast } = useToast();
   const router = useRouter();
+  const firestore = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const isEditMode = !!initialData;
 
   const form = useForm<BlogPostFormValues>({
@@ -75,45 +85,72 @@ export function BlogPostForm({ authorId, initialData }: BlogPostFormProps) {
   }, [initialData, form]);
 
   const onSubmit = async (data: BlogPostFormValues) => {
+    if (!firestore) return;
     setIsSubmitting(true);
-    
-    // In a real app, this would submit to a backend.
-    // For this demo, we'll just show a success message.
-    if (isEditMode) {
-       console.log("Updated post data:", {
-        id: initialData.id,
+
+    try {
+      const postData = {
         ...data,
         authorId,
         imageUrl: `https://picsum.photos/seed/${encodeURIComponent(
-            data.imageHint.split(' ').join('-')
-        )}/600/400`,
-        excerpt: data.content.substring(0, 150).replace(/<[^>]*>?/gm, '') + '...',
-        updatedAt: new Date().toISOString(),
-      });
-       toast({
-        title: 'Article actualitzat!',
-        description: "L'entrada del blog s'ha desat correctament (simulació).",
-      });
-    } else {
-        console.log("New post data:", {
-            ...data,
-            authorId,
-            imageUrl: `https://picsum.photos/seed/${encodeURIComponent(
-                data.imageHint.split(' ').join('-')
-            )}/600/400`,
-            excerpt: data.content.substring(0, 150).replace(/<[^>]*>?/gm, '') + '...',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
+          data.imageHint.split(' ').join('-')
+        )}/800/600`,
+        excerpt:
+          data.content.substring(0, 150).replace(/<[^>]*>?/gm, '') + '...',
+      };
+
+      if (isEditMode && initialData) {
+        const docRef = doc(firestore, 'blogPosts', initialData.id);
+        await setDoc(docRef, {
+          ...postData,
+          updatedAt: serverTimestamp(),
+          createdAt: initialData.createdAt, // Preserve original creation date
+        }).catch((error) => {
+          const permissionError = new FirestorePermissionError({
+            path: docRef.path,
+            operation: 'update',
+            requestResourceData: postData,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+          throw new Error("No s'ha pogut actualitzar l'article.");
         });
 
         toast({
-            title: 'Article creat!',
-            description: "La teva nova entrada de blog s'ha publicat correctament (simulació).",
+          title: 'Article actualitzat!',
+          description: "L'entrada del blog s'ha desat correctament.",
         });
-    }
+      } else {
+        const collectionRef = collection(firestore, 'blogPosts');
+        await addDoc(collectionRef, {
+          ...postData,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        }).catch((error) => {
+          const permissionError = new FirestorePermissionError({
+            path: collectionRef.path,
+            operation: 'create',
+            requestResourceData: postData,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+          throw new Error("No s'ha pogut crear l'article.");
+        });
 
-    router.push('/dashboard/blog');
-    setIsSubmitting(false);
+        toast({
+          title: 'Article creat!',
+          description: "La teva nova entrada de blog s'ha publicat correctament.",
+        });
+      }
+      router.push('/dashboard/blog');
+      router.refresh(); // Refresh the page to show the new post
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: (error as Error).message || 'Hi ha hagut un problema.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -126,7 +163,10 @@ export function BlogPostForm({ authorId, initialData }: BlogPostFormProps) {
             <FormItem>
               <FormLabel>Títol de l'article</FormLabel>
               <FormControl>
-                <Input placeholder="Un títol atractiu per al teu article" {...field} />
+                <Input
+                  placeholder="Un títol atractiu per al teu article"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -140,7 +180,10 @@ export function BlogPostForm({ authorId, initialData }: BlogPostFormProps) {
               <FormItem>
                 <FormLabel>Categoria</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ex: Logística, Tecnologia..." {...field} />
+                  <Input
+                    placeholder="Ex: Logística, Tecnologia..."
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -153,9 +196,12 @@ export function BlogPostForm({ authorId, initialData }: BlogPostFormProps) {
               <FormItem>
                 <FormLabel>Descripció de la imatge</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ex: camió modern a la carretera" {...field} />
+                  <Input
+                    placeholder="Ex: camió modern a la carretera"
+                    {...field}
+                  />
                 </FormControl>
-                 <FormDescription>
+                <FormDescription>
                   Això ajudarà a generar una imatge de capçalera adient.
                 </FormDescription>
                 <FormMessage />
@@ -176,19 +222,28 @@ export function BlogPostForm({ authorId, initialData }: BlogPostFormProps) {
                   {...field}
                 />
               </FormControl>
-               <FormDescription>
-                Pots utilitzar etiquetes HTML bàsiques per formatar el text. Per exemple:
-                {' '}<code>&lt;h3&gt;Subtítol&lt;/h3&gt;</code>,
-                {' '}<code>&lt;p&gt;Paràgraf.&lt;/p&gt;</code>,
-                {' '}<code>&lt;strong&gt;Negreta&lt;/strong&gt;</code>,
-                {' '}o <code>&lt;ul&gt;&lt;li&gt;Element de llista&lt;/li&gt;&lt;/ul&gt;</code>.
+              <FormDescription>
+                Pots utilitzar etiquetes HTML bàsiques per formatar el text. Per
+                exemple: <code>&lt;h3&gt;Subtítol&lt;/h3&gt;</code>,{' '}
+                <code>&lt;p&gt;Paràgraf.&lt;/p&gt;</code>,{' '}
+                <code>&lt;strong&gt;Negreta&lt;/strong&gt;</code>, o{' '}
+                <code>
+                  &lt;ul&gt;&lt;li&gt;Element de llista&lt;/li&gt;&lt;/ul&gt;
+                </code>
+                .
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? (isEditMode ? 'Desant...' : 'Publicant...') : (isEditMode ? 'Desar Canvis' : 'Publicar Article')}
+          {isSubmitting
+            ? isEditMode
+              ? 'Desant...'
+              : 'Publicant...'
+            : isEditMode
+            ? 'Desar Canvis'
+            : 'Publicar Article'}
         </Button>
       </form>
     </Form>

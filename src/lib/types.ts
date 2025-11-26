@@ -1,3 +1,5 @@
+import { FieldValue } from 'firebase/firestore';
+
 export type TransportRequest = {
   id: string;
   userProfileId: string;
@@ -33,6 +35,7 @@ export type UserProfile = {
   email: string;
   role: 'administrador' | 'treballador' | 'client/proveidor' | 'extern';
   creationDate: string;
+  avatarUrl?: string;
 };
 
 export type RegistrationRequest = {
@@ -70,6 +73,9 @@ export type BlogPost = {
   imageHint: string;
   excerpt: string;
   authorId: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string | FieldValue;
+  updatedAt: string | FieldValue;
 };
+
+// Utility type to add an 'id' field from Firestore documents
+export type WithId<T> = T & { id: string };
