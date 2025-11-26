@@ -209,9 +209,9 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <FirebaseClientProvider>
-          <div className="flex min-h-screen flex-col">
+          <div className="relative flex min-h-screen w-full flex-col">
             <SiteHeader />
-            <main className="flex-1">{children}</main>
+            {children}
             <SiteFooter />
           </div>
         </FirebaseClientProvider>
