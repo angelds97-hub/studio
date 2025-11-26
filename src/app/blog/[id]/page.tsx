@@ -11,6 +11,13 @@ import type { BlogPost, UserProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { blogPosts as mockBlogPosts } from '@/lib/blog-data';
 
+// This function tells Next.js which pages to generate at build time.
+export function generateStaticParams() {
+  return mockBlogPosts.map((post) => ({
+    id: post.id,
+  }));
+}
+
 function BlogPostDetail() {
   const params = useParams();
   const firestore = useFirestore();
