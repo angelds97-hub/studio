@@ -9,11 +9,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-          <div className="flex flex-col h-screen">
+          <div className="flex flex-col h-full">
             <AppHeader />
-            <div className="flex-1 overflow-y-auto">
+            <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
               {children}
-            </div>
+            </main>
           </div>
         </SidebarInset>
     </SidebarProvider>
