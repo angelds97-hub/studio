@@ -10,10 +10,13 @@ import { ca } from 'date-fns/locale';
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection } from 'firebase/firestore';
 import { Skeleton } from "@/components/ui/skeleton";
+import { blogPosts as mockBlogPosts } from "@/lib/blog-data"; // Import mock data
 
 function BlogPostList({ blogPosts, isLoading }: { blogPosts: WithId<BlogPost>[] | null, isLoading: boolean }) {
 
-  if (isLoading) {
+  const postsToDisplay = blogPosts && blogPosts.length > 0 ? blogPosts : mockBlogPosts.map(p => ({...p, id: p.id!}));
+
+  if (isLoading && (!postsToDisplay || postsToDisplay.length === 0)) {
     return (
        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[...Array(3)].map((_, i) => (
@@ -36,7 +39,7 @@ function BlogPostList({ blogPosts, isLoading }: { blogPosts: WithId<BlogPost>[] 
     );
   }
   
-  if (!blogPosts || blogPosts.length === 0) {
+  if (!postsToDisplay || postsToDisplay.length === 0) {
       return (
            <div className="text-center py-10 text-muted-foreground">
                 <h3 className="mt-2 text-lg font-semibold">No s'han trobat articles</h3>
@@ -49,7 +52,7 @@ function BlogPostList({ blogPosts, isLoading }: { blogPosts: WithId<BlogPost>[] 
 
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {blogPosts.map(post => (
+      {postsToDisplay.map(post => (
         <Card key={post.id} className="overflow-hidden flex flex-col">
           {post.imageUrl && (
             <div className="relative aspect-video">
@@ -67,7 +70,7 @@ function BlogPostList({ blogPosts, isLoading }: { blogPosts: WithId<BlogPost>[] 
           </CardContent>
           <CardFooter className="flex justify-between items-center text-sm">
             <span className="text-muted-foreground">
-              {post.createdAt && format(new Date(post.createdAt), 'dd MMM, yyyy', {
+              {post.createdAt && format(new Date(post.createdAt as string), 'dd MMM, yyyy', {
                 locale: ca,
               })}
             </span>

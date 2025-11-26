@@ -9,6 +9,7 @@ import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { BlogPost, UserProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { blogPosts as mockBlogPosts } from '@/lib/blog-data';
 
 function BlogPostDetail() {
   const params = useParams();
@@ -20,7 +21,9 @@ function BlogPostDetail() {
     return doc(firestore, 'blogPosts', id as string);
   }, [firestore, id]);
 
-  const { data: post, isLoading: postLoading } = useDoc<BlogPost>(postRef);
+  const { data: postFromDb, isLoading: postLoading } = useDoc<BlogPost>(postRef);
+
+  const post = postFromDb || mockBlogPosts.find(p => p.id === id);
 
   const authorRef = useMemoFirebase(() => {
     if (!firestore || !post?.authorId) return null;
@@ -61,6 +64,8 @@ function BlogPostDetail() {
   const authorName = author
     ? `${author.firstName} ${author.lastName}`
     : 'Autor desconegut';
+  
+  const createdAt = post.createdAt ? new Date(post.createdAt as string) : new Date();
 
   return (
     <article className="container max-w-4xl py-12">
@@ -84,7 +89,7 @@ function BlogPostDetail() {
             <span>Per {authorName}</span>
             <span className="mx-2">•</span>
             <span>
-              {format(new Date(post.createdAt), 'dd MMMM, yyyy', {
+              {format(createdAt, 'dd MMMM, yyyy', {
                 locale: ca,
               })}
             </span>
