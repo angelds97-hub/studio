@@ -205,6 +205,7 @@ export default function RootLayout({
       <head>
         <title>EnTrans - La teva plataforma de transports</title>
         <meta name="description" content="Contracta transports de manera fàcil i ràpida." />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
       <body className="font-body antialiased">
         <FirebaseClientProvider>
