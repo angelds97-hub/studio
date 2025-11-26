@@ -1,54 +1,41 @@
-'use client';
-import { notFound, useParams } from 'next/navigation';
-import type { BlogPost, UserProfile } from '@/lib/types';
+// This is a Server Component, so it can fetch data and use server-only functions.
 import BlogPostDetail from '@/components/blog-post-detail';
-import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
-
+import type { BlogPost, UserProfile } from '@/lib/types';
+import { notFound } from 'next/navigation';
+// Import mock data directly for static generation and server-side rendering
+import { blogPosts as mockBlogPosts } from '@/lib/blog-data';
+import { users as mockUsers } from '@/lib/data';
 
 // This function tells Next.js which pages to generate at build time.
-export function generateStaticParams() {
+// It must be in a Server Component.
+export async function generateStaticParams() {
   // In a real app, you'd fetch this from your CMS or database
   // For this static export example, we'll use the mock data
-  const { blogPosts: mockBlogPosts } = require('@/lib/blog-data');
   return mockBlogPosts.map((post: BlogPost) => ({
     id: post.id,
   }));
 }
 
-export default function BlogPostPage() {
-    const params = useParams();
-    const firestore = useFirestore();
+// This is the page component itself, running on the server.
+export default async function BlogPostPage({ params }: { params: { id: string } }) {
     const { id } = params;
 
-    // In a real app, you would fetch from the DB.
-    // For static export, we get the data from the mock file as a fallback.
-    const { blogPosts: mockBlogPosts } = require('@/lib/blog-data');
-    const staticPost = mockBlogPosts.find((p: BlogPost) => p.id === id);
+    // Fetch data on the server.
+    // For this example, we'll use the mock data to find the post.
+    const post = mockBlogPosts.find((p: BlogPost) => p.id === id);
 
-
-    const authorRef = useMemoFirebase(() => {
-        if (!firestore || !staticPost?.authorId) return null;
-        return doc(firestore, 'users', staticPost.authorId);
-    }, [firestore, staticPost?.authorId]);
-
-    const { data: author, isLoading: authorLoading } = useDoc<UserProfile>(authorRef);
-
-     const { data: postFromDb, isLoading: postLoading } = useDoc<BlogPost>(useMemoFirebase(() => {
-        if (!firestore || !id) return null;
-        return doc(firestore, 'blogPosts', id as string);
-     }, [firestore, id]));
-
-    const displayPost = postFromDb || staticPost;
-
-
-    if (postLoading || authorLoading) {
-        return <BlogPostDetail.Skeleton />;
-    }
-
-    if (!displayPost) {
+    if (!post) {
+        // If no post is found, trigger a 404 page.
         notFound();
     }
     
-    return <BlogPostDetail post={displayPost} author={author} />;
+    // Find the author from mock data
+    const author = mockUsers[post.authorId] as UserProfile | null;
+    
+    // Add the user id to the author object
+    const authorWithId = author ? { ...author, id: post.authorId } : null;
+
+    // The data is fetched on the server and then passed to the client component for rendering.
+    // The BlogPostDetail component is the one marked with 'use client'.
+    return <BlogPostDetail post={post} author={authorWithId} />;
 }
