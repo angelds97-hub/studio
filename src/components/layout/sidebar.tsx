@@ -54,7 +54,7 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader className="border-b">
          <SheetClose asChild>
-            <Link className="flex items-center gap-2 font-semibold" href="/dashboard">
+            <Link className="flex items-center gap-2 font-semibold" href="/">
               <Truck className="h-6 w-6 text-primary" />
               <span className="font-headline text-lg group-data-[state=collapsed]:hidden">EnTrans</span>
             </Link>
