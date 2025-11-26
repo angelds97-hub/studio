@@ -12,7 +12,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { useForm } from 'react-hook-form';
@@ -31,6 +31,20 @@ import { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { useRouter } from 'next/navigation';
+import { signOut } from 'firebase/auth';
+import { LogOut, ShieldAlert } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 const profileSchema = z.object({
   firstName: z.string().min(2, 'El nom és obligatori.'),
@@ -43,6 +57,8 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 export default function ConfiguracioPage() {
   const { user } = useUser();
   const firestore = useFirestore();
+  const auth = useAuth();
+  const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -106,6 +122,24 @@ export default function ConfiguracioPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSignOut = () => {
+    if (!auth) return;
+    signOut(auth).then(() => {
+      toast({ title: 'Sessió tancada correctament.' });
+      router.push('/');
+    });
+  };
+
+  const handleDeleteAccount = () => {
+    // Aquí aniria la lògica per eliminar el compte.
+    // Per ara, només mostra un missatge.
+    toast({
+      variant: 'destructive',
+      title: 'Acció no implementada',
+      description: 'La funcionalitat per eliminar el compte encara no està disponible.',
+    });
   };
 
   if (isLoading) {
@@ -231,6 +265,50 @@ export default function ConfiguracioPage() {
         <CardFooter className="border-t px-6 py-4">
           <Button>Desar canvis</Button>
         </CardFooter>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Compte</CardTitle>
+          <CardDescription>Gestiona les opcions de la teva sessió.</CardDescription>
+        </CardHeader>
+        <CardContent>
+           <Button variant="outline" onClick={handleSignOut}>
+            <LogOut className="mr-2 h-4 w-4" />
+            Tancar Sessió
+          </Button>
+        </CardContent>
+      </Card>
+       <Card className="border-destructive">
+        <CardHeader>
+          <CardTitle className="text-destructive">Zona Perillosa</CardTitle>
+          <CardDescription>Aquestes accions són permanents i no es poden desfer.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex justify-between items-center">
+            <div>
+                <p className="font-semibold">Eliminar el meu compte</p>
+                <p className="text-sm text-muted-foreground">Totes les teves dades seran eliminades permanentment.</p>
+            </div>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive">
+                <ShieldAlert className="mr-2 h-4 w-4" />
+                Eliminar Compte
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Estàs absolutament segur?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Aquesta acció no es pot desfer. Això eliminarà permanentment el teu compte i esborrarà les teves dades dels nostres servidors.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel·lar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteAccount}>Continuar</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </CardContent>
       </Card>
     </div>
   );
