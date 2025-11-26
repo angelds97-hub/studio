@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Truck, Facebook, Twitter, Linkedin, Menu, LogIn, UserPlus } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import { usePathname } from 'next/navigation';
+
 
 const inter = Inter({
   subsets: ['latin'],
@@ -195,6 +197,19 @@ function SiteFooter() {
     )
 }
 
+function MainLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isAuthedRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/configuracio') || pathname.startsWith('/solicituts') || pathname.startsWith('/transports');
+
+  return (
+    <div className="relative flex min-h-screen w-full flex-col">
+      {!isAuthedRoute && <SiteHeader />}
+      <div className="flex-1">{children}</div>
+      {!isAuthedRoute && <SiteFooter />}
+    </div>
+  );
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -209,11 +224,9 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <FirebaseClientProvider>
-          <div className="relative flex min-h-screen w-full flex-col">
-            <SiteHeader />
-            {children}
-            <SiteFooter />
-          </div>
+           <MainLayout>
+              {children}
+           </MainLayout>
         </FirebaseClientProvider>
         <Toaster />
       </body>
