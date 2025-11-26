@@ -1,4 +1,4 @@
->'use client';
+'use client';
 import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { format } from 'date-fns';
