@@ -4,7 +4,6 @@ import { PlaceHolderImages } from './placeholder-images';
 
 const reusImage = PlaceHolderImages.find(p => p.id === 'reus-city');
 const reusMapImage = PlaceHolderImages.find(p => p.id === 'reus-map');
-const reusTruckImage = PlaceHolderImages.find(p => p.id === 'cargo-truck');
 const tarragonaPortImage = PlaceHolderImages.find(p => p.id === 'tarragona-port');
 const truckHighwayImage = PlaceHolderImages.find(p => p.id === 'truck-highway');
 
@@ -65,8 +64,8 @@ export const blogPosts: BlogPost[] = [
 <p>Amb la constant expansió de polígons industrials com el CIM Camp i l'aposta per la digitalització del sector, Reus no només consolida la seva posició actual, sinó que mira cap al futur. La ciutat està preparada per liderar la transformació del sector logístic, adoptant noves tecnologies i pràctiques més sostenibles per afrontar els reptes de demà.</p>
         `,
         category: 'Logística',
-        imageUrl: reusTruckImage?.imageUrl || '',
-        imageHint: reusTruckImage?.imageHint || 'cargo truck',
+        imageUrl: '/20240712.jpg',
+        imageHint: 'reus city center',
         excerpt: 'Descobreix per què la ubicació i les infraestructures de Reus la converteixen en un punt clau per al transport de mercaderies a Catalunya.',
         authorId: 'user-1', 
         createdAt: subDays(new Date(), 5).toISOString(),
