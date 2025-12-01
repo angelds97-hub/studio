@@ -15,46 +15,44 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import React, { useState } from 'react';
 import { Truck } from 'lucide-react';
+import { users } from '@/lib/data';
 
 export function AuthForm() {
   const { toast } = useToast();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsProcessing(true);
     const formData = new FormData(event.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
 
-    try {
-      const response = await fetch("https://formspree.io/f/xblnopqq", {
-        method: "POST",
-        body: formData,
-        headers: {
-          'Accept': 'application/json'
-        }
+    const foundUser = users.find(
+      (user) => user.email === email && user.password === password
+    );
+
+    if (foundUser) {
+      toast({
+        title: 'Sessió iniciada correctament',
+        description: `Benvingut/da de nou, ${foundUser.firstName}.`,
       });
-
-      if (response.ok) {
-        toast({
-          title: 'Notificació d\'inici de sessió enviada',
-          description: 'Hem notificat a l\'administrador el teu intent d\'accés. Seràs redirigit al panell de control.',
-          duration: 5000,
-        });
-        // Redirect to dashboard as if login was successful
-        setTimeout(() => {
-            router.push('/dashboard');
-        }, 1000);
-      } else {
-        throw new Error("No s'ha pogut enviar la notificació.");
-      }
-    } catch (error) {
+      // Store user info in localStorage to simulate session
+      localStorage.setItem('loggedInUser', JSON.stringify({
+        id: foundUser.id,
+        firstName: foundUser.firstName,
+        lastName: foundUser.lastName,
+        email: foundUser.email,
+        role: foundUser.role,
+      }));
+      router.push('/dashboard');
+    } else {
       toast({
         variant: 'destructive',
-        title: 'Error',
-        description: "Hi ha hagut un problema. Si us plau, contacta amb el suport.",
+        title: 'Error d\'inici de sessió',
+        description: 'Les credencials introduïdes no són correctes.',
       });
-    } finally {
       setIsProcessing(false);
     }
   };
@@ -69,41 +67,43 @@ export function AuthForm() {
           Benvingut/da a EnTrans
         </CardTitle>
         <CardDescription>
-          Aquesta àrea és per a usuaris registrats. Introdueix les teves dades per notificar el teu accés.
+          Introdueix les teves credencials per accedir a la teva àrea personal.
         </CardDescription>
       </CardHeader>
       <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Correu Electrònic</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="correu@exemple.com"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Contrasenya</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="********"
-                required
-              />
-            </div>
-            <input type="hidden" name="_subject" value="Intent d'inici de sessió a EnTrans" />
-            <Button type="submit" className="w-full" disabled={isProcessing}>
-              {isProcessing ? 'Enviant...' : 'Iniciar Sessió'}
-            </Button>
-          </form>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Correu Electrònic</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="correu@exemple.com"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Contrasenya</Label>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="********"
+              required
+            />
+          </div>
+          <Button type="submit" className="w-full" disabled={isProcessing}>
+            {isProcessing ? 'Iniciant...' : 'Iniciar Sessió'}
+          </Button>
+        </form>
         <div className="mt-6 text-center text-sm border-t pt-4">
-            Encara no tens accés?{' '}
-            <Link href="/registre" className="underline font-semibold text-primary">
-              Sol·licita l'alta a l'Àrea Client
-            </Link>
+          Encara no tens accés?{' '}
+          <Link
+            href="/registre"
+            className="underline font-semibold text-primary"
+          >
+            Sol·licita l'alta a l'Àrea Client
+          </Link>
         </div>
       </CardContent>
     </Card>

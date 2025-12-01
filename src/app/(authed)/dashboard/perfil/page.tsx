@@ -12,9 +12,20 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useEffect, useState } from 'react';
+import type { UserProfile } from '@/lib/types';
+
 
 export default function PerfilPage() {
   const { toast } = useToast();
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('loggedInUser');
+    if (storedUser) {
+        setCurrentUser(JSON.parse(storedUser));
+    }
+  }, [])
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -32,7 +43,6 @@ export default function PerfilPage() {
               title: 'Sol·licitud enviada',
               description: "La teva sol·licitud de canvi de dades ha estat enviada. Es revisarà i aplicarà manualment.",
             });
-            (event.target as HTMLFormElement).reset();
         } else {
             toast({
               variant: 'destructive',
@@ -66,11 +76,11 @@ export default function PerfilPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">Nom</Label>
-                  <Input id="firstName" name="firstName" placeholder="El teu nom" />
+                  <Input id="firstName" name="firstName" placeholder="El teu nom" defaultValue={currentUser?.firstName} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Cognom</Label>
-                  <Input id="lastName" name="lastName" placeholder="El teu cognom" />
+                  <Input id="lastName" name="lastName" placeholder="El teu cognom" defaultValue={currentUser?.lastName} />
                 </div>
               </div>
               <div className="space-y-2">
@@ -79,7 +89,7 @@ export default function PerfilPage() {
                     id="email"
                     name="email"
                     type="email"
-                    value="admin@entrans.app"
+                    value={currentUser?.email || ''}
                     disabled
                     readOnly
                   />
@@ -87,7 +97,7 @@ export default function PerfilPage() {
             </div>
           </CardContent>
           <CardFooter className="border-t px-6 py-4">
-            <input type="hidden" name="_subject" value="Sol·licitud de canvi de dades de perfil" />
+            <input type="hidden" name="_subject" value={`Sol·licitud de canvi de dades per a ${currentUser?.email}`} />
             <Button type="submit">Enviar Sol·licitud de Canvi</Button>
           </CardFooter>
         </form>

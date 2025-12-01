@@ -28,6 +28,7 @@ export default function ConfiguracioPage() {
   const { toast } = useToast();
 
   const handleSignOut = () => {
+    localStorage.removeItem('loggedInUser');
     toast({ title: 'Sessió tancada correctament.' });
     router.push('/');
   };

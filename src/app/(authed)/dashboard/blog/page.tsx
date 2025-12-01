@@ -26,13 +26,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { BlogPost } from '@/lib/types';
+import type { BlogPost, WithId } from '@/lib/types';
 import { format } from 'date-fns';
 import { ca } from 'date-fns/locale';
-import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
-import { collection, deleteDoc, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { blogPosts as mockBlogPosts } from '@/lib/blog-data';
+import { useState, useEffect } from 'react';
 
 function BlogPostsTable({
   posts,
@@ -41,27 +41,14 @@ function BlogPostsTable({
   posts: WithId<BlogPost>[] | null;
   isLoading: boolean;
 }) {
-  const firestore = useFirestore();
   const { toast } = useToast();
 
   const handleDelete = async (postId: string) => {
-    if (!firestore) return;
-    if (!window.confirm("Estàs segur que vols eliminar aquest article? Aquesta acció no es pot desfer.")) return;
-    
-    try {
-      await deleteDoc(doc(firestore, 'blogPosts', postId));
-      toast({
-        title: 'Article eliminat',
-        description: 'L\'entrada del blog ha estat eliminada correctament.',
-      });
-    } catch (error) {
-       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'No s\'ha pogut eliminar l\'article.',
-      });
-      console.error(error);
-    }
+    toast({
+      title: 'Funcionalitat no disponible',
+      description: "En una web estàtica, els articles s'eliminen manualment del fitxer `src/lib/blog-data.ts`.",
+      variant: 'destructive',
+    });
   };
 
   if (isLoading) {
@@ -126,7 +113,7 @@ function BlogPostsTable({
             </TableCell>
             <TableCell>
               {post.createdAt &&
-                format(new Date(post.createdAt), 'dd MMM, yyyy', {
+                format(new Date(post.createdAt as string), 'dd MMM, yyyy', {
                   locale: ca,
                 })}
             </TableCell>
@@ -157,15 +144,15 @@ function BlogPostsTable({
 }
 
 export default function BlogManagementPage() {
-  const { user } = useUser();
-  const firestore = useFirestore();
+  const [blogPosts, setBlogPosts] = useState<WithId<BlogPost>[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const blogPostsQuery = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
-    return collection(firestore, 'blogPosts');
-  }, [firestore, user]);
-
-  const { data: blogPosts, isLoading } = useCollection<BlogPost>(blogPostsQuery);
+  useEffect(() => {
+    // In a static export, we rely on mock data.
+    const postsWithId = mockBlogPosts.map(p => ({...p, id: p.id!}));
+    setBlogPosts(postsWithId);
+    setIsLoading(false);
+  }, []);
 
   return (
     <Card>

@@ -43,7 +43,7 @@ import {
   CheckCircle,
   XCircle,
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,65 +59,34 @@ import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { users as mockUsers } from '@/lib/data';
 
 
 function UsersTable({
   users,
   isLoading,
-  error,
   currentUserId,
 }: {
   users: WithId<UserProfile>[] | null;
   isLoading: boolean;
-  error: Error | null;
   currentUserId: string | undefined;
 }) {
-  const firestore = useFirestore();
   const { toast } = useToast();
 
   const handleRoleChange = async (userId: string, newRole: UserProfile['role']) => {
-    if (!firestore) return;
-    const userRef = doc(firestore, 'users', userId);
-    try {
-      await setDoc(userRef, { role: newRole }, { merge: true });
-      toast({
-        title: 'Rol actualitzat',
-        description: `L'usuari ha estat actualitzat a ${newRole}.`,
-      });
-    } catch (error) {
-      toast({
+    toast({
+        title: 'Funcionalitat no disponible',
+        description: "En una web estàtica, els rols es canvien manualment al fitxer 'src/lib/data.ts'.",
         variant: 'destructive',
-        title: 'Error',
-        description: "No s'ha pogut actualitzar el rol.",
-      });
-      console.error(error);
-    }
+    });
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!firestore) return;
-    if (
-      !window.confirm(
-        "Estàs segur que vols eliminar aquest usuari? Aquesta acció no es pot desfer."
-      )
-    )
-      return;
-
-    const userRef = doc(firestore, 'users', userId);
-    try {
-      await deleteDoc(userRef);
-      toast({
-        title: 'Usuari eliminat',
-        description: "L'usuari ha estat eliminat correctament.",
-      });
-    } catch (error) {
-      toast({
+     toast({
+        title: 'Funcionalitat no disponible',
+        description: "En una web estàtica, els usuaris s'eliminen manualment del fitxer 'src/lib/data.ts'.",
         variant: 'destructive',
-        title: 'Error',
-        description: "No s'ha pogut eliminar l'usuari.",
-      });
-      console.error(error);
-    }
+    });
   };
 
   if (isLoading) {
@@ -152,19 +121,6 @@ function UsersTable({
           ))}
         </TableBody>
       </Table>
-    );
-  }
-
-  if (error) {
-    return (
-      <Alert variant="destructive">
-        <ShieldAlert className="h-4 w-4" />
-        <AlertTitle>Error de Permisos</AlertTitle>
-        <AlertDescription>
-          No s'ha pogut carregar la llista d'usuaris. Assegura't que les regles
-          de seguretat de Firestore permeten als administradors llistar usuaris.
-        </AlertDescription>
-      </Alert>
     );
   }
 
@@ -279,210 +235,35 @@ function RegistrationRequestsTable({
   isLoading,
   error,
 }: {
-  requests: WithId<RegistrationRequest>[] | null;
+  requests: any[] | null;
   isLoading: boolean;
   error: Error | null;
 }) {
-  const firestore = useFirestore();
-  const auth = useAuth();
-  const { toast } = useToast();
-  const [isProcessing, setIsProcessing] = useState<string | null>(null);
-
-  const handleApprove = async (request: WithId<RegistrationRequest>) => {
-    if (!firestore || !auth) return;
-    if (
-      !window.confirm(
-        `Estàs segur que vols aprovar el registre de ${request.firstName} ${request.lastName}?`
-      )
-    )
-      return;
-
-    setIsProcessing(request.id);
-    const tempPassword = Math.random().toString(36).slice(2) + 'EnTrans!';
-
-    try {
-      // Step 1: Create user in Firebase Auth.
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        request.email,
-        tempPassword
-      );
-      const newUserId = userCredential.user.uid;
-
-      // Step 2: Use a batch to create the user profile in Firestore and delete the request.
-      const batch = writeBatch(firestore);
-
-      const newUserRef = doc(firestore, 'users', newUserId);
-      const newUserProfile: Omit<UserProfile, 'id'> = {
-        firstName: request.firstName,
-        lastName: request.lastName,
-        email: request.email,
-        role: 'client/proveidor', // Default role
-        creationDate: new Date().toISOString(),
-      };
-      
-      batch.set(newUserRef, newUserProfile);
-
-      const requestRef = doc(firestore, 'registrationRequests', request.id);
-      batch.delete(requestRef);
-
-      // Step 3: Commit the batch
-      await batch.commit();
-
-      toast({
-        title: 'Usuari Aprovat',
-        description: `${request.firstName} ${request.lastName} ha estat afegit amb una contrasenya temporal. L'usuari haurà d'utilitzar la funcionalitat "He oblidat la contrasenya" per establir-ne una de nova.`,
-        duration: 10000,
-      });
-
-    } catch (e: any) {
-      console.error('Error approving request: ', e);
-      let errorMessage = "No s'ha pogut aprovar la sol·licitud.";
-      if (e.code === 'auth/email-already-in-use') {
-        errorMessage = 'Aquest correu electrònic ja està registrat a la plataforma.';
-      } else if (e.code === 'permission-denied') {
-        errorMessage = "Error de permisos. No s'ha pogut crear l'usuari o eliminar la sol·licitud.";
-        const permissionError = new FirestorePermissionError({
-           path: `/registrationRequests/${request.id}`, // Or the user path if that's where it failed
-           operation: 'write', // Broad operation
-        });
-        errorEmitter.emit('permission-error', permissionError);
-      }
-      
-      toast({
-        variant: 'destructive',
-        title: 'Error en aprovar',
-        description: errorMessage,
-      });
-    } finally {
-        setIsProcessing(null);
-    }
-  };
-
-
-  const handleReject = async (requestId: string) => {
-     if (!firestore) return;
-     if (!window.confirm("Estàs segur que vols rebutjar aquesta sol·licitud?")) return;
-
-    const requestRef = doc(firestore, 'registrationRequests', requestId);
-    try {
-      await deleteDoc(requestRef);
-      toast({
-        title: 'Sol·licitud Rebutjada',
-      });
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: "No s'ha pogut rebutjar la sol·licitud.",
-      });
-      console.error(error);
-    }
-  };
 
   if (isLoading) {
     return <Skeleton className="h-48 w-full" />;
   }
 
-  if (error) {
-    return (
-      <Alert variant="destructive">
-        <ShieldAlert className="h-4 w-4" />
-        <AlertTitle>Error de Permisos</AlertTitle>
-        <AlertDescription>
-          No s'han pogut carregar les sol·licituds de registre.
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
-  if (!requests || requests.length === 0) {
-    return (
+  return (
       <div className="text-center py-10 text-muted-foreground">
         <h3 className="mt-2 text-lg font-semibold">
-          No hi ha sol·licituds pendents
+          Gestió Manual
         </h3>
-        <p className="mt-1 text-sm">
-          No hi ha cap usuari esperant aprovació en aquests moments.
+        <p className="mt-1 text-sm max-w-md mx-auto">
+         Les sol·licituds de registre s'envien a través de Formspree. Per aprovar un usuari nou, afegeix-lo manualment a l'array `users` al fitxer `src/lib/data.ts` i torna a compilar l'aplicació.
         </p>
       </div>
     );
-  }
-
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Nom</TableHead>
-          <TableHead>Correu Electrònic</TableHead>
-          <TableHead className="text-right">Accions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {requests.map((request) => (
-          <TableRow key={request.id}>
-            <TableCell>{`${request.firstName} ${request.lastName}`}</TableCell>
-            <TableCell>{request.email}</TableCell>
-            <TableCell className="text-right space-x-2">
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-green-600 border-green-600 hover:bg-green-50 hover:text-green-700"
-                onClick={() => handleApprove(request)}
-                disabled={isProcessing === request.id}
-              >
-                {isProcessing === request.id ? 'Processant...' : <><CheckCircle className="mr-2 h-4 w-4" /> Aprovar</>}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-red-600 border-red-600 hover:bg-red-50 hover:text-red-700"
-                onClick={() => handleReject(request.id)}
-                disabled={isProcessing === request.id}
-              >
-                <XCircle className="mr-2 h-4 w-4" /> Rebutjar
-              </Button>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
 }
 
 function AdminUserManagement({ user }: { user: WithId<UserProfile> }) {
-  const firestore = useFirestore();
-
-  const usersQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'users');
-  }, [firestore]);
-
-  const requestsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'registrationRequests');
-  }, [firestore]);
-
-  const {
-    data: users,
-    isLoading: usersLoading,
-    error: usersError,
-  } = useCollection<UserProfile>(usersQuery);
-
-  const {
-    data: requests,
-    isLoading: requestsLoading,
-    error: requestsError,
-  } = useCollection<RegistrationRequest>(requestsQuery);
-  const pendingRequestsCount = requests?.length || 0;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Gestió d'Usuaris</CardTitle>
         <CardDescription>
-          Visualitza, gestiona els usuaris i aprova noves sol·licituds de
-          registre.
+          Visualitza els usuaris actius i gestiona les sol·licituds de registre.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -490,25 +271,21 @@ function AdminUserManagement({ user }: { user: WithId<UserProfile> }) {
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="users">Usuaris Actius</TabsTrigger>
             <TabsTrigger value="requests">
-              Sol·licituds Pendents
-              {pendingRequestsCount > 0 && (
-                <Badge className="ml-2">{pendingRequestsCount}</Badge>
-              )}
+              Sol·licituds
             </TabsTrigger>
           </TabsList>
           <TabsContent value="users" className="mt-4">
             <UsersTable
-              users={users}
-              isLoading={usersLoading}
-              error={usersError}
+              users={mockUsers}
+              isLoading={false}
               currentUserId={user.id}
             />
           </TabsContent>
           <TabsContent value="requests" className="mt-4">
             <RegistrationRequestsTable
-              requests={requests}
-              isLoading={requestsLoading}
-              error={requestsError}
+              requests={[]}
+              isLoading={false}
+              error={null}
             />
           </TabsContent>
         </Tabs>
@@ -518,18 +295,19 @@ function AdminUserManagement({ user }: { user: WithId<UserProfile> }) {
 }
 
 export default function UserManagementPage() {
-  const firestore = useFirestore();
-  const { user: currentUser } = useUser();
+    const [profile, setProfile] = useState<WithId<UserProfile> | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-  const profileRef = useMemoFirebase(() => {
-    if (!firestore || !currentUser) return null;
-    return doc(firestore, 'users', currentUser.uid);
-  }, [firestore, currentUser]);
+    useEffect(() => {
+        const storedUser = localStorage.getItem('loggedInUser');
+        if (storedUser) {
+            setProfile(JSON.parse(storedUser));
+        }
+        setIsLoading(false);
+    }, []);
 
-  const { data: profile, isLoading: profileLoading } =
-    useDoc<UserProfile>(profileRef);
 
-  if (profileLoading) {
+  if (isLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <div className="h-16 w-16 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>

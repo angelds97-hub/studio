@@ -4,24 +4,28 @@ import { subDays, addDays } from 'date-fns';
 
 
 // THIS FILE CONTAINS MOCK DATA.
-// IN A REAL APPLICATION, THIS DATA WOULD BE FETCHED FROM A DATABASE.
+// THIS IS THE SINGLE SOURCE OF TRUTH FOR A STATIC EXPORT.
+// TO ADD A NEW USER, ADD THEM TO THE `users` ARRAY.
 
 
-export const mainUser: UserProfile = {
+export const mainUser: WithId<UserProfile> = {
+  id: 'admin-user',
   firstName: 'Admin',
   lastName: 'User',
   email: 'admin@entrans.app',
   role: 'administrador',
   creationDate: new Date().toISOString(),
-  avatarUrl: '/user-avatar.png'
+  avatarUrl: '/user-avatar.png',
+  password: 'admin', // IMPORTANT: This is for demo purposes only.
 };
 
 export const users: WithId<UserProfile>[] = [
-  { id: 'user-1', firstName: 'Joan', lastName: 'Puig', email:'joan@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user1/100/100' },
-  { id: 'user-2', firstName: 'Maria', lastName: 'Llopis', email:'maria@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user2/100/100' },
-  { id: 'user-3', firstName: 'Carles', lastName: 'Sancho', email:'carles@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user3/100/100' },
-  { id: 'user-4', firstName: 'Laura', lastName: 'Molins', email:'laura@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user4/100/100' },
-  { id: 'user-5', firstName: 'Sergi', lastName: 'Brianso', email:'sergi@test.com', role: 'treballador', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user5/100/100' },
+  mainUser,
+  { id: 'user-1', firstName: 'Joan', lastName: 'Puig', email:'joan@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user1/100/100', password: 'password1' },
+  { id: 'user-2', firstName: 'Maria', lastName: 'Llopis', email:'maria@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user2/100/100', password: 'password2' },
+  { id: 'user-3', firstName: 'Carles', lastName: 'Sancho', email:'carles@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user3/100/100', password: 'password3' },
+  { id: 'user-4', firstName: 'Laura', lastName: 'Molins', email:'laura@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user4/100/100', password: 'password4' },
+  { id: 'user-5', firstName: 'Sergi', lastName: 'Brianso', email:'sergi@test.com', role: 'treballador', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user5/100/100', password: 'password5' },
 ];
 
 // This is now used as mock data for pages that are not yet connected to Firestore.

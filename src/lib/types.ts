@@ -36,6 +36,7 @@ export type UserProfile = {
   role: 'administrador' | 'treballador' | 'client/proveidor' | 'extern';
   creationDate: string;
   avatarUrl?: string;
+  password?: string;
 };
 
 export type RegistrationRequest = {
