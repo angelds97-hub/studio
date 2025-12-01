@@ -19,7 +19,7 @@
  *
  * Key Security Decisions:
  * - Users can only create, read, update, and delete their own profiles.
- * - Administrators can read all user profiles.
+ * - Administrators can read all user profiles and create new ones.
  * - Listing of transport requests and offerings is restricted to the owning user.
  * - Transport matches are secured by checking the user's ownership of the associated
  *   transport request or offering using the denormalized `userProfileId` field.
@@ -46,9 +46,11 @@ service cloud.firestore {
     match /users/{userId} {
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin();
-      // Allow user to create their own profile, or an admin to create any profile.
-      allow create: if isOwner(userId) && request.resource.data.id == userId || isAdmin();
+      // Allow an admin to create any user profile.
+      // Allow a user to update their own profile.
+      allow create: if isAdmin();
       allow update: if isOwner(userId) || isAdmin();
+      // Only an admin can delete a user, and not themselves.
       allow delete: if isAdmin() && resource.data.id != request.auth.uid;
     }
 
@@ -100,3 +102,5 @@ service cloud.firestore {
     }
   }
 }
+
+    

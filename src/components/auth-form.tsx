@@ -44,9 +44,6 @@ const registerSchema = z.object({
   firstName: z.string().min(2, 'El nom ha de tenir almenys 2 caràcters.'),
   lastName: z.string().min(2, 'El cognom ha de tenir almenys 2 caràcters.'),
   email: z.string().email('El correu electrònic no és vàlid.'),
-  password: z
-    .string()
-    .min(6, 'La contrasenya ha de tenir almenys 6 caràcters.'),
 });
 
 type AuthFormProps = {
@@ -67,8 +64,7 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
     resolver: zodResolver(schema),
     defaultValues: {
       email: '',
-      password: '',
-      ...(isRegister && { firstName: '', lastName: '' }),
+      ...(isRegister ? { firstName: '', lastName: '' } : { password: '' }),
     },
   });
 
@@ -91,7 +87,7 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
 
     try {
       if (isRegister) {
-        // --- Registration Flow ---
+        // --- Registration Request Flow ---
         const registrationData = {
           firstName: (values as z.infer<typeof registerSchema>).firstName,
           lastName: (values as z.infer<typeof registerSchema>).lastName,
@@ -101,7 +97,7 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
         };
 
         const collectionRef = collection(firestore, 'registrationRequests');
-        addDoc(collectionRef, registrationData)
+        await addDoc(collectionRef, registrationData)
         .catch(error => {
             const permissionError = new FirestorePermissionError({
                 path: collectionRef.path,
@@ -120,20 +116,20 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
 
       } else {
         // --- Login Flow ---
-        const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+        const userCredential = await signInWithEmailAndPassword(auth, values.email, (values as z.infer<typeof loginSchema>).password);
         const loggedInUser = userCredential.user;
 
         const userDocRef = doc(firestore, 'users', loggedInUser.uid);
         const userDoc = await getDoc(userDocRef);
 
         if (!userDoc.exists()) {
-          // If user doc doesn't exist, they are not approved.
-          await signOut(auth);
-          toast({
-            variant: 'destructive',
-            title: 'Inici de sessió fallit',
-            description: "El teu compte no està aprovat o no existeix.",
-          });
+            // If user doc doesn't exist, they are not approved yet or there's an issue.
+            await signOut(auth);
+            toast({
+                variant: 'destructive',
+                title: 'Inici de sessió fallit',
+                description: "El teu compte no està aprovat o no existeix.",
+            });
         } else {
             // User exists, login is successful
             toast({
@@ -154,6 +150,9 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
               case 'auth/wrong-password':
               case 'auth/invalid-credential':
                   description = 'El correu electrònic o la contrasenya són incorrectes.';
+                  break;
+              case 'auth/email-already-in-use':
+                  description = 'Aquest correu electrònic ja està en ús o té una sol·licitud de registre pendent.';
                   break;
               case 'permission-denied':
                   description = error.message;
@@ -248,19 +247,22 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Contrasenya</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="********" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {!isRegister && (
+               <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Contrasenya</FormLabel>
+                    <FormControl>
+                        <Input type="password" placeholder="********" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+            )}
+           
             <Button
               type="submit"
               className="w-full"
@@ -291,3 +293,5 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
     </Card>
   );
 }
+
+    

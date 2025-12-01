@@ -23,6 +23,7 @@ import {
   useUser,
   useMemoFirebase,
   useDoc,
+  useAuth,
 } from '@/firebase';
 import {
   collection,
@@ -32,6 +33,7 @@ import {
   writeBatch,
   serverTimestamp,
 } from 'firebase/firestore';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import type { UserProfile, RegistrationRequest, WithId } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -282,58 +284,75 @@ function RegistrationRequestsTable({
   error: Error | null;
 }) {
   const firestore = useFirestore();
+  const auth = useAuth();
   const { toast } = useToast();
 
   const handleApprove = async (request: WithId<RegistrationRequest>) => {
-     if (!firestore) return;
-     if (!window.confirm(`Estàs segur que vols aprovar el registre de ${request.firstName} ${request.lastName}?`)) return;
+    if (!firestore || !auth) return;
+    if (
+      !window.confirm(
+        `Estàs segur que vols aprovar el registre de ${request.firstName} ${request.lastName}?`
+      )
+    )
+      return;
 
-    const newUserId = doc(collection(firestore, 'users')).id; // Generate a new ID
-    const newUserRef = doc(firestore, "users", newUserId);
-    const requestRef = doc(firestore, "registrationRequests", request.id);
-    
-    const newUserProfile: Omit<UserProfile, 'id' | 'creationDate'> = {
+    // Use a temporary password. The user should reset it.
+    const tempPassword =
+      Math.random().toString(36).slice(2) + 'EnTrans!';
+
+    try {
+      // Step 1: Create user in Firebase Auth. This is temporary for getting a UID.
+      // We will create the user with a temporary password.
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        request.email,
+        tempPassword
+      );
+      const newUserId = userCredential.user.uid;
+      
+      // Step 2: Use a batch to create the user profile in Firestore and delete the request.
+      const batch = writeBatch(firestore);
+
+      const newUserRef = doc(firestore, 'users', newUserId);
+      const newUserProfile: UserProfile = {
+        id: newUserId,
         firstName: request.firstName,
         lastName: request.lastName,
         email: request.email,
-        role: "client/proveidor", // Default role
-    };
+        role: 'client/proveidor', // Default role
+        creationDate: new Date().toISOString(),
+      };
+      
+      batch.set(newUserRef, newUserProfile);
 
-    try {
-        const batch = writeBatch(firestore);
+      const requestRef = doc(firestore, 'registrationRequests', request.id);
+      batch.delete(requestRef);
 
-        batch.set(newUserRef, {
-            ...newUserProfile,
-            id: newUserId,
-            creationDate: serverTimestamp()
-        });
+      // Step 3: Commit the batch
+      await batch.commit();
 
-        batch.delete(requestRef);
-
-        await batch.commit();
-
-        toast({
-            title: "Usuari Aprovat",
-            description: `${request.firstName} ${request.lastName} ha estat afegit a la plataforma. Hauràs de crear les seves credencials d'autenticació.`,
-        });
-
+      toast({
+        title: 'Usuari Aprovat',
+        description: `${request.firstName} ${request.lastName} ha estat afegit amb una contrasenya temporal. L'usuari haurà d'utilitzar la funcionalitat "He oblidat la contrasenya" per establir-ne una de nova.`,
+        duration: 10000,
+      });
     } catch (e: any) {
-        console.error("Error approving request: ", e);
-        
-        if (e.code === 'permission-denied') {
+      console.error('Error approving request: ', e);
+       if (e.code === 'permission-denied') {
              const permissionError = new FirestorePermissionError({
-                path: newUserRef.path,
-                operation: 'create',
-                requestResourceData: newUserProfile,
+                path: `/registrationRequests/${request.id}`,
+                operation: 'delete',
             });
             errorEmitter.emit('permission-error', permissionError);
         }
 
-        toast({
-            variant: "destructive",
-            title: "Error en aprovar",
-            description: e.message || "No s'ha pogut aprovar la sol·licitud. Revisa els permisos.",
-        });
+      toast({
+        variant: 'destructive',
+        title: 'Error en aprovar',
+        description:
+          e.message ||
+          "No s'ha pogut aprovar la sol·licitud. Revisa els permisos i que l'usuari no existeixi ja.",
+      });
     }
   };
 
@@ -526,3 +545,5 @@ export default function UserManagementPage() {
 
   return <AdminUserManagement user={profile} />;
 }
+
+    
