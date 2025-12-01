@@ -25,7 +25,7 @@ export const users: WithId<UserProfile>[] = [
   { id: 'user-2', firstName: 'Maria', lastName: 'Llopis', email:'maria@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user2/100/100', password: 'password2' },
   { id: 'user-3', firstName: 'Carles', lastName: 'Sancho', email:'carles@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user3/100/100', password: 'password3' },
   { id: 'user-4', firstName: 'Laura', lastName: 'Molins', email:'laura@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user4/100/100', password: 'password4' },
-  { id: 'user-5', firstName: 'Sergi', lastName: 'Brianso', email:'sergi@test.com', role: 'treballador', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user5/100/100', password: 'password5' },
+  { id: 'user-5', firstName: 'Sergi', lastName: 'Brianso', email:'sergibrianso@gmail.com', role: 'treballador', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user5/100/100', password: '123sergi' },
 ];
 
 // This is now used as mock data for pages that are not yet connected to Firestore.
