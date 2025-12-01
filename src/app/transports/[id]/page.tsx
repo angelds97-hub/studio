@@ -57,7 +57,7 @@ export default function TransportDetailPage() {
     useDoc<UserProfile>(requesterProfileRef);
 
   // Mock offers for now as they are not in Firestore structure
-  const offers: TransportOffer[] = []; //allOffers[id as keyof typeof allOffers] || [];
+  const offers: TransportOffer[] = []; 
 
   if (requestLoading || requesterLoading) {
     return (
