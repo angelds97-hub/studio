@@ -4,8 +4,18 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { ArrowLeft, Clock, Package, Warehouse } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { transportRequests as mockTransportRequests } from '@/lib/data';
 
-export default function SeguimentPage({ params }: { params: { id: string }}) {
+// This function tells Next.js which pages to generate at build time.
+export async function generateStaticParams() {
+  // In a real app, you'd fetch this from your CMS or database
+  // For this static export example, we'll use the mock data
+  return mockTransportRequests.map((request) => ({
+    id: request.id,
+  }));
+}
+
+export default async function SeguimentPage({ params }: { params: { id: string }}) {
   const mapImage = PlaceHolderImages.find(img => img.id === 'map-tracking');
   const transportId = params.id;
 
@@ -28,7 +38,7 @@ export default function SeguimentPage({ params }: { params: { id: string }}) {
           </Link>
         </Button>
         <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0 font-headline">
-          Seguiment del Transport #{transportId}
+          Seguiment del Transport #{transportId.slice(0, 8)}...
         </h1>
       </div>
       <div className="grid gap-4 md:grid-cols-[1fr_350px] lg:grid-cols-3 lg:gap-8">

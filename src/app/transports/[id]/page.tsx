@@ -1,16 +1,12 @@
-'use client';
-
-import { notFound, useParams } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import TransportDetail from '@/components/transport-detail';
 import type { TransportRequest, UserProfile, TransportOffer } from '@/lib/types';
-import { useDoc, useFirestore, useUser, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
 import { transportRequests as mockTransportRequests } from '@/lib/data';
 import { users as mockUsers } from '@/lib/data';
-import { Skeleton } from '@/components/ui/skeleton';
+import { transportOffers as mockTransportOffers } from '@/lib/data';
 
 // This function tells Next.js which pages to generate at build time.
-export function generateStaticParams() {
+export async function generateStaticParams() {
   // In a real app, you'd fetch this from your CMS or database
   // For this static export example, we'll use the mock data
   return mockTransportRequests.map((request) => ({
@@ -19,7 +15,7 @@ export function generateStaticParams() {
 }
 
 // This is the page component itself, running on the server.
-export default function TransportDetailPage({ params }: { params: { id: string } }) {
+export default async function TransportDetailPage({ params }: { params: { id: string } }) {
     const { id } = params;
 
     // Fetch data on the server.
@@ -34,7 +30,10 @@ export default function TransportDetailPage({ params }: { params: { id: string }
     // Find the requester from mock data
     const requester = mockUsers[request.requesterId] as UserProfile | null;
     
+    // Find offers for this request
+    const offers = mockTransportOffers[request.id] || [];
+
     // The data is fetched on the server and then passed to the client component for rendering.
     // The TransportDetail component is the one marked with 'use client'.
-    return <TransportDetail request={request} requesterProfile={requester} offers={[]}/>;
+    return <TransportDetail request={request} requesterProfile={requester} offers={offers}/>;
 }
