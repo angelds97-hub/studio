@@ -29,7 +29,6 @@ import { useDoc, useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { TransportRequest, UserProfile, TransportOffer } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { transportOffers as allOffers } from '@/lib/data'; // Keep mock offers for now
 
 export default function TransportDetailPage() {
   const params = useParams();
@@ -58,7 +57,7 @@ export default function TransportDetailPage() {
     useDoc<UserProfile>(requesterProfileRef);
 
   // Mock offers for now as they are not in Firestore structure
-  const offers = allOffers[id as keyof typeof allOffers] || [];
+  const offers: TransportOffer[] = []; //allOffers[id as keyof typeof allOffers] || [];
 
   if (requestLoading || requesterLoading) {
     return (
