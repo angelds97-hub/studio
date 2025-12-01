@@ -552,5 +552,3 @@ export default function UserManagementPage() {
 
   return <AdminUserManagement user={profile} />;
 }
-
-    
