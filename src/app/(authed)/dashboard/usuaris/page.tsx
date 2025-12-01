@@ -17,31 +17,12 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  useCollection,
-  useFirestore,
-  useUser,
-  useMemoFirebase,
-  useDoc,
-  useAuth,
-} from '@/firebase';
-import {
-  collection,
-  doc,
-  deleteDoc,
-  setDoc,
-  writeBatch,
-  serverTimestamp,
-} from 'firebase/firestore';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import type { UserProfile, RegistrationRequest, WithId } from '@/lib/types';
+import type { UserProfile, WithId } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   ShieldAlert,
   MoreHorizontal,
-  CheckCircle,
-  XCircle,
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import {
@@ -56,9 +37,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 import { users as mockUsers } from '@/lib/data';
 
 
@@ -230,32 +208,6 @@ function UsersTable({
   );
 }
 
-function RegistrationRequestsTable({
-  requests,
-  isLoading,
-  error,
-}: {
-  requests: any[] | null;
-  isLoading: boolean;
-  error: Error | null;
-}) {
-
-  if (isLoading) {
-    return <Skeleton className="h-48 w-full" />;
-  }
-
-  return (
-      <div className="text-center py-10 text-muted-foreground">
-        <h3 className="mt-2 text-lg font-semibold">
-          Gestió Manual
-        </h3>
-        <p className="mt-1 text-sm max-w-md mx-auto">
-         Les sol·licituds de registre s'envien a través de Formspree. Per aprovar un usuari nou, afegeix-lo manualment a l'array `users` al fitxer `src/lib/data.ts` i torna a compilar l'aplicació.
-        </p>
-      </div>
-    );
-}
-
 function AdminUserManagement({ user }: { user: WithId<UserProfile> }) {
 
   return (
@@ -263,32 +215,15 @@ function AdminUserManagement({ user }: { user: WithId<UserProfile> }) {
       <CardHeader>
         <CardTitle>Gestió d'Usuaris</CardTitle>
         <CardDescription>
-          Visualitza els usuaris actius i gestiona les sol·licituds de registre.
+          Visualitza i gestiona els usuaris actius de la plataforma. Les altes es gestionen a través del correu electrònic rebut per Formspree.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="users">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="users">Usuaris Actius</TabsTrigger>
-            <TabsTrigger value="requests">
-              Sol·licituds
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="users" className="mt-4">
-            <UsersTable
-              users={mockUsers}
-              isLoading={false}
-              currentUserId={user.id}
-            />
-          </TabsContent>
-          <TabsContent value="requests" className="mt-4">
-            <RegistrationRequestsTable
-              requests={[]}
-              isLoading={false}
-              error={null}
-            />
-          </TabsContent>
-        </Tabs>
+         <UsersTable
+            users={mockUsers}
+            isLoading={false}
+            currentUserId={user.id}
+          />
       </CardContent>
     </Card>
   );
