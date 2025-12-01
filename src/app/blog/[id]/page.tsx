@@ -8,13 +8,13 @@ import { users as mockUsers } from '@/lib/data';
 
 // This function tells Next.js which pages to generate at build time.
 // It must be in a Server Component.
-// export async function generateStaticParams() {
-//   // In a real app, you'd fetch this from your CMS or database
-//   // For this static export example, we'll use the mock data
-//   return mockBlogPosts.map((post: BlogPost) => ({
-//     id: post.id,
-//   }));
-// }
+export async function generateStaticParams() {
+  // In a real app, you'd fetch this from your CMS or database
+  // For this static export example, we'll use the mock data
+  return mockBlogPosts.map((post: BlogPost) => ({
+    id: post.id,
+  }));
+}
 
 // This is the page component itself, running on the server.
 export default async function BlogPostPage({ params }: { params: { id: string } }) {
