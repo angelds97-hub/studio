@@ -74,7 +74,7 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
     }
   }, [user, isUserLoading, router]);
 
-  async function onSubmit(values: z.infer<typeof schema>) {
+  async function onLoginSubmit(values: z.infer<typeof loginSchema>) {
     if (!auth || !firestore) {
         toast({
             variant: 'destructive',
@@ -86,44 +86,13 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
     setIsProcessing(true);
 
     try {
-      if (isRegister) {
-        // --- Registration Request Flow ---
-        const registrationData = {
-          firstName: (values as z.infer<typeof registerSchema>).firstName,
-          lastName: (values as z.infer<typeof registerSchema>).lastName,
-          email: values.email,
-          status: 'pending',
-          requestedAt: serverTimestamp(),
-        };
-
-        const collectionRef = collection(firestore, 'registrationRequests');
-        await addDoc(collectionRef, registrationData)
-        .catch(error => {
-            const permissionError = new FirestorePermissionError({
-                path: collectionRef.path,
-                operation: 'create',
-                requestResourceData: registrationData,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            throw new Error("No s'ha pogut enviar la sol·licitud de registre.");
-        });
-
-        toast({
-          title: 'Sol·licitud de registre enviada',
-          description: "La teva sol·licitud ha estat enviada. Rebràs una notificació quan sigui aprovada per un administrador.",
-        });
-        form.reset();
-
-      } else {
-        // --- Login Flow ---
-        const userCredential = await signInWithEmailAndPassword(auth, values.email, (values as z.infer<typeof loginSchema>).password);
+        const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
         const loggedInUser = userCredential.user;
 
         const userDocRef = doc(firestore, 'users', loggedInUser.uid);
         const userDoc = await getDoc(userDocRef);
 
         if (!userDoc.exists()) {
-            // If user doc doesn't exist, they are not approved yet or there's an issue.
             await signOut(auth);
             toast({
                 variant: 'destructive',
@@ -131,14 +100,12 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
                 description: "El teu compte no està aprovat o no existeix.",
             });
         } else {
-            // User exists, login is successful
             toast({
                 title: 'Sessió iniciada',
                 description: 'Benvingut/da de nou!',
             });
             router.push('/dashboard');
         }
-      }
     } catch (error: any) {
       console.error(error);
       const defaultMessage = "Hi ha hagut un problema. Si us plau, intenta-ho de nou.";
@@ -152,7 +119,7 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
                   description = 'El correu electrònic o la contrasenya són incorrectes.';
                   break;
               case 'auth/email-already-in-use':
-                  description = 'Aquest correu electrònic ja està en ús o té una sol·licitud de registre pendent.';
+                  description = 'Aquest correu electrònic ja està en ús.';
                   break;
               case 'permission-denied':
                   description = error.message;
@@ -171,6 +138,7 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
         setIsProcessing(false);
     }
   }
+
 
   if (isUserLoading || (user && !isProcessing)) {
      return (
@@ -191,45 +159,43 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
         </CardTitle>
         <CardDescription>
           {isRegister
-            ? 'Entra les teves dades per sol·licitar un compte.'
+            ? 'Entra les teves dades i t\'avisarem quan el teu compte estigui llest.'
             : "Entra les teves credencials per accedir a la plataforma."}
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {isRegister ? (
+          <form 
+            action="https://formspree.io/f/xblnopqq"
+            method="POST"
+            className="space-y-4"
+          >
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">Nom</Label>
+                <Input id="firstName" name="Nom" placeholder="El teu nom" required/>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Cognom</Label>
+                <Input id="lastName" name="Cognom" placeholder="El teu cognom" required/>
+              </div>
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="email">Correu Electrònic</Label>
+                <Input id="email" type="email" name="email" placeholder="correu@exemple.com" required/>
+            </div>
+            {/* Hidden field for Formspree subject */}
+            <input type="hidden" name="_subject" value="Nova Sol·licitud de Registre a EnTrans!" />
+            <Button
+              type="submit"
+              className="w-full"
+            >
+              Enviar Sol·licitud
+            </Button>
+          </form>
+        ) : (
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {isRegister && (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                    control={form.control}
-                    name="firstName"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Nom</FormLabel>
-                        <FormControl>
-                            <Input placeholder="El teu nom" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="lastName"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Cognom</FormLabel>
-                        <FormControl>
-                            <Input placeholder="El teu cognom" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                </div>
-              </>
-            )}
+          <form onSubmit={form.handleSubmit(onLoginSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="email"
@@ -247,31 +213,30 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
                 </FormItem>
               )}
             />
-            {!isRegister && (
-               <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Contrasenya</FormLabel>
-                    <FormControl>
-                        <Input type="password" placeholder="********" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
-            )}
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                  <FormItem>
+                  <FormLabel>Contrasenya</FormLabel>
+                  <FormControl>
+                      <Input type="password" placeholder="********" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                  </FormItem>
+              )}
+            />
            
             <Button
               type="submit"
               className="w-full"
               disabled={isProcessing}
             >
-              {isProcessing ? (isRegister ? 'Enviant sol·licitud...' : 'Iniciant sessió...') : (isRegister ? 'Sol·licitar Registre' : 'Iniciar Sessió')}
+              {isProcessing ? 'Iniciant sessió...' : 'Iniciar Sessió'}
             </Button>
           </form>
         </Form>
+        )}
         <div className="mt-4 text-center text-sm">
           {isRegister ? (
             <>
