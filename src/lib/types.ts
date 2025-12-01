@@ -3,6 +3,7 @@ import { FieldValue } from 'firebase/firestore';
 export type TransportRequest = {
   id: string;
   userProfileId: string;
+  requesterId?: string; // Make optional or ensure it's always there
   transportType: 'passatgers' | 'càrrega';
   origin: string;
   destination: string;

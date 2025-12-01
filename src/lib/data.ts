@@ -1,4 +1,4 @@
-import type { TransportRequest, User, Notification, ActiveTransport, TransportOffer, UserProfile } from './types';
+import type { TransportRequest, UserProfile, Notification, ActiveTransport, TransportOffer } from './types';
 import { Truck, Users, CheckCircle, Bell } from 'lucide-react';
 import { subDays, addDays } from 'date-fns';
 
@@ -7,24 +7,28 @@ import { subDays, addDays } from 'date-fns';
 // IN A REAL APPLICATION, THIS DATA WOULD BE FETCHED FROM A DATABASE.
 
 
-export const mainUser: User = {
-  name: 'Admin',
+export const mainUser: UserProfile = {
+  firstName: 'Admin',
+  lastName: 'User',
+  email: 'admin@entrans.app',
+  role: 'administrador',
+  creationDate: new Date().toISOString(),
   avatarUrl: '/user-avatar.png'
 };
 
-export const users: { [key: string]: User } = {
-  'user-1': { name: 'Joan Puig', avatarUrl: 'https://picsum.photos/seed/user1/100/100' },
-  'user-2': { name: 'Maria Llopis', avatarUrl: 'https://picsum.photos/seed/user2/100/100' },
-  'user-3': { name: 'Carles Sancho', avatarUrl: 'https://picsum.photos/seed/user3/100/100' },
-  'user-4': { name: 'Laura Molins', avatarUrl: 'https://picsum.photos/seed/user4/100/100' },
+export const users: { [key: string]: UserProfile } = {
+  'user-1': { firstName: 'Joan', lastName: 'Puig', email:'joan@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user1/100/100' },
+  'user-2': { firstName: 'Maria', lastName: 'Llopis', email:'maria@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user2/100/100' },
+  'user-3': { firstName: 'Carles', lastName: 'Sancho', email:'carles@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user3/100/100' },
+  'user-4': { firstName: 'Laura', lastName: 'Molins', email:'laura@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user4/100/100' },
 };
 
 // This is now used as mock data for pages that are not yet connected to Firestore.
-export const transportRequests: (TransportRequest & {requester: User, offersCount: number})[] = [
+export const transportRequests: (TransportRequest & {requesterId: string, offersCount: number})[] = [
   {
     id: 'req-1',
-    userProfileId: 'user-1-id',
-    requester: users['user-1'],
+    userProfileId: 'user-1',
+    requesterId: 'user-1',
     transportType: 'càrrega',
     origin: 'Barcelona',
     destination: 'València',
@@ -35,8 +39,8 @@ export const transportRequests: (TransportRequest & {requester: User, offersCoun
   },
   {
     id: 'req-2',
-    userProfileId: 'user-2-id',
-    requester: users['user-2'],
+    userProfileId: 'user-2',
+    requesterId: 'user-2',
     transportType: 'passatgers',
     origin: 'Girona',
     destination: 'Lleida',
@@ -47,8 +51,8 @@ export const transportRequests: (TransportRequest & {requester: User, offersCoun
   },
   {
     id: 'req-3',
-    userProfileId: 'user-3-id',
-    requester: users['user-3'],
+    userProfileId: 'user-3',
+    requesterId: 'user-3',
     transportType: 'càrrega',
     origin: 'Tarragona',
     destination: 'Madrid',
@@ -59,8 +63,8 @@ export const transportRequests: (TransportRequest & {requester: User, offersCoun
   },
   {
     id: 'req-4',
-    userProfileId: 'user-4-id',
-    requester: users['user-4'],
+    userProfileId: 'user-4',
+    requesterId: 'user-4',
     transportType: 'càrrega',
     origin: 'Sabadell',
     destination: 'Saragossa',

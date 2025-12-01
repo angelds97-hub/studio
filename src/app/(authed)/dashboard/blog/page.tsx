@@ -140,11 +140,6 @@ function BlogPostsTable({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Accions</DropdownMenuLabel>
-                  <DropdownMenuItem asChild>
-                    <Link href={`/dashboard/blog/editar/${post.id}`}>
-                      Editar
-                    </Link>
-                  </DropdownMenuItem>
                   <DropdownMenuItem
                     className="text-red-600"
                     onClick={() => handleDelete(post.id)}
