@@ -16,57 +16,20 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import type { UserProfile, WithId } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import {
-  ShieldAlert,
-  MoreHorizontal,
-} from 'lucide-react';
+import { ShieldAlert } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useToast } from '@/hooks/use-toast';
 import { users as mockUsers } from '@/lib/data';
-
 
 function UsersTable({
   users,
   isLoading,
-  currentUserId,
 }: {
   users: WithId<UserProfile>[] | null;
   isLoading: boolean;
-  currentUserId: string | undefined;
 }) {
-  const { toast } = useToast();
-
-  const handleRoleChange = async (userId: string, newRole: UserProfile['role']) => {
-    toast({
-        title: 'Funcionalitat no disponible',
-        description: "En una web estàtica, els rols es canvien manualment al fitxer 'src/lib/data.ts'.",
-        variant: 'destructive',
-    });
-  };
-
-  const handleDeleteUser = async (userId: string) => {
-     toast({
-        title: 'Funcionalitat no disponible',
-        description: "En una web estàtica, els usuaris s'eliminen manualment del fitxer 'src/lib/data.ts'.",
-        variant: 'destructive',
-    });
-  };
-
   if (isLoading) {
     return (
       <Table>
@@ -75,9 +38,6 @@ function UsersTable({
             <TableHead>Nom</TableHead>
             <TableHead>Correu Electrònic</TableHead>
             <TableHead>Rol</TableHead>
-            <TableHead>
-              <span className="sr-only">Accions</span>
-            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -91,9 +51,6 @@ function UsersTable({
               </TableCell>
               <TableCell>
                 <Skeleton className="h-6 w-24" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-8 w-8 ml-auto" />
               </TableCell>
             </TableRow>
           ))}
@@ -120,9 +77,6 @@ function UsersTable({
           <TableHead>Nom</TableHead>
           <TableHead>Correu Electrònic</TableHead>
           <TableHead>Rol</TableHead>
-          <TableHead>
-            <span className="sr-only">Accions</span>
-          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -143,64 +97,6 @@ function UsersTable({
                 {user.role}
               </Badge>
             </TableCell>
-            <TableCell>
-              {user.id !== currentUserId && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button aria-haspopup="true" size="icon" variant="ghost">
-                      <MoreHorizontal className="h-4 w-4" />
-                      <span className="sr-only">Obrir menú</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Accions</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger>
-                        Canviar Rol
-                      </DropdownMenuSubTrigger>
-                      <DropdownMenuSubContent>
-                        <DropdownMenuItem
-                          onClick={() =>
-                            handleRoleChange(user.id, 'administrador')
-                          }
-                        >
-                          Administrador
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() =>
-                            handleRoleChange(user.id, 'treballador')
-                          }
-                        >
-                          Treballador
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() =>
-                            handleRoleChange(user.id, 'client/proveidor')
-                          }
-                        >
-                          Client/Proveïdor
-                        </DropdownMenuItem>
-                         <DropdownMenuItem
-                          onClick={() =>
-                            handleRoleChange(user.id, 'extern')
-                          }
-                        >
-                          Extern
-                        </DropdownMenuItem>
-                      </DropdownMenuSubContent>
-                    </DropdownMenuSub>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="text-red-600"
-                      onClick={() => handleDeleteUser(user.id)}
-                    >
-                      Eliminar Usuari
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </TableCell>
           </TableRow>
         ))}
       </TableBody>
@@ -208,39 +104,33 @@ function UsersTable({
   );
 }
 
-function AdminUserManagement({ user }: { user: WithId<UserProfile> }) {
-
+function AdminUserManagement() {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Gestió d'Usuaris</CardTitle>
         <CardDescription>
-          Visualitza i gestiona els usuaris actius de la plataforma. Les altes es gestionen a través del correu electrònic rebut per Formspree.
+          Aquí pots visualitzar els usuaris actius de la plataforma. Per afegir, modificar o eliminar usuaris, has d'editar manualment l'arxiu `src/lib/data.ts`. Les noves altes se sol·liciten via Formspree i es gestionen des del correu.
         </CardDescription>
       </CardHeader>
       <CardContent>
-         <UsersTable
-            users={mockUsers}
-            isLoading={false}
-            currentUserId={user.id}
-          />
+        <UsersTable users={mockUsers} isLoading={false} />
       </CardContent>
     </Card>
   );
 }
 
 export default function UserManagementPage() {
-    const [profile, setProfile] = useState<WithId<UserProfile> | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+  const [profile, setProfile] = useState<WithId<UserProfile> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        const storedUser = localStorage.getItem('loggedInUser');
-        if (storedUser) {
-            setProfile(JSON.parse(storedUser));
-        }
-        setIsLoading(false);
-    }, []);
-
+  useEffect(() => {
+    const storedUser = localStorage.getItem('loggedInUser');
+    if (storedUser) {
+      setProfile(JSON.parse(storedUser));
+    }
+    setIsLoading(false);
+  }, []);
 
   if (isLoading) {
     return (
@@ -262,5 +152,5 @@ export default function UserManagementPage() {
     );
   }
 
-  return <AdminUserManagement user={profile} />;
+  return <AdminUserManagement />;
 }
