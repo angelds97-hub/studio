@@ -204,7 +204,7 @@ function SiteFooter() {
 
 function MainLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAuthedRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/configuracio') || pathname.startsWith('/solicituts') || pathname.startsWith('/transports');
+  const isAuthedRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/configuracio');
 
   return (
     <div className="relative flex min-h-screen w-full flex-col">
@@ -244,5 +244,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-    
