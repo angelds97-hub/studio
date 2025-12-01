@@ -9,10 +9,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import {
   LayoutDashboard,
   ScrollText,
@@ -20,7 +17,9 @@ import {
   Settings,
   Truck,
   Newspaper,
-  Users
+  Users,
+  Home,
+  FileText,
 } from 'lucide-react';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -41,15 +40,40 @@ export function AppSidebar() {
 
   const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
 
-  const navItems = [
-    // { href: '/dashboard', label: 'Panell', icon: LayoutDashboard, roles: ['administrador', 'treballador', 'client/proveidor', 'extern'] },
-    // { href: '/solicituts', label: 'Sol·licituds', icon: ScrollText, roles: ['administrador', 'treballador', 'client/proveidor'] },
-    { href: '/dashboard/blog', label: 'Blog', icon: Newspaper, roles: ['administrador', 'treballador'] },
-    { href: '/dashboard/usuaris', label: 'Usuaris', icon: Users, roles: ['administrador'] },
-    { href: '/configuracio', label: 'Configuració', icon: Settings, roles: ['administrador', 'treballador', 'client/proveidor', 'extern'] },
-  ];
+  const navItems = {
+    all: [
+       { href: '/dashboard', label: 'Panell', icon: LayoutDashboard },
+    ],
+    administrador: [
+      { href: '/solicituts', label: 'Sol·licituds', icon: FileText },
+      { href: '/dashboard/blog', label: 'Blog', icon: Newspaper },
+      { href: '/dashboard/usuaris', label: "Usuaris", icon: Users },
+      { href: '/configuracio', label: 'Configuració', icon: Settings },
+    ],
+    treballador: [
+      { href: '/dashboard/blog', label: 'Blog', icon: Newspaper },
+      { href: '/configuracio', label: 'Configuració', icon: Settings },
+    ],
+    'client/proveidor': [
+        { href: '/solicituts', label: 'Les meves sol·licituds', icon: FileText },
+        { href: '/solicituts/nova', label: 'Nova sol·licitud', icon: PlusCircle },
+        { href: '/dashboard/blog', label: 'Blog', icon: Newspaper },
+        { href: '/configuracio', label: 'Configuració', icon: Settings },
+    ],
+    extern: [
+       { href: '/configuracio', label: 'Configuració', icon: Settings },
+    ]
+  };
 
-  const filteredNavItems = navItems.filter(item => userProfile && item.roles.includes(userProfile.role));
+  const getNavItems = () => {
+    if (!userProfile) return [];
+    
+    const roleNavs = navItems[userProfile.role] || [];
+    return [...navItems.all, ...roleNavs];
+  };
+
+  const filteredNavItems = getNavItems();
+
 
   return (
     <Sidebar>
@@ -73,6 +97,7 @@ export function AppSidebar() {
                           ? pathname === item.href
                           : pathname.startsWith(item.href)
                       }
+                      tooltip={item.label}
                     >
                         <item.icon className="h-4 w-4" />
                         <span className="group-data-[state=collapsed]:hidden">{item.label}</span>

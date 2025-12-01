@@ -8,155 +8,111 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Users,
   Truck,
   FileText,
-  MoreHorizontal,
-  ArrowUpRight,
+  Newspaper,
+  PlusCircle,
+  Settings,
+  ArrowRight,
 } from 'lucide-react';
 import Link from 'next/link';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { format } from 'date-fns';
-import { ca } from 'date-fns/locale';
-import { useUser, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where, orderBy, limit } from 'firebase/firestore';
-import type { TransportRequest } from '@/lib/types';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { UserProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
-function DashboardStats({
-  requests,
-  isLoading,
-}: {
-  requests: any[] | null;
-  isLoading: boolean;
-}) {
-  const openRequests = requests?.filter((r) => r.status === 'oberta').length ?? 0;
-  const activeTransports = requests?.filter((r) => r.status === 'assignada').length ?? 0;
-
-  if (isLoading) {
-    return (
-      <>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Sol·licituds Obertes
-            </CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-8 w-10" />
-            <Skeleton className="h-4 w-28 mt-1" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Transports en Curs
-            </CardTitle>
-            <Truck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-8 w-10" />
-            <Skeleton className="h-4 w-24 mt-1" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Transportistes</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-8 w-10" />
-            <Skeleton className="h-4 w-24 mt-1" />
-          </CardContent>
-        </Card>
-      </>
-    );
-  }
-
-  return (
-    <>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            Sol·licituds Obertes
-          </CardTitle>
-          <FileText className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{openRequests}</div>
-          <p className="text-xs text-muted-foreground">
-            Esperant ofertes de transportistes.
-          </p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            Transports en Curs
-          </CardTitle>
-          <Truck className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{activeTransports}</div>
-          <p className="text-xs text-muted-foreground">
-            Actualment en ruta.
-          </p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Transportistes</CardTitle>
-          <Users className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">23</div>
-          <p className="text-xs text-muted-foreground">+5 nous aquest mes</p>
-        </CardContent>
-      </Card>
-    </>
-  );
-}
+const roleDashboardConfig = {
+  administrador: {
+    title: 'Benvingut, Administrador',
+    description: 'Gestiona tota la plataforma des d\'aquí.',
+    links: [
+      { href: '/dashboard/usuaris', label: 'Gestionar Usuaris', icon: Users },
+      { href: '/dashboard/blog', label: 'Gestionar Blog', icon: Newspaper },
+      { href: '/solicituts', label: 'Veure Sol·licituds', icon: FileText },
+    ],
+  },
+  treballador: {
+    title: 'Benvingut/da',
+    description: 'Gestiona el contingut de la plataforma.',
+    links: [
+      { href: '/dashboard/blog', label: 'Gestionar Blog', icon: Newspaper },
+      { href: '/dashboard/blog/nou', label: 'Nou Article', icon: PlusCircle },
+    ],
+  },
+  'client/proveidor': {
+    title: 'La teva Àrea de Client',
+    description: 'Gestiona les teves sol·licituds de transport.',
+    links: [
+      { href: '/solicituts/nova', label: 'Nova Sol·licitud', icon: PlusCircle },
+      { href: '/solicituts', label: 'Les meves Sol·licituds', icon: FileText },
+      { href: '/configuracio', label: 'Configuració del Compte', icon: Settings },
+    ],
+  },
+  extern: {
+    title: 'El teu Perfil',
+    description: 'Actualitza la teva informació personal i preferències.',
+    links: [
+        { href: '/configuracio', label: 'Anar a la Configuració', icon: Settings },
+    ],
+  },
+};
 
 
 export default function DashboardPage() {
   const { user } = useUser();
   const firestore = useFirestore();
 
-  const requestsQuery = useMemoFirebase(() => {
+  const profileRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    return query(
-        collection(firestore, 'users', user.uid, 'transportRequests'), 
-        orderBy('dates.from', 'desc'), 
-        limit(10)
-    );
+    return doc(firestore, 'users', user.uid);
   }, [firestore, user]);
 
-  const { data: requests, isLoading: requestsLoading } =
-    useCollection<TransportRequest>(requestsQuery);
+  const { data: profile, isLoading } = useDoc<UserProfile>(profileRef);
+
+  if (isLoading || !profile) {
+    return (
+      <div className="flex flex-col gap-8">
+        <Skeleton className="h-10 w-1/2" />
+        <Skeleton className="h-6 w-3/4" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <Skeleton className="h-40" />
+          <Skeleton className="h-40" />
+          <Skeleton className="h-40" />
+        </div>
+      </div>
+    );
+  }
+
+  const config = roleDashboardConfig[profile.role] || roleDashboardConfig.extern;
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
-        <DashboardStats requests={requests} isLoading={requestsLoading} />
+    <div className="flex flex-col gap-4">
+       <div>
+        <h1 className="text-3xl font-bold font-headline">{config.title}</h1>
+        <p className="text-muted-foreground">{config.description}</p>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {config.links.map((link) => (
+          <Card key={link.href}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{link.label}</CardTitle>
+              <link.icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" size="sm" asChild>
+                <Link href={link.href}>
+                  Anar-hi <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );
 }
+
