@@ -37,6 +37,7 @@ import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { doc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
+import { LoadingLink } from '../loading-link';
 
 
 export function AppHeader() {
@@ -135,10 +136,10 @@ export function AppHeader() {
           <DropdownMenuLabel>El meu compte</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link href="/configuracio"><Settings className="mr-2 h-4 w-4" />Configuració</Link>
+            <LoadingLink href="/configuracio"><Settings className="mr-2 h-4 w-4" />Configuració</LoadingLink>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="#"><UserIcon className="mr-2 h-4 w-4" />Perfil</Link>
+            <LoadingLink href="#"><UserIcon className="mr-2 h-4 w-4" />Perfil</LoadingLink>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleSignOut}>
@@ -150,3 +151,5 @@ export function AppHeader() {
     </header>
   );
 }
+
+    

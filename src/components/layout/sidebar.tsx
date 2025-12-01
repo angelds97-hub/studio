@@ -26,6 +26,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { SheetClose } from '@/components/ui/sheet';
+import { LoadingLink } from '../loading-link';
 
 
 export function AppSidebar() {
@@ -54,10 +55,10 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader className="border-b">
          <SheetClose asChild>
-            <Link className="flex items-center gap-2 font-semibold" href="/">
+            <LoadingLink className="flex items-center gap-2 font-semibold" href="/">
               <Truck className="h-6 w-6 text-primary" />
               <span className="font-headline text-lg group-data-[state=collapsed]:hidden">EnTrans</span>
-            </Link>
+            </LoadingLink>
         </SheetClose>
       </SidebarHeader>
       <SidebarContent className="flex-1">
@@ -65,7 +66,7 @@ export function AppSidebar() {
           {filteredNavItems.map((item) => (
             <SidebarMenuItem key={item.href}>
                <SheetClose asChild>
-                  <Link href={item.href}>
+                  <LoadingLink href={item.href}>
                     <SidebarMenuButton
                       isActive={
                         item.href === '/dashboard'
@@ -76,7 +77,7 @@ export function AppSidebar() {
                         <item.icon className="h-4 w-4" />
                         <span className="group-data-[state=collapsed]:hidden">{item.label}</span>
                     </SidebarMenuButton>
-                  </Link>
+                  </LoadingLink>
               </SheetClose>
             </SidebarMenuItem>
           ))}
@@ -87,10 +88,10 @@ export function AppSidebar() {
          <div className="p-2 group-data-[state=collapsed]:p-0 group-data-[state=collapsed]:w-fit group-data-[state=collapsed]:mx-auto">
             <SheetClose asChild>
                 <Button size="sm" className="w-full group-data-[state=collapsed]:w-8 group-data-[state=collapsed]:h-8 group-data-[state=collapsed]:p-0" asChild>
-                    <Link href="/solicituts/nova">
+                    <LoadingLink href="/solicituts/nova">
                         <PlusCircle className="mr-2 h-4 w-4 group-data-[state=collapsed]:mr-0" />
                         <span className="group-data-[state=collapsed]:hidden">Nova Sol·licitud</span>
-                    </Link>
+                    </LoadingLink>
                 </Button>
             </SheetClose>
          </div>
@@ -98,3 +99,5 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
+    

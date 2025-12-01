@@ -15,6 +15,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { LoadingProvider } from '@/context/loading-context';
 import { PageLoader } from '@/components/page-loader';
 import { NavigationEvents } from '@/components/navigation-events';
+import { LoadingLink } from '@/components/loading-link';
 
 
 const inter = Inter({
@@ -51,21 +52,21 @@ function SiteHeader() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center">
         <div className="mr-4 hidden md:flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
+          <LoadingLink href="/" className="mr-6 flex items-center space-x-2">
             <Truck className="h-6 w-6 text-primary" />
             <span className="hidden font-bold sm:inline-block font-headline">
               EnTrans
             </span>
-          </Link>
+          </LoadingLink>
           <nav className="flex items-center space-x-6 text-sm font-medium">
             {navLinks.map((link) => (
-              <Link
+              <LoadingLink
                 key={link.href}
                 href={link.href}
                 className="transition-colors hover:text-foreground/80 text-foreground/60"
               >
                 {link.label}
-              </Link>
+              </LoadingLink>
             ))}
           </nav>
         </div>
@@ -84,29 +85,29 @@ function SiteHeader() {
                       <SheetTitle className="sr-only">Menú de navegació</SheetTitle>
                   </SheetHeader>
                 <div className="flex flex-col gap-4 p-4">
-                    <Link href="/" className="flex items-center space-x-2">
+                    <LoadingLink href="/" className="flex items-center space-x-2">
                          <Truck className="h-6 w-6 text-primary" />
                         <span className="font-bold font-headline">EnTrans</span>
-                    </Link>
+                    </LoadingLink>
                     <nav className="flex flex-col gap-4">
                          {navLinks.map((link) => (
-                            <Link key={link.href} href={link.href} className="text-lg font-medium hover:text-primary">
+                            <LoadingLink key={link.href} href={link.href} className="text-lg font-medium hover:text-primary">
                                 {link.label}
-                            </Link>
+                            </LoadingLink>
                         ))}
                     </nav>
                      <div className="mt-auto flex flex-col gap-2">
                       {isLoggedIn ? (
                         <Button asChild>
-                            <Link href="/dashboard">Àrea Client</Link>
+                            <LoadingLink href="/dashboard">Àrea Client</LoadingLink>
                         </Button>
                       ) : (
                         <>
                           <Button asChild>
-                              <Link href="/login"><LogIn className="mr-2 h-4 w-4"/> Iniciar Sessió</Link>
+                              <LoadingLink href="/login"><LogIn className="mr-2 h-4 w-4"/> Iniciar Sessió</LoadingLink>
                           </Button>
                           <Button asChild variant="outline">
-                             <Link href="/registre"><UserPlus className="mr-2 h-4 w-4"/> Registrar-se</Link>
+                             <LoadingLink href="/registre"><UserPlus className="mr-2 h-4 w-4"/> Registrar-se</LoadingLink>
                           </Button>
                         </>
                       )}
@@ -117,24 +118,24 @@ function SiteHeader() {
            </div>
            
           <div className="md:hidden flex-1 flex justify-center">
-            <Link href="/" className="flex items-center space-x-2">
+            <LoadingLink href="/" className="flex items-center space-x-2">
               <Truck className="h-6 w-6 text-primary" />
               <span className="font-bold font-headline">EnTrans</span>
-            </Link>
+            </LoadingLink>
           </div>
 
           <nav className="flex items-center gap-2 flex-1 justify-end">
              {isLoggedIn ? (
               <Button asChild className="hidden md:flex">
-                  <Link href="/dashboard">Àrea Client</Link>
+                  <LoadingLink href="/dashboard">Àrea Client</LoadingLink>
               </Button>
             ) : (
               <div className="hidden md:flex gap-2">
                 <Button asChild variant="ghost">
-                    <Link href="/login">Iniciar Sessió</Link>
+                    <LoadingLink href="/login">Iniciar Sessió</LoadingLink>
                 </Button>
                 <Button asChild>
-                    <Link href="/registre">Registrar-se</Link>
+                    <LoadingLink href="/registre">Registrar-se</LoadingLink>
                 </Button>
               </div>
             )}
@@ -151,19 +152,19 @@ function SiteFooter() {
             <div className="container py-12 px-4 md:px-6">
                 <div className="grid gap-8 md:grid-cols-4">
                     <div className="space-y-4">
-                         <Link href="/" className="flex items-center space-x-2">
+                         <LoadingLink href="/" className="flex items-center space-x-2">
                             <Truck className="h-7 w-7 text-primary" />
                             <span className="font-bold text-xl font-headline">EnTrans</span>
-                        </Link>
+                        </LoadingLink>
                         <p className="text-sm text-gray-400">La teva solució logística de confiança. Movent el teu negoci cap endavant.</p>
                     </div>
                      <div className="space-y-4">
                         <h4 className="font-semibold text-lg">Navegació</h4>
                         <nav className="grid gap-2">
                             {navLinks.map(link => (
-                                <Link key={link.href} href={link.href} className="text-sm text-gray-400 hover:text-white">
+                                <LoadingLink key={link.href} href={link.href} className="text-sm text-gray-400 hover:text-white">
                                     {link.label}
-                                </Link>
+                                </LoadingLink>
                             ))}
                         </nav>
                     </div>
@@ -243,3 +244,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+    
