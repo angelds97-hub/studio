@@ -313,8 +313,7 @@ function RegistrationRequestsTable({
       const batch = writeBatch(firestore);
 
       const newUserRef = doc(firestore, 'users', newUserId);
-      const newUserProfile: UserProfile = {
-        id: newUserId,
+      const newUserProfile: Omit<UserProfile, 'id'> = {
         firstName: request.firstName,
         lastName: request.lastName,
         email: request.email,
