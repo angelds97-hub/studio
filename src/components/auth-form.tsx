@@ -1,17 +1,6 @@
 'use client';
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
 import {
   Card,
   CardContent,
@@ -20,42 +9,54 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Truck } from 'lucide-react';
-
-const loginSchema = z.object({
-  email: z.string().email('El correu electrònic no és vàlid.'),
-  password: z.string().min(1, 'La contrasenya és obligatòria.'),
-});
 
 export function AuthForm() {
   const { toast } = useToast();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const form = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
-  });
-
-  const onLoginSubmit = (values: z.infer<typeof loginSchema>) => {
-    // In a static site, real login is not possible.
-    // We redirect to dashboard, assuming login is handled externally or mocked.
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setIsProcessing(true);
-    toast({
-      title: 'Inici de sessió simulat',
-      description: 'Redirigint al panell de control...',
-    });
-    // Add a small delay to simulate a network request
-    setTimeout(() => {
-        router.push('/dashboard');
-    }, 1000);
+    const formData = new FormData(event.currentTarget);
+
+    try {
+      const response = await fetch("https://formspree.io/f/xblnopqq", {
+        method: "POST",
+        body: formData,
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Notificació d\'inici de sessió enviada',
+          description: 'Hem notificat a l\'administrador el teu intent d\'accés. Seràs redirigit al panell de control.',
+          duration: 5000,
+        });
+        // Redirect to dashboard as if login was successful
+        setTimeout(() => {
+            router.push('/dashboard');
+        }, 1000);
+      } else {
+        throw new Error("No s'ha pogut enviar la notificació.");
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: "Hi ha hagut un problema. Si us plau, contacta amb el suport.",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -68,47 +69,36 @@ export function AuthForm() {
           Benvingut/da a EnTrans
         </CardTitle>
         <CardDescription>
-          Aquesta àrea és per a usuaris registrats.
+          Aquesta àrea és per a usuaris registrats. Introdueix les teves dades per notificar el teu accés.
         </CardDescription>
       </CardHeader>
       <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onLoginSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Correu Electrònic</Label>
+              <Input
+                id="email"
                 name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Correu Electrònic</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="correu@exemple.com"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                type="email"
+                placeholder="correu@exemple.com"
+                required
               />
-              <FormField
-                control={form.control}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Contrasenya</Label>
+              <Input
+                id="password"
                 name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Contrasenya</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="********" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                type="password"
+                placeholder="********"
+                required
               />
-              <Button type="submit" className="w-full" disabled={isProcessing}>
-                {isProcessing ? 'Iniciant sessió...' : 'Iniciar Sessió'}
-              </Button>
-            </form>
-          </Form>
+            </div>
+            <input type="hidden" name="_subject" value="Intent d'inici de sessió a EnTrans" />
+            <Button type="submit" className="w-full" disabled={isProcessing}>
+              {isProcessing ? 'Enviant...' : 'Iniciar Sessió'}
+            </Button>
+          </form>
         <div className="mt-6 text-center text-sm border-t pt-4">
             Encara no tens accés?{' '}
             <Link href="/registre" className="underline font-semibold text-primary">

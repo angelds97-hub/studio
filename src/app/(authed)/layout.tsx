@@ -4,8 +4,6 @@ import { AppShell } from '@/components/layout/app-shell';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ShieldAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-
 
 export default function AuthedLayout({
   children,
@@ -14,39 +12,15 @@ export default function AuthedLayout({
 }) {
   const router = useRouter();
 
-  // In a static export, we can't check for a real user.
-  // This layout assumes access is granted if the page is visited.
-  // The logic to "protect" these routes would be to not link to them
-  // from public pages if a user isn't meant to see them.
+  // In a static export environment, we cannot perform real-time checks
+  // for user authentication or roles. The layout's responsibility is
+  // reduced to providing the visual shell for authenticated sections.
+  // Access control is managed by obscurity (i.e., not linking to these
+  // pages from public areas if the user is not supposed to see them).
 
-  // The below logic is for a dynamic app and would cause issues in static export.
-  // For now, we allow access and rely on role-based UI rendering in child components.
-
-  // const { user, isUserLoading } = useUser();
-  // const firestore = useFirestore();
-
-  // const profileRef = useMemoFirebase(() => {
-  //   if (!firestore || !user) return null;
-  //   return doc(firestore, 'users', user.uid);
-  // }, [firestore, user]);
-
-  // const { data: profile, isLoading: isProfileLoading } = useDoc<UserProfile>(profileRef);
-
-  // useEffect(() => {
-  //   const totalLoading = isUserLoading || isProfileLoading;
-  //   if (!totalLoading && !user) {
-  //     router.push('/login');
-  //   }
-  // }, [user, isUserLoading, isProfileLoading, router]);
-
-  // if (isUserLoading || isProfileLoading || !user || !profile) {
-  //   return (
-  //     <div className="flex h-screen w-full items-center justify-center">
-  //       <div className="h-16 w-16 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>
-  //     </div>
-  //   );
-  // }
-  
+  // The logic below is commented out as it relies on dynamic, client-side
+  // data that is not suitable for a purely static export.
+  /*
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
   const profileRole = 'administrador'; // Mock role for static site
 
@@ -67,6 +41,7 @@ export default function AuthedLayout({
      router.push('/configuracio');
      return null;
    }
+   */
 
   return (
     <AppShell>

@@ -1,19 +1,6 @@
-
 'use client';
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -23,77 +10,59 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { cn } from '@/lib/utils';
-import { CalendarIcon, MapPin } from 'lucide-react';
-import { format } from 'date-fns';
-import { ca } from 'date-fns/locale';
-import React, { useState, useEffect } from 'react';
+import { MapPin } from 'lucide-react';
+import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
-
-const transportRequestSchema = z.object({
-  transportType: z.enum(['passatgers', 'càrrega'], {
-    required_error: 'Has de seleccionar un tipus de transport.',
-  }),
-  origin: z
-    .string()
-    .min(2, "L'origen ha de tenir almenys 2 caràcters.")
-    .max(100, "L'origen no pot tenir més de 100 caràcters."),
-  destination: z
-    .string()
-    .min(2, 'La destinació ha de tenir almenys 2 caràcters.')
-    .max(100, 'La destinació no pot tenir més de 100 caràcters.'),
-  dates: z.object(
-    {
-      from: z.date({ required_error: "La data d'inici és obligatòria." }),
-      to: z.date().optional(),
-    },
-    { required_error: "Has d'especificar un rang de dates." }
-  ),
-  specialRequirements: z.string().optional(),
-});
-
+import { Label } from '@/components/ui/label';
 
 export function TransportRequestForm() {
   const { toast } = useToast();
   const router = useRouter();
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const [showMap, setShowMap] = useState(false);
-  const mapImage = PlaceHolderImages.find(img => img.id === 'map-tracking');
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsProcessing(true);
+    const formData = new FormData(event.currentTarget);
 
-  const form = useForm<z.infer<typeof transportRequestSchema>>({
-    resolver: zodResolver(transportRequestSchema),
-    defaultValues: {
-      origin: '',
-      destination: '',
-      specialRequirements: '',
-    },
-  });
+    try {
+      const response = await fetch("https://formspree.io/f/xblnopqq", {
+        method: "POST",
+        body: formData,
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
 
-  const origin = form.watch('origin');
-  const destination = form.watch('destination');
-
-  useEffect(() => {
-    if (origin && origin.length > 2 && destination && destination.length > 2) {
-      setShowMap(true);
-    } else {
-      setShowMap(false);
+      if (response.ok) {
+        toast({
+          title: 'Sol·licitud enviada!',
+          description: "La teva sol·licitud de transport ha estat rebuda. Ens posarem en contacte aviat.",
+          duration: 5000,
+        });
+        (event.target as HTMLFormElement).reset();
+        // Optionally, redirect the user after a short delay
+        setTimeout(() => router.push('/solicituts'), 2000);
+      } else {
+        throw new Error("No s'ha pogut enviar la sol·licitud.");
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error en la sol·licitud',
+        description: "No s'ha pogut enviar la teva sol·licitud. Si us plau, intenta-ho de nou més tard.",
+      });
+    } finally {
+      setIsProcessing(false);
     }
-  }, [origin, destination]);
+  };
+
 
   return (
     <div className="space-y-8">
       <form 
-        action="https://formspree.io/f/xblnopqq"
-        method="POST"
+        onSubmit={handleSubmit}
         className="space-y-8"
       >
         <div className="grid md:grid-cols-2 gap-8">
@@ -144,7 +113,7 @@ export function TransportRequestForm() {
         
         <input type="hidden" name="_subject" value="Nova Sol·licitud de Transport a EnTrans!" />
 
-        <Button type="submit">Enviar Sol·licitud</Button>
+        <Button type="submit" disabled={isProcessing}>{isProcessing ? 'Enviant...' : 'Enviar Sol·licitud'}</Button>
       </form>
 
     </div>
