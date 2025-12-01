@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import TransportDetail from '@/components/transport-detail';
 import type { TransportRequest, UserProfile, TransportOffer } from '@/lib/types';
-import { mockTransportRequests, mockUsers, mockTransportOffers } from '@/lib/data';
+import { mockTransportRequests, users as mockUsers, mockTransportOffers } from '@/lib/data';
 
 // This function tells Next.js which pages to generate at build time.
 export async function generateStaticParams() {

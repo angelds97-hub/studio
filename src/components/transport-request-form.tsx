@@ -33,7 +33,6 @@ import { cn } from '@/lib/utils';
 import { CalendarIcon, Sparkles, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { ca } from 'date-fns/locale';
-import { suggestTransportImprovements } from '@/ai/flows/suggest-transport-improvements';
 import React, { useState, useEffect, useTransition } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -145,22 +144,6 @@ export function TransportRequestForm() {
           title: 'Sol·licitud Creada amb Èxit',
           description: 'La teva sol·licitud ha estat creada correctament.',
         });
-
-        const { suggestedImprovements } = await suggestTransportImprovements({
-            transportType: values.transportType,
-            origin: values.origin,
-            destination: values.destination,
-            dates: `${format(values.dates.from, 'PPP', {
-                locale: ca,
-            })} - ${
-                values.dates.to
-                ? format(values.dates.to, 'PPP', { locale: ca })
-                : 'Obert'
-            }`,
-            specialRequirements: values.specialRequirements ?? 'Cap',
-        });
-
-        setSuggestions(suggestedImprovements);
         
         setTimeout(() => router.push('/dashboard'), 3000);
 
