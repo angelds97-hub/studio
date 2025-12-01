@@ -36,7 +36,9 @@ service cloud.firestore {
     }
     
     function isAdmin() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'administrador';
+      // Check if user document exists and has the 'administrador' role.
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'administrador';
     }
 
     function isSignedIn() {
@@ -47,11 +49,12 @@ service cloud.firestore {
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin();
       // Allow an admin to create any user profile.
-      // Allow a user to update their own profile.
+      // This is crucial for the registration approval flow.
       allow create: if isAdmin();
+      // Allow a user to update their own profile, or an admin to update any.
       allow update: if isOwner(userId) || isAdmin();
       // Only an admin can delete a user, and not themselves.
-      allow delete: if isAdmin() && resource.data.id != request.auth.uid;
+      allow delete: if isAdmin() && resource.id != request.auth.uid;
     }
 
     match /registrationRequests/{requestId} {
@@ -102,5 +105,3 @@ service cloud.firestore {
     }
   }
 }
-
-    

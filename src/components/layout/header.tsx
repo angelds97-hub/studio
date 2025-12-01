@@ -136,10 +136,10 @@ export function AppHeader() {
           <DropdownMenuLabel>El meu compte</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <LoadingLink href="/configuracio"><Settings className="mr-2 h-4 w-4" />Configuració</LoadingLink>
+            <LoadingLink href="/dashboard/perfil"><UserIcon className="mr-2 h-4 w-4" />Perfil</LoadingLink>
           </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <LoadingLink href="#"><UserIcon className="mr-2 h-4 w-4" />Perfil</LoadingLink>
+           <DropdownMenuItem asChild>
+            <LoadingLink href="/configuracio"><Settings className="mr-2 h-4 w-4" />Configuració</LoadingLink>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleSignOut}>
@@ -151,5 +151,3 @@ export function AppHeader() {
     </header>
   );
 }
-
-    
