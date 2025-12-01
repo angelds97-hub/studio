@@ -4,19 +4,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
-import type { BlogPost } from '@/lib/types';
+import type { BlogPost, WithId } from '@/lib/types';
 import { format } from 'date-fns';
 import { ca } from 'date-fns/locale';
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection } from 'firebase/firestore';
 import { Skeleton } from "@/components/ui/skeleton";
 import { blogPosts as mockBlogPosts } from "@/lib/blog-data"; // Import mock data
+import { useState, useEffect } from "react";
 
-function BlogPostList({ blogPosts, isLoading }: { blogPosts: WithId<BlogPost>[] | null, isLoading: boolean }) {
+function BlogPostList({ blogPosts, isLoading }: { blogPosts: WithId<BlogPost>[], isLoading: boolean }) {
 
-  const postsToDisplay = blogPosts && blogPosts.length > 0 ? blogPosts : mockBlogPosts.map(p => ({...p, id: p.id!}));
-
-  if (isLoading && (!postsToDisplay || postsToDisplay.length === 0)) {
+  if (isLoading) {
     return (
        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[...Array(3)].map((_, i) => (
@@ -39,7 +36,7 @@ function BlogPostList({ blogPosts, isLoading }: { blogPosts: WithId<BlogPost>[] 
     );
   }
   
-  if (!postsToDisplay || postsToDisplay.length === 0) {
+  if (!blogPosts || blogPosts.length === 0) {
       return (
            <div className="text-center py-10 text-muted-foreground">
                 <h3 className="mt-2 text-lg font-semibold">No s'han trobat articles</h3>
@@ -52,7 +49,7 @@ function BlogPostList({ blogPosts, isLoading }: { blogPosts: WithId<BlogPost>[] 
 
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {postsToDisplay.map(post => (
+      {blogPosts.map(post => (
         <Card key={post.id} className="overflow-hidden flex flex-col">
           {post.imageUrl && (
             <div className="relative aspect-video">
@@ -86,14 +83,15 @@ function BlogPostList({ blogPosts, isLoading }: { blogPosts: WithId<BlogPost>[] 
 
 
 export default function BlogPage() {
-    const firestore = useFirestore();
-    
-    const blogPostsQuery = useMemoFirebase(() => {
-        if (!firestore) return null;
-        return collection(firestore, 'blogPosts');
-    }, [firestore]);
+    const [posts, setPosts] = useState<WithId<BlogPost>[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const { data: blogPosts, isLoading } = useCollection<BlogPost>(blogPostsQuery);
+    useEffect(() => {
+        // In a static export, we rely solely on mock data.
+        const postsWithId = mockBlogPosts.map(p => ({...p, id: p.id!}));
+        setPosts(postsWithId);
+        setIsLoading(false);
+    }, []);
 
     return (
         <div className="container py-12">
@@ -102,7 +100,7 @@ export default function BlogPage() {
             <p className="text-lg text-muted-foreground mt-4 max-w-3xl mx-auto">Notícies, tendències i consells sobre el món del transport i la logística.</p>
         </div>
 
-        <BlogPostList blogPosts={blogPosts} isLoading={isLoading} />
+        <BlogPostList blogPosts={posts} isLoading={isLoading} />
         
         </div>
     );

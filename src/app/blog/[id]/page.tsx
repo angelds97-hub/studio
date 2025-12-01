@@ -1,6 +1,6 @@
 // This is a Server Component, so it can fetch data and use server-only functions.
 import BlogPostDetail from '@/components/blog-post-detail';
-import type { BlogPost, UserProfile } from '@/lib/types';
+import type { BlogPost, UserProfile, WithId } from '@/lib/types';
 import { notFound } from 'next/navigation';
 // Import mock data directly for static generation and server-side rendering
 import { blogPosts as mockBlogPosts } from '@/lib/blog-data';
@@ -30,12 +30,9 @@ export default async function BlogPostPage({ params }: { params: { id: string } 
     }
     
     // Find the author from mock data
-    const author = mockUsers[post.authorId] as UserProfile | null;
+    const author = mockUsers.find(u => u.id === post.authorId) as UserProfile | null;
     
-    // Add the user id to the author object
-    const authorWithId = author ? { ...author, id: post.authorId } : null;
-
     // The data is fetched on the server and then passed to the client component for rendering.
     // The BlogPostDetail component is the one marked with 'use client'.
-    return <BlogPostDetail post={post} author={authorWithId} />;
+    return <BlogPostDetail post={{...post, id: post.id!}} author={author ? {...author, id: post.authorId} : null} />;
 }

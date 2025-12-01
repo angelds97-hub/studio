@@ -46,7 +46,7 @@ export default function HomePage() {
           <p className="text-lg md:text-xl max-w-3xl mb-8">Connectem les teves necessitats de transport amb els millors professionals del sector. Ràpid, fàcil i segur.</p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Button size="lg" asChild>
-              <LoadingLink href="/solicituts/nova">Sol·licita un transport</LoadingLink>
+              <LoadingLink href="/registre">Comença Ara</LoadingLink>
             </Button>
             <Button size="lg" variant="secondary" asChild>
               <LoadingLink href="/serveis">Els nostres serveis</LoadingLink>

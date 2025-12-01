@@ -1,4 +1,4 @@
-import type { TransportRequest, UserProfile, Notification, ActiveTransport, TransportOffer } from './types';
+import type { TransportRequest, UserProfile, Notification, ActiveTransport, TransportOffer, WithId } from './types';
 import { Truck, Users, CheckCircle, Bell } from 'lucide-react';
 import { subDays, addDays } from 'date-fns';
 
@@ -16,15 +16,15 @@ export const mainUser: UserProfile = {
   avatarUrl: '/user-avatar.png'
 };
 
-export const users: { [key: string]: UserProfile } = {
-  'user-1': { firstName: 'Joan', lastName: 'Puig', email:'joan@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user1/100/100' },
-  'user-2': { firstName: 'Maria', lastName: 'Llopis', email:'maria@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user2/100/100' },
-  'user-3': { firstName: 'Carles', lastName: 'Sancho', email:'carles@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user3/100/100' },
-  'user-4': { firstName: 'Laura', lastName: 'Molins', email:'laura@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user4/100/100' },
-};
+export const users: WithId<UserProfile>[] = [
+  { id: 'user-1', firstName: 'Joan', lastName: 'Puig', email:'joan@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user1/100/100' },
+  { id: 'user-2', firstName: 'Maria', lastName: 'Llopis', email:'maria@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user2/100/100' },
+  { id: 'user-3', firstName: 'Carles', lastName: 'Sancho', email:'carles@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user3/100/100' },
+  { id: 'user-4', firstName: 'Laura', lastName: 'Molins', email:'laura@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user4/100/100' },
+];
 
 // This is now used as mock data for pages that are not yet connected to Firestore.
-export const transportRequests: (TransportRequest & {requesterId: string, offersCount: number})[] = [
+export const mockTransportRequests: (TransportRequest & {requesterId: string, offersCount: number})[] = [
   {
     id: 'req-1',
     userProfileId: 'user-1',
@@ -75,7 +75,7 @@ export const transportRequests: (TransportRequest & {requesterId: string, offers
   },
 ];
 
-export const recentRequests = transportRequests.slice(0, 4);
+export const recentRequests = mockTransportRequests.slice(0, 4);
 
 export const activeTransports: ActiveTransport[] = [
     { id: 'tr-1', origin: 'Barcelona', destination: 'València', status: 'en trànsit', progress: 65 },
@@ -118,7 +118,7 @@ export const notifications: Notification[] = [
   },
 ];
 
-export const transportOffers: { [key: string]: TransportOffer[] } = {
+export const mockTransportOffers: { [key: string]: TransportOffer[] } = {
   'req-1': [
     {
       id: 'offer-1-1',

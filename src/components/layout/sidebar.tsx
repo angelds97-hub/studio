@@ -42,8 +42,8 @@ export function AppSidebar() {
   const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
 
   const navItems = [
-    { href: '/dashboard', label: 'Panell', icon: LayoutDashboard, roles: ['administrador', 'treballador', 'client/proveidor', 'extern'] },
-    { href: '/solicituts', label: 'Sol·licituds', icon: ScrollText, roles: ['administrador', 'treballador', 'client/proveidor'] },
+    // { href: '/dashboard', label: 'Panell', icon: LayoutDashboard, roles: ['administrador', 'treballador', 'client/proveidor', 'extern'] },
+    // { href: '/solicituts', label: 'Sol·licituds', icon: ScrollText, roles: ['administrador', 'treballador', 'client/proveidor'] },
     { href: '/dashboard/blog', label: 'Blog', icon: Newspaper, roles: ['administrador', 'treballador'] },
     { href: '/dashboard/usuaris', label: 'Usuaris', icon: Users, roles: ['administrador'] },
     { href: '/configuracio', label: 'Configuració', icon: Settings, roles: ['administrador', 'treballador', 'client/proveidor', 'extern'] },
@@ -83,21 +83,6 @@ export function AppSidebar() {
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="mt-auto">
-         <Separator className="my-2" />
-         <div className="p-2 group-data-[state=collapsed]:p-0 group-data-[state=collapsed]:w-fit group-data-[state=collapsed]:mx-auto">
-            <SheetClose asChild>
-                <Button size="sm" className="w-full group-data-[state=collapsed]:w-8 group-data-[state=collapsed]:h-8 group-data-[state=collapsed]:p-0" asChild>
-                    <LoadingLink href="/solicituts/nova">
-                        <PlusCircle className="mr-2 h-4 w-4 group-data-[state=collapsed]:mr-0" />
-                        <span className="group-data-[state=collapsed]:hidden">Nova Sol·licitud</span>
-                    </LoadingLink>
-                </Button>
-            </SheetClose>
-         </div>
-      </SidebarFooter>
     </Sidebar>
   );
 }
-
-    
