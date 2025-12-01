@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { CheckCircle, Truck, Users } from "lucide-react";
 import Image from "next/image";
-import { LoadingLink } from "@/components/loading-link";
+import Link from "next/link";
 
 export default function HomePage() {
   const heroImage = PlaceHolderImages.find(img => img.id === 'hero-truck');
@@ -46,10 +46,10 @@ export default function HomePage() {
           <p className="text-lg md:text-xl max-w-3xl mb-8">Connectem les teves necessitats de transport amb els millors professionals del sector. Ràpid, fàcil i segur.</p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Button size="lg" asChild>
-              <LoadingLink href="/registre">Comença Ara</LoadingLink>
+              <Link href="/registre">Comença Ara</Link>
             </Button>
             <Button size="lg" variant="secondary" asChild>
-              <LoadingLink href="/serveis">Els nostres serveis</LoadingLink>
+              <Link href="/serveis">Els nostres serveis</Link>
             </Button>
           </div>
         </div>
@@ -82,7 +82,7 @@ export default function HomePage() {
           <h2 className="text-3xl font-bold font-headline mb-4">Preparat per començar?</h2>
           <p className="text-muted-foreground max-w-xl mx-auto mb-8">Crea un compte avui mateix i descobreix la forma més senzilla de gestionar els teus transports.</p>
           <Button size="lg" asChild>
-            <LoadingLink href="/registre">Registra't gratis</LoadingLink>
+            <Link href="/registre">Registra't gratis</Link>
           </Button>
         </div>
       </section>

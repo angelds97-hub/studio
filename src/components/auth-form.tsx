@@ -74,6 +74,44 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
     }
   }, [user, isUserLoading, router]);
 
+  async function onRegisterSubmit(values: z.infer<typeof registerSchema>) {
+    if (!firestore) return;
+    setIsProcessing(true);
+    try {
+      await addDoc(collection(firestore, 'registrationRequests'), {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        status: 'pending',
+        requestedAt: serverTimestamp(),
+      });
+
+      toast({
+        title: 'Sol·licitud enviada!',
+        description:
+          "Gràcies per registrar-te. T'enviarem un correu quan el teu compte estigui aprovat.",
+      });
+      form.reset();
+    } catch (e: any) {
+      console.error(e);
+      const permissionError = new FirestorePermissionError({
+        path: '/registrationRequests',
+        operation: 'create',
+        requestResourceData: values,
+      });
+      errorEmitter.emit('permission-error', permissionError);
+      toast({
+        variant: 'destructive',
+        title: 'Error en la sol·licitud',
+        description:
+          e.message || "No s'ha pogut enviar la teva sol·licitud.",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  }
+
+
   async function onLoginSubmit(values: z.infer<typeof loginSchema>) {
     if (!auth || !firestore) {
         toast({
@@ -139,6 +177,8 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
     }
   }
 
+  const onSubmit = isRegister ? onRegisterSubmit : onLoginSubmit;
+
 
   if (isUserLoading || (user && !isProcessing)) {
      return (
@@ -164,38 +204,40 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {isRegister ? (
-          <form 
-            action="https://formspree.io/f/xblnopqq"
-            method="POST"
-            className="space-y-4"
-          >
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">Nom</Label>
-                <Input id="firstName" name="Nom" placeholder="El teu nom" required/>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Cognom</Label>
-                <Input id="lastName" name="Cognom" placeholder="El teu cognom" required/>
-              </div>
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="email">Correu Electrònic</Label>
-                <Input id="email" type="email" name="email" placeholder="correu@exemple.com" required/>
-            </div>
-            {/* Hidden field for Formspree subject */}
-            <input type="hidden" name="_subject" value="Nova Sol·licitud de Registre a EnTrans!" />
-            <Button
-              type="submit"
-              className="w-full"
-            >
-              Enviar Sol·licitud
-            </Button>
-          </form>
-        ) : (
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onLoginSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+             {isRegister && (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nom</FormLabel>
+                        <FormControl>
+                          <Input placeholder="El teu nom" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cognom</FormLabel>
+                        <FormControl>
+                          <Input placeholder="El teu cognom" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </>
+            )}
             <FormField
               control={form.control}
               name="email"
@@ -213,30 +255,33 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                  <FormItem>
-                  <FormLabel>Contrasenya</FormLabel>
-                  <FormControl>
-                      <Input type="password" placeholder="********" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                  </FormItem>
-              )}
-            />
+            {!isRegister && (
+                <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Contrasenya</FormLabel>
+                    <FormControl>
+                        <Input type="password" placeholder="********" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+            )}
            
             <Button
               type="submit"
               className="w-full"
               disabled={isProcessing}
             >
-              {isProcessing ? 'Iniciant sessió...' : 'Iniciar Sessió'}
+              {isRegister
+                ? isProcessing ? 'Enviant...' : 'Enviar Sol·licitud'
+                : isProcessing ? 'Iniciant sessió...' : 'Iniciar Sessió'}
             </Button>
           </form>
         </Form>
-        )}
         <div className="mt-4 text-center text-sm">
           {isRegister ? (
             <>
@@ -258,5 +303,3 @@ export function AuthForm({ isRegister = false }: AuthFormProps) {
     </Card>
   );
 }
-
-    
