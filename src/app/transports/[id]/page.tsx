@@ -1,12 +1,13 @@
 import { notFound } from 'next/navigation';
 import TransportDetail from '@/components/transport-detail';
 import type { TransportRequest, UserProfile, TransportOffer } from '@/lib/types';
-import { transportRequests as mockTransportRequests } from '@/lib/data';
-import { users as mockUsers } from '@/lib/data';
-import { transportOffers as mockTransportOffers } from '@/lib/data';
+import { mockTransportRequests, mockUsers, mockTransportOffers } from '@/lib/data';
 
 // This function tells Next.js which pages to generate at build time.
 export async function generateStaticParams() {
+  if (!mockTransportRequests) {
+    return [];
+  }
   // In a real app, you'd fetch this from your CMS or database
   // For this static export example, we'll use the mock data
   return mockTransportRequests.map((request) => ({
@@ -28,7 +29,7 @@ export default async function TransportDetailPage({ params }: { params: { id: st
     }
     
     // Find the requester from mock data
-    const requester = mockUsers[request.requesterId] as UserProfile | null;
+    const requester = mockUsers.find(u => u.id === request.requesterId) as UserProfile | null;
     
     // Find offers for this request
     const offers = mockTransportOffers[request.id] || [];

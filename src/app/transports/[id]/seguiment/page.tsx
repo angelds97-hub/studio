@@ -4,10 +4,13 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { ArrowLeft, Clock, Package, Warehouse } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { transportRequests as mockTransportRequests } from '@/lib/data';
+import { mockTransportRequests } from '@/lib/data';
 
 // This function tells Next.js which pages to generate at build time.
 export async function generateStaticParams() {
+  if (!mockTransportRequests) {
+    return [];
+  }
   // In a real app, you'd fetch this from your CMS or database
   // For this static export example, we'll use the mock data
   return mockTransportRequests.map((request) => ({
