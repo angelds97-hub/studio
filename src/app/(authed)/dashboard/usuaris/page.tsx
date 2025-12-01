@@ -29,11 +29,10 @@ import {
   doc,
   deleteDoc,
   setDoc,
-  getDoc,
   writeBatch,
   serverTimestamp,
 } from 'firebase/firestore';
-import type { UserProfile, RegistrationRequest } from '@/lib/types';
+import type { UserProfile, RegistrationRequest, WithId } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
@@ -42,7 +41,7 @@ import {
   CheckCircle,
   XCircle,
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,6 +55,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
+
 
 function UsersTable({
   users,
@@ -286,28 +288,26 @@ function RegistrationRequestsTable({
      if (!firestore) return;
      if (!window.confirm(`Estàs segur que vols aprovar el registre de ${request.firstName} ${request.lastName}?`)) return;
 
+    const newUserId = doc(collection(firestore, 'users')).id; // Generate a new ID
+    const newUserRef = doc(firestore, "users", newUserId);
+    const requestRef = doc(firestore, "registrationRequests", request.id);
+    
+    const newUserProfile: Omit<UserProfile, 'id' | 'creationDate'> = {
+        firstName: request.firstName,
+        lastName: request.lastName,
+        email: request.email,
+        role: "client/proveidor", // Default role
+    };
+
     try {
         const batch = writeBatch(firestore);
 
-        // We can't create an auth user from the client, so we create the user profile
-        // and the admin will need to create auth credentials manually or via a backend function.
-        // For this mockup, we'll simulate user creation by adding them to the 'users' collection.
-        // A real app would need a backend function to create the auth user.
-        
-        const newUserId = doc(collection(firestore, 'users')).id; // Generate a new ID
-        const newUserRef = doc(firestore, "users", newUserId);
-
         batch.set(newUserRef, {
+            ...newUserProfile,
             id: newUserId,
-            firstName: request.firstName,
-            lastName: request.lastName,
-            email: request.email,
-            role: "client/proveidor", // Default role
             creationDate: serverTimestamp()
         });
 
-        // Delete the request
-        const requestRef = doc(firestore, "registrationRequests", request.id);
         batch.delete(requestRef);
 
         await batch.commit();
@@ -317,12 +317,22 @@ function RegistrationRequestsTable({
             description: `${request.firstName} ${request.lastName} ha estat afegit a la plataforma. Hauràs de crear les seves credencials d'autenticació.`,
         });
 
-    } catch (e) {
+    } catch (e: any) {
         console.error("Error approving request: ", e);
+        
+        if (e.code === 'permission-denied') {
+             const permissionError = new FirestorePermissionError({
+                path: newUserRef.path,
+                operation: 'create',
+                requestResourceData: newUserProfile,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        }
+
         toast({
             variant: "destructive",
-            title: "Error",
-            description: "No s'ha pogut aprovar la sol·licitud.",
+            title: "Error en aprovar",
+            description: e.message || "No s'ha pogut aprovar la sol·licitud. Revisa els permisos.",
         });
     }
   };
