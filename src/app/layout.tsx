@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { Inter, Space_Grotesk } from 'next/font/google';
 import { Toaster } from '@/components/ui/toaster';
@@ -10,7 +11,10 @@ import { Button } from '@/components/ui/button';
 import { Truck, Facebook, Twitter, Linkedin, Menu, LogIn, UserPlus } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { LoadingProvider } from '@/context/loading-context';
+import { PageLoader } from '@/components/page-loader';
+import { NavigationEvents } from '@/components/navigation-events';
 
 
 const inter = Inter({
@@ -204,7 +208,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative flex min-h-screen w-full flex-col">
       {!isAuthedRoute && <SiteHeader />}
-      <div className="flex-1">{children}</div>
+      <div className="flex-1 flex flex-col">{children}</div>
       {!isAuthedRoute && <SiteFooter />}
     </div>
   );
@@ -224,9 +228,15 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <FirebaseClientProvider>
-           <MainLayout>
+          <LoadingProvider>
+            <PageLoader />
+            <Suspense fallback={null}>
+              <NavigationEvents />
+            </Suspense>
+            <MainLayout>
               {children}
-           </MainLayout>
+            </MainLayout>
+          </LoadingProvider>
         </FirebaseClientProvider>
         <Toaster />
       </body>
