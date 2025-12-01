@@ -41,15 +41,6 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <Providers>{children}</Providers>
         <Toaster />
-        <Script id="tawk-to-vars" strategy="beforeInteractive">
-            {`var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();`}
-        </Script>
-        <Script
-            id="tawk-to-script"
-            strategy="lazyOnload"
-            src="https://embed.tawk.to/692d73b50962891980a79253/1jbconvno"
-            async
-        />
       </body>
     </html>
   );
