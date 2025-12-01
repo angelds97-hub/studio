@@ -12,11 +12,11 @@ export const mainUser: WithId<UserProfile> = {
   id: 'admin-user',
   firstName: 'Admin',
   lastName: 'User',
-  email: 'admin@entrans.app',
+  email: 'adomen11@xtec.cat',
   role: 'administrador',
   creationDate: new Date().toISOString(),
   avatarUrl: '/user-avatar.png',
-  password: 'admin', // IMPORTANT: This is for demo purposes only.
+  password: '123456', // IMPORTANT: This is for demo purposes only.
 };
 
 export const users: WithId<UserProfile>[] = [
