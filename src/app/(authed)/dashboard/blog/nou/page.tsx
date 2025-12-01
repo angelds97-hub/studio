@@ -8,27 +8,20 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { useUser } from '@/firebase';
 
 export default function NewBlogPostPage() {
-  const { user } = useUser();
-
-  if (!user) {
-    return null; // O un component de càrrega
-  }
-
   return (
     <Card>
       <CardHeader>
         <CardTitle className="font-headline text-2xl">
-          Crear un nou article
+          Proposar un nou article
         </CardTitle>
         <CardDescription>
-          Omple el formulari següent per publicar una nova entrada al teu blog.
+          Omple el formulari següent per enviar una proposta d'article per al blog. Un cop rebuda, es revisarà i publicarà manualment.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <BlogPostForm authorId={user.uid} />
+        <BlogPostForm />
       </CardContent>
     </Card>
   );
