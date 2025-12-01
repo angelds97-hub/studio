@@ -34,6 +34,8 @@ function BlogPostDetail({ post, author }: BlogPostDetailProps) {
             <AvatarImage
               src={author?.avatarUrl}
               alt={authorName}
+              width={40}
+              height={40}
               data-ai-hint="person portrait"
             />
             <AvatarFallback>{authorName.charAt(0)}</AvatarFallback>
@@ -55,8 +57,8 @@ function BlogPostDetail({ post, author }: BlogPostDetailProps) {
           <Image
             src={post.imageUrl}
             alt={post.title}
-            width={800}
-            height={600}
+            width={1200}
+            height={675}
             className="object-cover w-full h-full"
             data-ai-hint={post.imageHint}
             priority

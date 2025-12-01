@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import Image from 'next/image';
 
 const teamMembers = [
   {
@@ -106,7 +107,9 @@ export default function QuiSomPage() {
             <Card key={member.name} className="text-center">
               <CardContent className="p-6">
                 <Avatar className="w-24 h-24 mx-auto mb-4">
-                  <AvatarImage src={member.avatarUrl} alt={member.name} data-ai-hint={member.avatarHint} />
+                  <AvatarImage asChild src={member.avatarUrl} alt={member.name} >
+                     <Image src={member.avatarUrl} alt={member.name} width={100} height={100} data-ai-hint={member.avatarHint} />
+                  </AvatarImage>
                   <AvatarFallback>
                     {member.name.charAt(0)}
                     {member.name.split(' ')[1]?.charAt(0)}

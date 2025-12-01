@@ -178,18 +178,15 @@ function SiteFooter() {
                     </div>
                     <div className="space-y-4">
                         <h4 className="font-semibold text-lg">Segueix-nos</h4>
-                        <div className="flex space-x-4">
-                            <Link href="#" className="text-gray-400 hover:text-white">
+                        <div className="flex space-x-2">
+                            <Link href="#" aria-label="Facebook" className="text-gray-400 hover:text-white p-2">
                                 <Facebook className="h-6 w-6" />
-                                <span className="sr-only">Facebook</span>
                             </Link>
-                            <Link href="#" className="text-gray-400 hover:text-white">
+                            <Link href="#" aria-label="Twitter" className="text-gray-400 hover:text-white p-2">
                                 <Twitter className="h-6 w-6" />
-                                <span className="sr-only">Twitter</span>
                             </Link>
-                             <Link href="#" className="text-gray-400 hover:text-white">
+                             <Link href="#" aria-label="LinkedIn" className="text-gray-400 hover:text-white p-2">
                                 <Linkedin className="h-6 w-6" />
-                                <span className="sr-only">LinkedIn</span>
                             </Link>
                         </div>
                     </div>
@@ -224,7 +221,7 @@ export default function RootLayout({
     <html lang="ca" suppressHydrationWarning className={cn(inter.variable, spaceGrotesk.variable)}>
       <head>
         <title>EnTrans - La teva plataforma de transports</title>
-        <meta name="description" content="Contracta transports de manera fàcil i ràpida." />
+        <meta name="description" content="Contracta transports de manera fàcil i ràpida. Connectem les teves necessitats de transport amb els millors professionals." />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
       <body className="font-body antialiased">
