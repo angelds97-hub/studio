@@ -10,7 +10,7 @@ export default function NovaSolicitutPage() {
                 <CardHeader>
                     <CardTitle className="font-headline text-2xl">Crear una nova sol·licitud de transport</CardTitle>
                     <CardDescription>
-                        Omple el formulari següent amb els detalls del transport que necessites. Com més informació proporcionis, millors seran les ofertes que rebràs.
+                        Omple el formulari següent amb els detalls del transport que necessites. Un cop rebuda, el nostre equip es posarà en contacte amb tu.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>

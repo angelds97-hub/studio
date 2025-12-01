@@ -30,21 +30,14 @@ import {
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
-import { CalendarIcon, Sparkles, MapPin } from 'lucide-react';
+import { CalendarIcon, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { ca } from 'date-fns/locale';
-import React, { useState, useEffect, useTransition } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { useFirestore, useUser } from '@/firebase';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import type { TransportRequest } from '@/lib/types';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
-
 
 const transportRequestSchema = z.object({
   transportType: z.enum(['passatgers', 'càrrega'], {
@@ -70,16 +63,11 @@ const transportRequestSchema = z.object({
 
 
 export function TransportRequestForm() {
-  const { user } = useUser();
-  const firestore = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
 
-  const [isPending, startTransition] = useTransition();
-  const [suggestions, setSuggestions] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
   const mapImage = PlaceHolderImages.find(img => img.id === 'map-tracking');
-
 
   const form = useForm<z.infer<typeof transportRequestSchema>>({
     resolver: zodResolver(transportRequestSchema),
@@ -101,240 +89,64 @@ export function TransportRequestForm() {
     }
   }, [origin, destination]);
 
-  async function onSubmit(values: z.infer<typeof transportRequestSchema>) {
-     if (!user || !firestore) {
-      toast({
-        variant: 'destructive',
-        title: 'Error d\'autenticació',
-        description: 'Has d\'iniciar sessió per crear una sol·licitud.',
-      });
-      return;
-    }
-
-    startTransition(async () => {
-      try {
-        const newRequest: Omit<TransportRequest, 'id'> = {
-          userProfileId: user.uid,
-          transportType: values.transportType,
-          origin: values.origin,
-          destination: values.destination,
-          dates: {
-            from: values.dates.from.toISOString(),
-            ...(values.dates.to && { to: values.dates.to.toISOString() }),
-          },
-          specialRequirements: values.specialRequirements,
-          status: 'oberta',
-        };
-
-        const collectionRef = collection(firestore, 'users', user.uid, 'transportRequests');
-        await addDoc(collectionRef, {
-            ...newRequest,
-            createdAt: serverTimestamp(),
-        }).catch(error => {
-            const permissionError = new FirestorePermissionError({
-                path: collectionRef.path,
-                operation: 'create',
-                requestResourceData: newRequest,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            throw new Error("No s'ha pogut desar la sol·licitud.");
-        });
-
-        toast({
-          title: 'Sol·licitud Creada amb Èxit',
-          description: 'La teva sol·licitud ha estat creada correctament.',
-        });
-        
-        setTimeout(() => router.push('/dashboard'), 3000);
-
-      } catch (error) {
-        console.error(error);
-        toast({
-          variant: 'destructive',
-          title: 'Error en crear la sol·licitud',
-          description: (error as Error).message || "Hi ha hagut un problema. Si us plau, intenta-ho de nou.",
-        });
-      }
-    });
-  }
-
   return (
     <div className="space-y-8">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <div className="grid md:grid-cols-2 gap-8">
-            <FormField
-              control={form.control}
-              name="transportType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tipus de Transport</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
+      <form 
+        action="https://formspree.io/f/xblnopqq"
+        method="POST"
+        className="space-y-8"
+      >
+        <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-2">
+                <Label>Tipus de Transport</Label>
+                <Select name="transportType" required>
+                    <SelectTrigger>
                         <SelectValue placeholder="Selecciona un tipus" />
-                      </SelectTrigger>
-                    </FormControl>
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="passatgers">Passatgers</SelectItem>
                       <SelectItem value="càrrega">Càrrega</SelectItem>
                     </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Quin tipus de transport necessites?
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="dates"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Dates del Transport</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={'outline'}
-                          className={cn(
-                            'w-full pl-3 text-left font-normal',
-                            !field.value?.from && 'text-muted-foreground'
-                          )}
-                        >
-                          {field.value?.from ? (
-                            <>
-                              {format(field.value.from, 'PPP', {
-                                locale: ca,
-                              })}{' '}
-                              -{' '}
-                              {field.value?.to
-                                ? format(field.value.to, 'PPP', { locale: ca })
-                                : 'Data final oberta'}
-                            </>
-                          ) : (
-                            <span>Tria un rang de dates</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        locale={ca}
-                        mode="range"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormDescription>
-                    Selecciona les dates d'inici i final del transport.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            <FormField
-              control={form.control}
-              name="origin"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Adreça d'Origen</FormLabel>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <FormControl>
-                      <Input placeholder="Carrer de Sants, 123, Barcelona" {...field} className="pl-10" />
-                    </FormControl>
-                  </div>
-                  <FormDescription>Introdueix l'adreça completa de recollida.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="destination"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Adreça de Destinació</FormLabel>
-                   <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <FormControl>
-                      <Input placeholder="Avinguda del Port, 456, València" {...field} className="pl-10" />
-                    </FormControl>
-                  </div>
-                  <FormDescription>Introdueix l'adreça completa de lliurament.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-           {showMap && mapImage && (
-            <div className="relative w-full aspect-[16/9] rounded-lg overflow-hidden border">
-                <Image
-                    src={mapImage.imageUrl}
-                    alt={mapImage.description}
-                    fill
-                    className="object-cover"
-                    data-ai-hint={mapImage.imageHint}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-4 left-4 text-white">
-                    <h3 className="font-bold text-xl font-headline">{origin} → {destination}</h3>
-                    <p className="text-sm">Visualització de la ruta</p>
-                </div>
+                </Select>
+                 <p className="text-sm text-muted-foreground">Quin tipus de transport necessites?</p>
             </div>
-          )}
 
-          <FormField
-            control={form.control}
-            name="specialRequirements"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Requisits Especials</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Descriu qualsevol necessitat especial (ex: refrigeració, material fràgil...)"
-                    className="resize-min"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <div className="space-y-2">
+                <Label>Dates del Transport</Label>
+                 <Input name="dates" placeholder="DD/MM/AAAA - DD/MM/AAAA" required />
+                <p className="text-sm text-muted-foreground">Escriu les dates d'inici i final del transport.</p>
+            </div>
+        </div>
+        
+        <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-2">
+                <Label>Adreça d'Origen</Label>
+                <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input name="origin" placeholder="Carrer de Sants, 123, Barcelona" className="pl-10" required />
+                </div>
+                 <p className="text-sm text-muted-foreground">Introdueix l'adreça completa de recollida.</p>
+            </div>
+             <div className="space-y-2">
+                <Label>Adreça de Destinació</Label>
+                <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input name="destination" placeholder="Avinguda del Port, 456, València" className="pl-10" required />
+                </div>
+                <p className="text-sm text-muted-foreground">Introdueix l'adreça completa de lliurament.</p>
+            </div>
+        </div>
 
-          <Button type="submit" disabled={isPending}>
-            {isPending ? 'Creant sol·licitud...' : 'Crear Sol·licitud'}
-          </Button>
-        </form>
-      </Form>
+        <div className="space-y-2">
+            <Label>Requisits Especials</Label>
+            <Textarea name="specialRequirements" placeholder="Descriu qualsevol necessitat especial (ex: refrigeració, material fràgil...)" />
+        </div>
+        
+        <input type="hidden" name="_subject" value="Nova Sol·licitud de Transport a EnTrans!" />
 
-      {suggestions && (
-        <Card className="bg-accent/30 border-accent mt-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="text-accent-foreground h-5 w-5" />
-              Suggeriments per millorar la teva sol·licitud
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-accent-foreground/90 whitespace-pre-wrap">{suggestions}</p>
-          </CardContent>
-        </Card>
-      )}
+        <Button type="submit">Enviar Sol·licitud</Button>
+      </form>
+
     </div>
   );
 }
