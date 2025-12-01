@@ -16,24 +16,28 @@ export default function ContactePage() {
         <div className="space-y-8">
             <Card>
                 <CardContent className="p-6">
-                    <form className="space-y-4">
+                    <form
+                      action="https://formspree.io/f/xblnopqq"
+                      method="POST"
+                      className="space-y-4"
+                    >
                         <div className="grid sm:grid-cols-2 gap-4">
                              <div className="space-y-2">
                                 <Label htmlFor="name">Nom</Label>
-                                <Input id="name" placeholder="El teu nom" />
+                                <Input id="name" name="name" placeholder="El teu nom" />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="email">Correu electrònic</Label>
-                                <Input id="email" type="email" placeholder="correu@exemple.com" />
+                                <Input id="email" type="email" name="email" placeholder="correu@exemple.com" />
                             </div>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="subject">Assumpte</Label>
-                            <Input id="subject" placeholder="Sobre què vols parlar?" />
+                            <Input id="subject" name="subject" placeholder="Sobre què vols parlar?" />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="message">Missatge</Label>
-                            <Textarea id="message" placeholder="Escriu el teu missatge aquí." rows={5} />
+                            <Textarea id="message" name="message" placeholder="Escriu el teu missatge aquí." rows={5} />
                         </div>
                         <Button type="submit" className="w-full">Enviar Missatge</Button>
                     </form>
