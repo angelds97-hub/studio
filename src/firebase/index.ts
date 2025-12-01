@@ -9,16 +9,7 @@ import { getFirestore } from 'firebase/firestore';
 export function initializeFirebase() {
   let firebaseApp;
   if (!getApps().length) {
-    try {
-      // This will only work if you have a service account file.
-      // And will only work on the server.
-      firebaseApp = initializeApp();
-    } catch (e) {
-       if (process.env.NODE_ENV !== "production") {
-        console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
-      }
-      firebaseApp = initializeApp(firebaseConfig);
-    }
+    firebaseApp = initializeApp(firebaseConfig);
   } else {
     firebaseApp = getApp();
   }
