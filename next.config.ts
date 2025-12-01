@@ -1,20 +1,12 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
+  output: 'export',
   typescript: {
     ignoreBuildErrors: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
-  },
-  async redirects() {
-    return [
-      {
-        source: '/transports',
-        destination: '/solicituts',
-        permanent: true,
-      },
-    ]
   },
   images: {
     unoptimized: true,
