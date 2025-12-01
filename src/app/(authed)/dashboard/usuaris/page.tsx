@@ -43,7 +43,7 @@ import {
   CheckCircle,
   XCircle,
 } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -286,6 +286,7 @@ function RegistrationRequestsTable({
   const firestore = useFirestore();
   const auth = useAuth();
   const { toast } = useToast();
+  const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
   const handleApprove = async (request: WithId<RegistrationRequest>) => {
     if (!firestore || !auth) return;
@@ -296,20 +297,18 @@ function RegistrationRequestsTable({
     )
       return;
 
-    // Use a temporary password. The user should reset it.
-    const tempPassword =
-      Math.random().toString(36).slice(2) + 'EnTrans!';
+    setIsProcessing(request.id);
+    const tempPassword = Math.random().toString(36).slice(2) + 'EnTrans!';
 
     try {
-      // Step 1: Create user in Firebase Auth. This is temporary for getting a UID.
-      // We will create the user with a temporary password.
+      // Step 1: Create user in Firebase Auth.
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         request.email,
         tempPassword
       );
       const newUserId = userCredential.user.uid;
-      
+
       // Step 2: Use a batch to create the user profile in Firestore and delete the request.
       const batch = writeBatch(firestore);
 
@@ -336,25 +335,31 @@ function RegistrationRequestsTable({
         description: `${request.firstName} ${request.lastName} ha estat afegit amb una contrasenya temporal. L'usuari haurà d'utilitzar la funcionalitat "He oblidat la contrasenya" per establir-ne una de nova.`,
         duration: 10000,
       });
+
     } catch (e: any) {
       console.error('Error approving request: ', e);
-       if (e.code === 'permission-denied') {
-             const permissionError = new FirestorePermissionError({
-                path: `/registrationRequests/${request.id}`,
-                operation: 'delete',
-            });
-            errorEmitter.emit('permission-error', permissionError);
-        }
-
+      let errorMessage = "No s'ha pogut aprovar la sol·licitud.";
+      if (e.code === 'auth/email-already-in-use') {
+        errorMessage = 'Aquest correu electrònic ja està registrat a la plataforma.';
+      } else if (e.code === 'permission-denied') {
+        errorMessage = "Error de permisos. No s'ha pogut crear l'usuari o eliminar la sol·licitud.";
+        const permissionError = new FirestorePermissionError({
+           path: `/registrationRequests/${request.id}`, // Or the user path if that's where it failed
+           operation: 'write', // Broad operation
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      }
+      
       toast({
         variant: 'destructive',
         title: 'Error en aprovar',
-        description:
-          e.message ||
-          "No s'ha pogut aprovar la sol·licitud. Revisa els permisos i que l'usuari no existeixi ja.",
+        description: errorMessage,
       });
+    } finally {
+        setIsProcessing(null);
     }
   };
+
 
   const handleReject = async (requestId: string) => {
      if (!firestore) return;
@@ -425,14 +430,16 @@ function RegistrationRequestsTable({
                 variant="outline"
                 className="text-green-600 border-green-600 hover:bg-green-50 hover:text-green-700"
                 onClick={() => handleApprove(request)}
+                disabled={isProcessing === request.id}
               >
-                <CheckCircle className="mr-2 h-4 w-4" /> Aprovar
+                {isProcessing === request.id ? 'Processant...' : <><CheckCircle className="mr-2 h-4 w-4" /> Aprovar</>}
               </Button>
               <Button
                 size="sm"
                 variant="outline"
                 className="text-red-600 border-red-600 hover:bg-red-50 hover:text-red-700"
                 onClick={() => handleReject(request.id)}
+                disabled={isProcessing === request.id}
               >
                 <XCircle className="mr-2 h-4 w-4" /> Rebutjar
               </Button>
