@@ -16,8 +16,10 @@ export function LoadingProvider({ children }: { children: ReactNode }) {
   const showLoader = useCallback(() => setLoading(true), []);
   const hideLoader = useCallback(() => setLoading(false), []);
 
+  const value = { loading, showLoader, hideLoader };
+
   return (
-    <LoadingContext.Provider value={{ loading, showLoader, hideLoader }}>
+    <LoadingContext.Provider value={value}>
       {children}
     </LoadingContext.Provider>
   );

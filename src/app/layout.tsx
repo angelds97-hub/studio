@@ -12,6 +12,9 @@ import { Truck, Facebook, Twitter, Linkedin, Menu, LogIn, UserPlus } from 'lucid
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { LoadingProvider } from '@/context/loading-context';
+import { PageLoader } from '@/components/page-loader';
+import { NavigationEvents } from '@/components/navigation-events';
 
 
 const inter = Inter({
@@ -221,9 +224,15 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <FirebaseClientProvider>
+          <LoadingProvider>
+            <PageLoader />
+            <Suspense fallback={null}>
+                <NavigationEvents />
+            </Suspense>
             <MainLayout>
               {children}
             </MainLayout>
+          </LoadingProvider>
         </FirebaseClientProvider>
         <Toaster />
       </body>

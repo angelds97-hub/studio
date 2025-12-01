@@ -20,14 +20,12 @@ export function LoadingLink({
   const pathname = usePathname();
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    // If the link is to the current page, don't show the loader
-    if (href.toString() === pathname) {
-      onClick?.(e);
-      return;
+    if (href.toString() !== pathname) {
+      showLoader();
     }
-
-    showLoader();
-    onClick?.(e);
+    if (onClick) {
+      onClick(e);
+    }
   };
 
   return (
@@ -36,5 +34,3 @@ export function LoadingLink({
     </Link>
   );
 }
-
-    
