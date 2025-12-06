@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   try {
     // IMPORTANT: Substitueix aquest valor per la teva clau d'API de Mistral
     // o, preferiblement, carrega-la des de les variables d'entorn.
-    const apiKey = "ENGANXA_AQUI_LA_TEVA_CLAU_DE_MISTRAL";
+    const apiKey = "N0gEtea77xFuhBtJRDyehF0fQ5vgvHcA";
 
     // Inicialitza el client de Mistral
     const client = new MistralAI({ apiKey });
