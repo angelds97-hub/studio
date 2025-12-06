@@ -60,7 +60,7 @@ export default function TestAIPage() {
                 id="prompt"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Ex: 'Venc sabates a la Xina i no vull pagar el transport'"
+                placeholder="Ex: 'Què és un Incoterm EXW?'"
                 className="min-h-[120px] text-base"
                 required
               />
