@@ -1,9 +1,9 @@
+
 import type { BlogPost } from './types';
 import { subDays } from 'date-fns';
 import { PlaceHolderImages } from './placeholder-images';
 
 const reusImage = PlaceHolderImages.find(p => p.id === 'reus-city');
-const reusMapImage = PlaceHolderImages.find(p => p.id === 'reus-map');
 const tarragonaPortImage = PlaceHolderImages.find(p => p.id === 'tarragona-port');
 const truckHighwayImage = PlaceHolderImages.find(p => p.id === 'truck-highway');
 
@@ -43,7 +43,7 @@ export const blogPosts: BlogPost[] = [
         content: `
 <p>Reus, més enllà de ser coneguda pel seu modernisme i el seu dinamisme comercial, s'ha erigit com una peça fonamental en el tauler logístic de Catalunya. La seva ubicació estratègica i una xarxa d'infraestructures de primer nivell la converteixen en el motor del transport de mercaderies al sud del país.</p>
 
-<img src="${reusMapImage?.imageUrl}" alt="Mapa estratègic de Reus" class="rounded-lg my-6" data-ai-hint="${reusMapImage?.imageHint}" />
+<img src="/20240712.jpg" alt="Mapa estratègic de Reus" class="rounded-lg my-6" data-ai-hint="mapa reus" />
 
 <h3>Una Cruïlla de Camins Privilegiada</h3>
 <p>Situada al cor del Camp de Tarragona, Reus gaudeix d'un accés directe a eixos viaris vitals com l'AP-7, la principal autopista del corredor mediterrani, i l'A-27, que connecta la costa amb l'interior de la península. Aquesta connectivitat permet a les empreses de transport optimitzar rutes, escurçar temps de lliurament i, en conseqüència, reduir costos operatius.</p>
