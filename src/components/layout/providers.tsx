@@ -40,7 +40,6 @@ function SiteHeader() {
     { href: '/', label: 'Inici' },
     { href: '/serveis', label: 'Serveis' },
     { href: '/blog', label: 'Blog' },
-    { href: '/assistent', label: 'Assistent IA' },
     { href: '/qui-som', label: 'Qui Som' },
     { href: '/contacte', label: 'Contacte' },
   ];
