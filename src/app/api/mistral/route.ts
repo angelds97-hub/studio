@@ -3,11 +3,20 @@ import MistralAI from '@mistralai/mistralai';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
-  const apiKey = "qbmLYgq2z5NtJr1OF7yVQzSEj8K4HKDa"; 
+  const apiKey = process.env.MISTRAL_API_KEY;
+
+  if (!apiKey) {
+    console.error("MISTRAL_API_KEY no està configurada a les variables d'entorn.");
+    return NextResponse.json({ error: "Error de configuració del servidor: Manca la clau d'API." }, { status: 500 });
+  }
 
   try {
     const { missatge } = await request.json();
 
+    if (!missatge) {
+        return NextResponse.json({ error: 'El missatge no pot estar buit.' }, { status: 400 });
+    }
+    
     // --- LOGS DE CONTROL ---
     console.log("--- INICI DEPURACIÓ MISTRAL ---");
     console.log("Intentant connectar amb clau...");
@@ -15,14 +24,6 @@ export async function POST(request: Request) {
     console.log(`Llargada de la clau: ${apiKey.length} caràcters`);
     console.log("Missatge a enviar:", missatge);
     console.log("----------------------------");
-
-    if (!missatge) {
-        return NextResponse.json({ error: 'El missatge no pot estar buit.' }, { status: 400 });
-    }
-    
-    if (apiKey === "ENGANXA_AQUI_LA_TEVA_CLAU_DE_MISTRAL") {
-        return NextResponse.json({ error: "La clau de l'API de Mistral no està configurada. Si us plau, edita l'arxiu `src/app/api/mistral/route.ts` i afegeix la teva clau." }, { status: 400 });
-    }
 
     const client = new MistralAI(apiKey);
 
