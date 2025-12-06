@@ -24,7 +24,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "La clau de l'API de Mistral no està configurada. Si us plau, edita l'arxiu `src/app/api/mistral/route.ts` i afegeix la teva clau." }, { status: 400 });
     }
 
-    const client = new MistralAI({ apiKey: apiKey });
+    const client = new MistralAI(apiKey);
 
     const chatResponse = await client.chat({
       model: 'mistral-small-latest',
