@@ -5,7 +5,7 @@ export async function POST(request: Request) {
   // ATENCIÓ: Posa la teva clau real aquí dins de les cometes
   const apiKey = "N0gEtea77xFuhBtJRDyehF0fQ5vgvHcA"; 
 
-  if (apiKey === "N0gEtea77xFuhBtJRDyehF0fQ5vgvHcA") {
+  if (apiKey === "ENGANXA_AQUI_LA_TEVA_CLAU_DE_MISTRAL") {
     return NextResponse.json({ error: "La clau de l'API de Mistral no està configurada. Si us plau, edita l'arxiu `src/app/api/mistral/route.ts` i afegeix la teva clau." }, { status: 400 });
   }
 
