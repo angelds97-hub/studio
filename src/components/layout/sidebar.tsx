@@ -49,7 +49,7 @@ export function AppSidebar() {
       { href: '/configuracio', label: 'Configuració', icon: Settings },
     ],
     'client/proveidor': [
-      { href: '/solicituts', label: 'Les meves sol·licituds', icon: FileText },
+      { href: '/solicituts', label: 'Sol·licituds', icon: FileText },
       {
         href: '/solicituts/nova',
         label: 'Nova sol·licitud',

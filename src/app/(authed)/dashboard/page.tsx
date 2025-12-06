@@ -80,13 +80,18 @@ export default function DashboardPage() {
   useEffect(() => {
     const storedUser = localStorage.getItem('loggedInUser');
     if (storedUser) {
-      setProfile(JSON.parse(storedUser));
+      try {
+        setProfile(JSON.parse(storedUser));
+      } catch (e) {
+        console.error("Failed to parse user from localStorage", e);
+        setProfile(null);
+      }
     }
     setIsLoading(false);
   }, []);
 
 
-  if (isLoading || !profile) {
+  if (isLoading) {
     return (
       <div className="flex flex-col gap-8">
         <Skeleton className="h-10 w-1/2" />
@@ -98,6 +103,18 @@ export default function DashboardPage() {
         </div>
       </div>
     );
+  }
+  
+  if (!profile) {
+     return (
+        <div className="flex flex-col items-center justify-center h-full text-center">
+            <h1 className="text-2xl font-bold font-headline">Error en carregar el perfil</h1>
+            <p className="text-muted-foreground">No s'ha pogut carregar la informació de l'usuari. Si us plau, intenta iniciar sessió de nou.</p>
+            <Button asChild className="mt-4">
+                <Link href="/login">Anar a Iniciar Sessió</Link>
+            </Button>
+        </div>
+     )
   }
 
   const config =

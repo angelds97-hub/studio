@@ -30,7 +30,7 @@ export const blogPosts: BlogPost[] = [
 <p>Una bona optimització de rutes no només beneficia l'empresa de transport. Els clients reben les seves mercaderies més ràpid, es redueixen les emissions de CO2 i, en general, es contribueix a una mobilitat més sostenible i eficient per a tota la societat.</p>
         `,
         category: 'Eficiència',
-        imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSs5jOMVXpvl5ow8uAd8TXP3n-GWvVKPUUdDA&s',
+        imageUrl: truckHighwayImage?.imageUrl ?? 'https://picsum.photos/seed/truck-sunset/800/600',
         imageHint: 'truck sunset highway',
         excerpt: 'Descobreix com la tecnologia i una planificació intel·ligent poden transformar les operacions de transport, estalviant temps i diners.',
         authorId: 'user-1',
@@ -64,7 +64,7 @@ export const blogPosts: BlogPost[] = [
 <p>Amb la constant expansió de polígons industrials com el CIM Camp i l'aposta per la digitalització del sector, Reus no només consolida la seva posició actual, sinó que mira cap al futur. La ciutat està preparada per liderar la transformació del sector logístic, adoptant noves tecnologies i pràctiques més sostenibles per afrontar els reptes de demà.</p>
         `,
         category: 'Logística',
-        imageUrl: '/20240712.jpg',
+        imageUrl: reusImage?.imageUrl ?? 'https://picsum.photos/seed/reus-city/800/600',
         imageHint: 'reus city center',
         excerpt: 'Descobreix per què la ubicació i les infraestructures de Reus la converteixen en un punt clau per al transport de mercaderies a Catalunya.',
         authorId: 'user-1', 

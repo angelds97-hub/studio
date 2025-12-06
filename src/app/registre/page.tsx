@@ -76,25 +76,25 @@ export default function RegisterPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="companyName">Nom de l'Empresa</Label>
-                <Input id="companyName" name="companyName" placeholder="La teva empresa S.L." required />
+                <Input id="companyName" name="companyName" placeholder="La teva empresa S.L." required disabled={isProcessing} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="taxId">NIF/CIF</Label>
-                <Input id="taxId" name="taxId" placeholder="B12345678" required />
+                <Input id="taxId" name="taxId" placeholder="B12345678" required disabled={isProcessing} />
               </div>
                <div className="grid sm:grid-cols-2 gap-4">
                  <div className="space-y-2">
                     <Label htmlFor="contactName">Nom de contacte</Label>
-                    <Input id="contactName" name="contactName" placeholder="El teu nom" required />
+                    <Input id="contactName" name="contactName" placeholder="El teu nom" required disabled={isProcessing} />
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="phone">Telèfon</Label>
-                    <Input id="phone" name="phone" type="tel" placeholder="600 123 456" required />
+                    <Input id="phone" name="phone" type="tel" placeholder="600 123 456" required disabled={isProcessing} />
                 </div>
                </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Correu Electrònic de Contacte</Label>
-                <Input id="email" name="email" type="email" placeholder="correu@exemple.com" required />
+                <Input id="email" name="email" type="email" placeholder="correu@exemple.com" required disabled={isProcessing} />
               </div>
               <p className="text-xs text-muted-foreground pt-2">
                 Un cop verificades les dades, el nostre departament d'operacions us enviarà les credencials d'accés per correu electrònic.

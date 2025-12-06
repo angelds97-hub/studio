@@ -80,6 +80,7 @@ export function AuthForm() {
               type="email"
               placeholder="correu@exemple.com"
               required
+              disabled={isProcessing}
             />
           </div>
           <div className="space-y-2">
@@ -90,6 +91,7 @@ export function AuthForm() {
               type="password"
               placeholder="********"
               required
+              disabled={isProcessing}
             />
           </div>
           <Button type="submit" className="w-full" disabled={isProcessing}>
