@@ -12,6 +12,7 @@ import {
   LogIn,
   UserPlus,
   User,
+  BrainCircuit,
 } from 'lucide-react';
 import {
   Sheet,
@@ -39,6 +40,7 @@ function SiteHeader() {
     { href: '/', label: 'Inici' },
     { href: '/serveis', label: 'Serveis' },
     { href: '/blog', label: 'Blog' },
+    { href: '/assistent', label: 'Assistent IA' },
     { href: '/qui-som', label: 'Qui Som' },
     { href: '/contacte', label: 'Contacte' },
   ];
@@ -158,6 +160,7 @@ function SiteFooter() {
     { href: '/', label: 'Inici' },
     { href: '/serveis', label: 'Serveis' },
     { href: '/blog', label: 'Blog' },
+    { href: '/assistent', label: 'Assistent IA' },
     { href: '/qui-som', label: 'Qui Som' },
     { href: '/contacte', label: 'Contacte' },
   ];
