@@ -28,14 +28,14 @@ type Shipment = {
   client: string;
   desti: string;
   descripcio: string;
-  estat: 'Pendent' | 'En preparació' | 'En trànsit' | 'Aduanes' | 'Lliurat';
+  estat: 'Pendent' | 'En preparació' | 'En trànsit' | 'Duanes' | 'Lliurat';
 };
 
 const statusSteps = [
   { name: 'Pendent', icon: Package },
   { name: 'En preparació', icon: Warehouse },
   { name: 'En trànsit', icon: Truck },
-  { name: 'Aduanes', icon: Landmark },
+  { name: 'Duanes', icon: Landmark },
   { name: 'Lliurat', icon: CheckCircle },
 ];
 
