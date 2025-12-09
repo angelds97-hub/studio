@@ -19,6 +19,7 @@ import {
   Warehouse,
   Truck,
   CheckCircle,
+  Landmark,
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
@@ -27,13 +28,14 @@ type Shipment = {
   client: string;
   desti: string;
   descripcio: string;
-  estat: 'Pendent' | 'En preparació' | 'En trànsit' | 'Lliurat';
+  estat: 'Pendent' | 'En preparació' | 'En trànsit' | 'Aduanes' | 'Lliurat';
 };
 
 const statusSteps = [
   { name: 'Pendent', icon: Package },
   { name: 'En preparació', icon: Warehouse },
   { name: 'En trànsit', icon: Truck },
+  { name: 'Aduanes', icon: Landmark },
   { name: 'Lliurat', icon: CheckCircle },
 ];
 
