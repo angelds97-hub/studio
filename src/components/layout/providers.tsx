@@ -12,7 +12,7 @@ import {
   LogIn,
   UserPlus,
   User,
-  BrainCircuit,
+  Search,
 } from 'lucide-react';
 import {
   Sheet,
@@ -39,6 +39,7 @@ function SiteHeader() {
   const navLinks = [
     { href: '/', label: 'Inici' },
     { href: '/serveis', label: 'Serveis' },
+    { href: '/seguiment', label: 'Seguiment' },
     { href: '/blog', label: 'Blog' },
     { href: '/qui-som', label: 'Qui Som' },
     { href: '/contacte', label: 'Contacte' },
@@ -158,6 +159,7 @@ function SiteFooter() {
   const navLinks = [
     { href: '/', label: 'Inici' },
     { href: '/serveis', label: 'Serveis' },
+    { href: '/seguiment', label: 'Seguiment' },
     { href: '/blog', label: 'Blog' },
     { href: '/assistent', label: 'Assistent IA' },
     { href: '/qui-som', label: 'Qui Som' },
