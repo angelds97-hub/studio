@@ -17,6 +17,7 @@ import {
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -80,6 +81,7 @@ function SiteHeader() {
               <SheetContent side="left" className="p-0">
                 <SheetHeader className="p-4">
                   <SheetTitle className="sr-only">Menú de navegació</SheetTitle>
+                  <SheetDescription className="sr-only">Navegació principal per a dispositius mòbils.</SheetDescription>
                 </SheetHeader>
                 <div className="flex flex-col gap-4 p-4">
                   <Link href="/" className="flex items-center space-x-2">
