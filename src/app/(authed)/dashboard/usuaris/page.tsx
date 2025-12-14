@@ -219,7 +219,7 @@ export default function UserManagementPage() {
 
       if (parsedUser.role === 'administrador') {
         fetchUsers();
-      } else if (parsedUser.role === 'client/proveidor') {
+      } else if (parsedUser.role === 'client/proveidor' || parsedUser.role === 'client') {
         fetchShipments();
       } else {
         // For other roles like 'treballador' or 'extern'
@@ -316,7 +316,7 @@ export default function UserManagementPage() {
     )
   }
 
-  if (profile.role === 'client/proveidor') {
+  if (profile.role === 'client/proveidor' || profile.role === 'client') {
       return (
         <Card>
           <CardHeader>

@@ -62,6 +62,17 @@ export function AppSidebar() {
       { href: '/dashboard/blog', label: 'Blog', icon: Newspaper },
       { href: '/configuracio', label: 'Configuració', icon: Settings },
     ],
+    client: [
+      { href: '/solicituts', label: 'Sol·licituds', icon: FileText },
+      {
+        href: '/solicituts/nova',
+        label: 'Nova sol·licitud',
+        icon: PlusCircle,
+      },
+      { href: '/dashboard/usuaris', label: 'Historial', icon: ClipboardList },
+      { href: '/dashboard/blog', label: 'Blog', icon: Newspaper },
+      { href: '/configuracio', label: 'Configuració', icon: Settings },
+    ],
     extern: [{ href: '/configuracio', label: 'Configuració', icon: Settings }],
   };
 
