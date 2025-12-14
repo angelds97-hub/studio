@@ -1,12 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { CheckCircle, Truck, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function HomePage() {
-  const heroImage = PlaceHolderImages.find(img => img.id === 'hero-truck');
 
   const services = [
     {
@@ -30,16 +28,13 @@ export default function HomePage() {
     <div className="flex flex-col">
       {/* Hero Section */}
       <section className="relative w-full h-[60vh] bg-gray-900 text-white">
-        {heroImage && (
-          <Image
-            src={heroImage.imageUrl}
-            alt={heroImage.description}
-            fill
-            className="object-cover"
-            data-ai-hint={heroImage.imageHint}
-            priority
-          />
-        )}
+        <Image
+          src="/Imatgeheroentrans.png"
+          alt="Camió d'EnTrans en una carretera"
+          fill
+          className="object-cover"
+          priority
+        />
         <div className="absolute inset-0 bg-black/60" />
         <div className="relative h-full flex flex-col items-center justify-center text-center p-4">
           <h1 className="text-4xl md:text-6xl font-bold font-headline mb-4 leading-tight">La teva solució logística de confiança</h1>
