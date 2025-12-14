@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, Search, Settings, LogOut, User as UserIcon } from 'lucide-react';
+import { Bell, Search, Settings, LogOut, User as UserIcon, CheckCircle2, ShieldAlert, Info } from 'lucide-react';
 import Link from 'next/link';
 
 import {
@@ -21,18 +21,35 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SidebarTrigger } from '../ui/sidebar';
-import { notifications } from '@/lib/data';
 import { formatDistanceToNow } from 'date-fns';
 import { ca } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
 import type { UserProfile } from '@/lib/types';
 import { LoadingLink } from '../loading-link';
 import { useEffect, useState } from 'react';
+import { Skeleton } from '../ui/skeleton';
+
+type Shipment = {
+  id: string;
+  client: string;
+  desti: string;
+  descripcio: string;
+  estat: 'Pendent' | 'En preparació' | 'En trànsit' | 'Duanes' | 'Lliurat' | 'Incidència';
+};
+
+type DynamicNotification = {
+  id: string;
+  icon: React.ElementType;
+  title: string;
+  description: string;
+  date: Date;
+};
 
 export function AppHeader() {
-  const unreadCount = notifications.filter((n) => !n.read).length;
   const router = useRouter();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [notifications, setNotifications] = useState<DynamicNotification[]>([]);
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
 
   useEffect(() => {
     // This runs on the client, after hydration
@@ -41,6 +58,69 @@ export function AppHeader() {
       setUserProfile(JSON.parse(storedUser));
     }
   }, []);
+
+   useEffect(() => {
+    if (!userProfile?.empresa) {
+      return;
+    }
+
+    const fetchShipmentsAndCreateNotifications = async () => {
+      setIsLoadingNotifications(true);
+      try {
+        const response = await fetch(
+          `https://sheetdb.io/api/v1/sjvdps9wa0f8z/search?client=${encodeURIComponent(
+            userProfile.empresa!
+          )}&sheet=seguiment`
+        );
+        if (!response.ok) {
+          throw new Error("No s'han pogut carregar els enviaments.");
+        }
+        const shipments: Shipment[] = await response.json();
+
+        const generatedNotifications = shipments
+          .map((shipment): DynamicNotification | null => {
+            const common = { id: shipment.id, date: new Date() }; // Date can be improved if available in sheet
+            switch (shipment.estat) {
+              case 'Lliurat':
+                return {
+                  ...common,
+                  title: 'Enviament Lliurat',
+                  description: `L'enviament ${shipment.id} ha estat lliurat.`,
+                  icon: CheckCircle2,
+                };
+              case 'Duanes':
+              case 'Incidència':
+                return {
+                  ...common,
+                  title: 'Incidència en Enviament',
+                  description: `L'enviament ${shipment.id} requereix atenció.`,
+                  icon: ShieldAlert,
+                };
+              case 'En trànsit':
+                 return {
+                  ...common,
+                  title: 'Enviament en Camí',
+                  description: `L'enviament ${shipment.id} està en trànsit cap a ${shipment.desti}.`,
+                  icon: Info,
+                };
+              default:
+                return null;
+            }
+          })
+          .filter((n): n is DynamicNotification => n !== null);
+        
+        setNotifications(generatedNotifications);
+
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      } finally {
+        setIsLoadingNotifications(false);
+      }
+    };
+
+    fetchShipmentsAndCreateNotifications();
+  }, [userProfile]);
+
 
   const handleSignOut = () => {
     localStorage.removeItem('loggedInUser');
@@ -53,6 +133,9 @@ export function AppHeader() {
     }
     return 'U';
   };
+  
+  const unreadCount = notifications.length;
+
 
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
@@ -88,31 +171,35 @@ export function AppHeader() {
         <PopoverContent className="w-80 p-0">
           <div className="p-4 font-medium">Notificacions</div>
           <div className="border-t">
-            {notifications.map((notification) => (
-              <div
-                key={notification.id}
-                className="border-b p-4 grid grid-cols-[2rem_1fr] items-start gap-4 last:border-b-0"
-              >
-                <notification.icon className="h-5 w-5 text-muted-foreground" />
-                <div className="grid gap-1">
-                  <p className="font-medium">{notification.title}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {notification.description}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(notification.date, {
-                      addSuffix: true,
-                      locale: ca,
-                    })}
-                  </p>
+            {isLoadingNotifications ? (
+                <div className="p-4 space-y-4">
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
                 </div>
-              </div>
-            ))}
-          </div>
-          <div className="border-t p-2 text-center text-sm">
-            <Button variant="link" size="sm" asChild>
-              <Link href="#">Veure-les totes</Link>
-            </Button>
+            ) : notifications.length > 0 ? (
+              notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className="border-b p-4 grid grid-cols-[2rem_1fr] items-start gap-4 last:border-b-0"
+                >
+                  <notification.icon className="h-5 w-5 text-muted-foreground" />
+                  <div className="grid gap-1">
+                    <p className="font-medium">{notification.title}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {notification.description}
+                    </p>
+                     <p className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(notification.date, {
+                        addSuffix: true,
+                        locale: ca,
+                      })}
+                    </p>
+                  </div>
+                </div>
+              ))
+            ) : (
+                 <p className="p-4 text-sm text-muted-foreground text-center">No tens notificacions noves.</p>
+            )}
           </div>
         </PopoverContent>
       </Popover>

@@ -25,20 +25,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useEffect, useState } from 'react';
 
-type Shipment = {
-  id: string;
-  client: string;
-  desti: string;
-  descripcio: string;
-  estat: 'Pendent' | 'En preparació' | 'En trànsit' | 'Duanes' | 'Lliurat' | 'Incidència';
-};
-
-type Notification = {
-  id: string;
-  message: string;
-  type: 'success' | 'destructive' | 'info';
-  icon: React.ElementType;
-};
 
 const roleDashboardConfig = {
   administrador: {
@@ -92,98 +78,6 @@ const roleDashboardConfig = {
   },
 };
 
-function ShipmentNotifications({
-  companyName,
-}: {
-  companyName: string | undefined;
-}) {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (!companyName) {
-      setIsLoading(false);
-      return;
-    }
-
-    const fetchShipmentsAndCreateNotifications = async () => {
-      try {
-        const response = await fetch(
-          `https://sheetdb.io/api/v1/sjvdps9wa0f8z/search?client=${encodeURIComponent(
-            companyName
-          )}&sheet=seguiment`
-        );
-        if (!response.ok) {
-          throw new Error("No s'han pogut carregar els enviaments.");
-        }
-        const shipments: Shipment[] = await response.json();
-
-        const generatedNotifications = shipments
-          .map((shipment) => {
-            switch (shipment.estat) {
-              case 'Lliurat':
-                return {
-                  id: shipment.id,
-                  message: `L'enviament ${shipment.id} ha estat lliurat correctament.`,
-                  type: 'success' as const,
-                  icon: CheckCircle2,
-                };
-              case 'Duanes':
-              case 'Incidència':
-                return {
-                  id: shipment.id,
-                  message: `Atenció: L'enviament ${shipment.id} té una incidència a ${shipment.estat}. Contacta amb nosaltres.`,
-                  type: 'destructive' as const,
-                  icon: ShieldAlert,
-                };
-              case 'En trànsit':
-                 return {
-                  id: shipment.id,
-                  message: `L'enviament ${shipment.id} està en trànsit cap a ${shipment.desti}.`,
-                  type: 'info' as const,
-                  icon: Info,
-                };
-              default:
-                return null;
-            }
-          })
-          .filter((n): n is Notification => n !== null);
-        
-        setNotifications(generatedNotifications);
-
-      } catch (error) {
-        console.error('Error fetching notifications:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchShipmentsAndCreateNotifications();
-  }, [companyName]);
-
-  if (isLoading || notifications.length === 0) {
-    return null;
-  }
-  
-  return (
-    <div className="space-y-4">
-        {notifications.map(notification => (
-            <Alert key={notification.id} variant={notification.type === 'info' ? 'default' : notification.type}>
-                <notification.icon className="h-4 w-4" />
-                <AlertTitle>
-                    {notification.type === 'success' && 'Enviament Lliurat'}
-                    {notification.type === 'destructive' && 'Incidència en Enviament'}
-                    {notification.type === 'info' && 'Enviament en Camí'}
-                </AlertTitle>
-                <AlertDescription>
-                    {notification.message}
-                </AlertDescription>
-            </Alert>
-        ))}
-    </div>
-  );
-}
-
 
 export default function DashboardPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -235,8 +129,6 @@ export default function DashboardPage() {
 
   const config =
     roleDashboardConfig[profile.role] || roleDashboardConfig.extern;
-  
-  const isClientRole = profile.role === 'client/proveidor' || profile.role === 'client';
 
   return (
     <div className="flex flex-col gap-8">
@@ -244,8 +136,6 @@ export default function DashboardPage() {
         <h1 className="text-3xl font-bold font-headline">{config.title}</h1>
         <p className="text-muted-foreground">{config.description}</p>
       </div>
-      
-      {isClientRole && <ShipmentNotifications companyName={profile.empresa} />}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {config.links.map((link) => (
