@@ -17,9 +17,9 @@ import {
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
+  SheetDescription,
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { usePathname } from 'next/navigation';
@@ -41,6 +41,7 @@ function SiteHeader() {
     { href: '/', label: 'Inici' },
     { href: '/serveis', label: 'Serveis' },
     { href: '/seguiment', label: 'Seguiment' },
+    { href: '/assistent', label: 'Assistent IA' },
     { href: '/blog', label: 'Blog' },
     { href: '/qui-som', label: 'Qui Som' },
     { href: '/contacte', label: 'Contacte' },
@@ -78,11 +79,11 @@ function SiteHeader() {
                   <span className="sr-only">Obrir menú</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="p-0">
-                <SheetHeader className="p-4">
-                  <SheetTitle className="sr-only">Menú de navegació</SheetTitle>
-                  <SheetDescription className="sr-only">Navegació principal per a dispositius mòbils.</SheetDescription>
-                </SheetHeader>
+              <SheetContent side="left">
+                 <SheetHeader>
+                    <SheetTitle className="sr-only">Menú de navegació</SheetTitle>
+                    <SheetDescription className="sr-only">Navegació principal per a dispositius mòbils.</SheetDescription>
+                 </SheetHeader>
                 <div className="flex flex-col gap-4 p-4">
                   <Link href="/" className="flex items-center space-x-2">
                     <Truck className="h-6 w-6 text-primary" />

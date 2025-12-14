@@ -1,91 +1,281 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import {
+  Truck,
+  Facebook,
+  Twitter,
+  Linkedin,
+  Menu,
+  LogIn,
+  UserPlus,
+  User,
+  Search,
+} from 'lucide-react';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import { usePathname } from 'next/navigation';
+import { LoadingProvider } from '@/context/loading-context';
+import { PageLoader } from '@/components/page-loader';
+import { NavigationEvents } from '@/components/navigation-events';
 
-export default function TestAIPage() {
-  const [prompt, setPrompt] = useState('');
-  const [response, setResponse] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+function SiteHeader() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const pathname = usePathname();
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setIsLoading(true);
-    setResponse('');
-    setError(null);
+  useEffect(() => {
+    // This effect runs on the client and checks localStorage.
+    const user = localStorage.getItem('loggedInUser');
+    setIsLoggedIn(!!user);
+  }, [pathname]); // Re-check on every navigation.
 
-    try {
-      const res = await fetch('/api/mistral', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ missatge: prompt }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "No s'ha pogut obtenir una resposta.");
-      }
-
-      const data = await res.json();
-      setResponse(data.resposta);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const navLinks = [
+    { href: '/', label: 'Inici' },
+    { href: '/serveis', label: 'Serveis' },
+    { href: '/seguiment', label: 'Seguiment' },
+    { href: '/assistent', label: 'Assistent IA' },
+    { href: '/blog', label: 'Blog' },
+    { href: '/qui-som', label: 'Qui Som' },
+    { href: '/contacte', label: 'Contacte' },
+  ];
 
   return (
-    <div className="container mx-auto max-w-3xl py-12">
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-headline text-3xl">Prova de IA Logística</CardTitle>
-          <CardDescription>
-            Fes una pregunta o descriu una situació logística per obtenir una recomanació.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="prompt">La teva consulta:</Label>
-              <Textarea
-                id="prompt"
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Ex: 'Què és un Incoterm EXW?'"
-                className="min-h-[120px] text-base"
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={isLoading}>
-              {isLoading ? 'Consultant...' : 'Consultar Mistral'}
-            </Button>
-          </form>
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 items-center">
+        <div className="mr-4 hidden md:flex">
+          <Link href="/" className="mr-6 flex items-center space-x-2">
+            <Truck className="h-6 w-6 text-primary" />
+            <span className="hidden font-bold sm:inline-block font-headline">
+              EnTrans
+            </span>
+          </Link>
+          <nav className="flex items-center space-x-6 text-sm font-medium">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="transition-colors hover:text-foreground/80 text-foreground/60"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
 
-          {error && (
-            <Alert variant="destructive" className="mt-6">
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+          <div className="md:hidden flex-1">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">Obrir menú</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left">
+                 <SheetHeader>
+                    <SheetTitle className="sr-only">Menú de navegació</SheetTitle>
+                    <SheetDescription className="sr-only">Navegació principal per a dispositius mòbils.</SheetDescription>
+                 </SheetHeader>
+                <div className="flex flex-col gap-4 p-4">
+                  <Link href="/" className="flex items-center space-x-2">
+                    <Truck className="h-6 w-6 text-primary" />
+                    <span className="font-bold font-headline">EnTrans</span>
+                  </Link>
+                  <nav className="flex flex-col gap-4">
+                    {navLinks.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className="text-lg font-medium hover:text-primary"
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </nav>
+                  <div className="mt-auto flex flex-col gap-2">
+                    {isLoggedIn ? (
+                      <Button asChild>
+                        <Link href="/dashboard">
+                          <User className="mr-2 h-4 w-4" /> Àrea Client
+                        </Link>
+                      </Button>
+                    ) : (
+                      <>
+                        <Button asChild>
+                          <Link href="/login">
+                            <LogIn className="mr-2 h-4 w-4" /> Iniciar Sessió
+                          </Link>
+                        </Button>
+                        <Button asChild variant="outline">
+                          <Link href="/registre">
+                            <UserPlus className="mr-2 h-4 w-4" /> Registrar-se
+                          </Link>
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
 
-          {response && (
-            <div className="mt-8">
-              <h3 className="text-xl font-semibold mb-4 font-headline">Resposta de l'Assistent:</h3>
-              <div className="bg-muted p-6 rounded-lg border">
-                <p className="text-muted-foreground whitespace-pre-wrap">{response}</p>
+          <div className="md:hidden flex-1 flex justify-center">
+            <Link href="/" className="flex items-center space-x-2">
+              <Truck className="h-6 w-6 text-primary" />
+              <span className="font-bold font-headline">EnTrans</span>
+            </Link>
+          </div>
+
+          <nav className="flex items-center gap-2 flex-1 justify-end">
+            {isLoggedIn ? (
+              <Button asChild className="hidden md:flex">
+                <Link href="/dashboard">
+                  <User className="mr-2 h-4 w-4" /> Àrea Client
+                </Link>
+              </Button>
+            ) : (
+              <div className="hidden md:flex gap-2">
+                <Button asChild variant="ghost">
+                  <Link href="/login">Iniciar Sessió</Link>
+                </Button>
+                <Button asChild>
+                  <Link href="/registre">Registrar-se</Link>
+                </Button>
               </div>
+            )}
+          </nav>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function SiteFooter() {
+  const navLinks = [
+    { href: '/', label: 'Inici' },
+    { href: '/serveis', label: 'Serveis' },
+    { href: '/seguiment', label: 'Seguiment' },
+    { href: '/blog', label: 'Blog' },
+    { href: '/assistent', label: 'Assistent IA' },
+    { href: '/qui-som', label: 'Qui Som' },
+    { href: '/contacte', label: 'Contacte' },
+  ];
+  return (
+    <footer className="bg-gray-900 text-white">
+      <div className="container py-12 px-4 md:px-6">
+        <div className="grid gap-8 md:grid-cols-4">
+          <div className="space-y-4">
+            <Link href="/" className="flex items-center space-x-2">
+              <Truck className="h-7 w-7 text-primary" />
+              <span className="font-bold text-xl font-headline">EnTrans</span>
+            </Link>
+            <p className="text-sm text-gray-400">
+              La teva solució logística de confiança. Movent el teu negoci cap
+              endavant.
+            </p>
+          </div>
+          <div className="space-y-4">
+            <h4 className="font-semibold text-lg">Navegació</h4>
+            <nav className="grid gap-2">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-sm text-gray-400 hover:text-white"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+          <div className="space-y-4">
+            <h4 className="font-semibold text-lg">Legal</h4>
+            <nav className="grid gap-2">
+              <Link
+                href="#"
+                className="text-sm text-gray-400 hover:text-white"
+              >
+                Política de Privacitat
+              </Link>
+              <Link
+                href="#"
+                className="text-sm text-gray-400 hover:text-white"
+              >
+                Termes i Condicions
+              </Link>
+              <Link
+                href="#"
+                className="text-sm text-gray-400 hover:text-white"
+              >
+                Política de Cookies
+              </Link>
+            </nav>
+          </div>
+          <div className="space-y-4">
+            <h4 className="font-semibold text-lg">Segueix-nos</h4>
+            <div className="flex space-x-2">
+              <Link
+                href="#"
+                aria-label="Facebook"
+                className="text-gray-400 hover:text-white p-2"
+              >
+                <Facebook className="h-6 w-6" />
+              </Link>
+              <Link
+                href="#"
+                aria-label="Twitter"
+                className="text-gray-400 hover:text-white p-2"
+              >
+                <Twitter className="h-6 w-6" />
+              </Link>
+              <Link
+                href="#"
+                aria-label="LinkedIn"
+                className="text-gray-400 hover:text-white p-2"
+              >
+                <Linkedin className="h-6 w-6" />
+              </Link>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        </div>
+        <div className="mt-8 border-t border-gray-800 pt-4 text-center text-sm text-gray-500">
+          <p>&copy; {new Date().getFullYear()} EnTrans. Tots els drets reservats.</p>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+function MainLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isAuthedRoute =
+    pathname.startsWith('/dashboard') || pathname.startsWith('/configuracio')  || pathname.startsWith('/solicituts');
+
+  return (
+    <div className="relative flex min-h-screen w-full flex-col">
+      {!isAuthedRoute && <SiteHeader />}
+      <div className="flex-1 flex flex-col">{children}</div>
+      {!isAuthedRoute && <SiteFooter />}
     </div>
+  );
+}
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+      <LoadingProvider>
+        <PageLoader />
+        <Suspense fallback={null}>
+          <NavigationEvents />
+        </Suspense>
+        <MainLayout>{children}</MainLayout>
+      </LoadingProvider>
   );
 }
