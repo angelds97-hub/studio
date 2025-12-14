@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import ReactMarkdown from 'react-markdown';
 
 export default function AssistentAIPage() {
   const [prompt, setPrompt] = useState('');
@@ -80,7 +81,9 @@ export default function AssistentAIPage() {
             <div className="mt-8">
               <h3 className="text-xl font-semibold mb-4 font-headline">Resposta de l'Assistent:</h3>
               <div className="bg-muted p-6 rounded-lg border">
-                <p className="text-muted-foreground whitespace-pre-wrap">{response}</p>
+                <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none">
+                  {response}
+                </ReactMarkdown>
               </div>
             </div>
           )}
