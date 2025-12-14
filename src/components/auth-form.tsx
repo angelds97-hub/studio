@@ -41,12 +41,13 @@ export function AuthForm() {
       if (data && data.length > 0) {
         const userData = data[0];
         const [firstName, ...lastNameParts] = userData.treballador.split(' ');
-        const foundUser = {
+        const foundUser: UserProfile = {
           id: userData.id || email, // SheetDB might not have a dedicated ID column, use email as fallback
           firstName: firstName,
           lastName: lastNameParts.join(' '),
           email: userData.usuari,
           role: userData.rol.toLowerCase(),
+          empresa: userData.empresa, // <-- AFEGIT: Guardem el nom de l'empresa
         };
 
         toast({
