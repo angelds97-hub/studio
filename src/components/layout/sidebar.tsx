@@ -18,6 +18,7 @@ import {
   Truck,
   Newspaper,
   Users,
+  ClipboardList,
 } from 'lucide-react';
 import type { UserProfile } from '@/lib/types';
 import { SheetClose } from '@/components/ui/sheet';
@@ -40,11 +41,13 @@ export function AppSidebar() {
     all: [{ href: '/dashboard', label: 'Panell', icon: LayoutDashboard }],
     administrador: [
       { href: '/solicituts', label: 'Sol·licituds', icon: FileText },
+      { href: '/dashboard/registre-enviaments', label: "Registre d'Enviaments", icon: ClipboardList},
       { href: '/dashboard/blog', label: 'Blog', icon: Newspaper },
       { href: '/dashboard/usuaris', label: 'Usuaris', icon: Users },
       { href: '/configuracio', label: 'Configuració', icon: Settings },
     ],
     treballador: [
+      { href: '/dashboard/registre-enviaments', label: "Registre d'Enviaments", icon: ClipboardList},
       { href: '/dashboard/blog', label: 'Blog', icon: Newspaper },
       { href: '/configuracio', label: 'Configuració', icon: Settings },
     ],
@@ -55,6 +58,7 @@ export function AppSidebar() {
         label: 'Nova sol·licitud',
         icon: PlusCircle,
       },
+      { href: '/dashboard/usuaris', label: 'Historial', icon: ClipboardList },
       { href: '/dashboard/blog', label: 'Blog', icon: Newspaper },
       { href: '/configuracio', label: 'Configuració', icon: Settings },
     ],
@@ -64,7 +68,17 @@ export function AppSidebar() {
   const getNavItems = () => {
     if (!userProfile) return [];
 
-    const roleNavs = navItems[userProfile.role] || [];
+    let roleNavs = [];
+
+    // Prioritize 'administrador' role to include 'treballador' items
+    if (userProfile.role === 'administrador') {
+      // Use a Set to avoid duplicates if items are in both lists
+      const combinedItems = [...navItems.administrador];
+      roleNavs = combinedItems;
+    } else {
+       roleNavs = navItems[userProfile.role] || [];
+    }
+    
     return [...navItems.all, ...roleNavs];
   };
 

@@ -19,7 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import type { UserProfile, WithId } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ShieldAlert, History } from 'lucide-react';
+import { ShieldAlert, History, ClipboardList } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
 type Shipment = {
@@ -219,8 +219,11 @@ export default function UserManagementPage() {
 
       if (parsedUser.role === 'administrador') {
         fetchUsers();
-      } else {
+      } else if (parsedUser.role === 'client/proveidor') {
         fetchShipments();
+      } else {
+        // For other roles like 'treballador' or 'extern'
+        setIsLoading(false);
       }
     } else {
       setIsLoading(false);
@@ -313,19 +316,39 @@ export default function UserManagementPage() {
     )
   }
 
-  // Vista para clientes/proveedores
+  if (profile.role === 'client/proveidor') {
+      return (
+        <Card>
+          <CardHeader>
+            <CardTitle>Historial d'Enviaments de la teva Empresa</CardTitle>
+            <CardDescription>
+              Aquí pots veure totes les comandes associades a la teva empresa,{' '}
+              <span className="font-bold text-primary">{profile.empresa}</span>.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ShipmentHistory shipments={shipments} companyName={profile.empresa || ''} isLoading={isLoading} error={error} />
+          </CardContent>
+        </Card>
+    )
+  }
+
+  // Fallback view for other roles like 'treballador' or 'extern'
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Historial d'Enviaments de la teva Empresa</CardTitle>
-        <CardDescription>
-          Aquí pots veure totes les comandes associades a la teva empresa,{' '}
-          <span className="font-bold text-primary">{profile.empresa}</span>.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ShipmentHistory shipments={shipments} companyName={profile.empresa || ''} isLoading={isLoading} error={error} />
-      </CardContent>
+        <CardHeader>
+            <CardTitle>Historial</CardTitle>
+             <CardDescription>Aquesta secció mostra l'historial d'enviaments per a clients.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <div className="text-center py-16 text-muted-foreground">
+                <ClipboardList className="mx-auto h-12 w-12" />
+                <h3 className="mt-4 text-lg font-semibold">Sense historial per mostrar</h3>
+                <p className="mt-1 text-sm max-w-md mx-auto">
+                    La vista d'historial d'enviaments està disponible per a usuaris de tipus client/proveïdor.
+                </p>
+            </div>
+        </CardContent>
     </Card>
   )
 }
