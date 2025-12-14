@@ -17,19 +17,22 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'El missatge no pot estar buit.' }, { status: 400 });
     }
     
+    // --- LÒGICA DEL PROMPT AMAGAT ---
+    const fullPrompt = `Actua com a expert logístic de l'empresa EnTrans. Parla en català, Sigues corporatiu i breu. La pregunta del client és: "${missatge}"`;
+
     // --- LOGS DE CONTROL ---
     console.log("--- INICI DEPURACIÓ MISTRAL ---");
     console.log("Intentant connectar amb clau...");
     console.log(`Inici de la clau: ${apiKey.substring(0, 4)}...`);
     console.log(`Llargada de la clau: ${apiKey.length} caràcters`);
-    console.log("Missatge a enviar:", missatge);
+    console.log("Full Prompt a enviar a Mistral:", fullPrompt);
     console.log("----------------------------");
 
     const client = new MistralAI(apiKey);
 
     const chatResponse = await client.chat({
       model: 'mistral-small-latest',
-      messages: [{ role: 'user', content: missatge }],
+      messages: [{ role: 'user', content: fullPrompt }], // Enviem el prompt complet
     });
 
     console.log("Resposta rebuda de Mistral!"); 
