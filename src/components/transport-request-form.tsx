@@ -11,15 +11,29 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { MapPin } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { Label } from '@/components/ui/label';
+import type { UserProfile } from '@/lib/types';
 
 export function TransportRequestForm() {
   const { toast } = useToast();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    // Aquest codi s'executa només al client, després que el component s'hagi muntat.
+    const storedUser = localStorage.getItem('loggedInUser');
+    if (storedUser) {
+      try {
+        setCurrentUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error("No s'ha pogut llegir l'usuari del localStorage", e);
+      }
+    }
+  }, []);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -65,6 +79,15 @@ export function TransportRequestForm() {
         onSubmit={handleSubmit}
         className="space-y-8"
       >
+        {/* Camps ocults per enviar les dades de l'usuari */}
+        {currentUser && (
+          <>
+            <input type="hidden" name="nom_usuari" value={`${currentUser.firstName} ${currentUser.lastName}`} />
+            <input type="hidden" name="email_usuari" value={currentUser.email} />
+            <input type="hidden" name="empresa_usuari" value={currentUser.empresa || 'N/A'} />
+          </>
+        )}
+
         <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-2">
                 <Label>Tipus de Transport</Label>
@@ -111,7 +134,7 @@ export function TransportRequestForm() {
             <Textarea name="specialRequirements" placeholder="Descriu qualsevol necessitat especial (ex: refrigeració, material fràgil...)" />
         </div>
         
-        <input type="hidden" name="_subject" value="Nova Sol·licitud de Transport a EnTrans!" />
+        <input type="hidden" name="_subject" value={`Nova Sol·licitud de Transport de ${currentUser?.empresa || currentUser?.email || ''}!`} />
 
         <Button type="submit" disabled={isProcessing}>{isProcessing ? 'Enviant...' : 'Enviar Sol·licitud'}</Button>
       </form>
