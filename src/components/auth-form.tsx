@@ -15,43 +15,59 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import React, { useState } from 'react';
 import { Truck } from 'lucide-react';
-import { users } from '@/lib/data';
+import type { UserProfile } from '@/lib/types';
 
 export function AuthForm() {
   const { toast } = useToast();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsProcessing(true);
     const formData = new FormData(event.currentTarget);
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
-    const foundUser = users.find(
-      (user) => user.email === email && user.password === password
-    );
+    try {
+      const response = await fetch(
+        `https://sheetdb.io/api/v1/sjvdps9wa0f8z/search?usuari=${email}&password=${password}&sheet=usuaris`
+      );
+      if (!response.ok) {
+        throw new Error("No s'ha pogut connectar amb el servei d'autenticació.");
+      }
+      const data: any[] = await response.json();
 
-    if (foundUser) {
-      toast({
-        title: 'Sessió iniciada correctament',
-        description: `Benvingut/da de nou, ${foundUser.firstName}.`,
-      });
-      // Store user info in localStorage to simulate session
-      localStorage.setItem('loggedInUser', JSON.stringify({
-        id: foundUser.id,
-        firstName: foundUser.firstName,
-        lastName: foundUser.lastName,
-        email: foundUser.email,
-        role: foundUser.role,
-      }));
-      router.push('/dashboard');
-    } else {
+      if (data && data.length > 0) {
+        const userData = data[0];
+        const [firstName, ...lastNameParts] = userData.treballador.split(' ');
+        const foundUser = {
+          id: userData.id || email, // SheetDB might not have a dedicated ID column, use email as fallback
+          firstName: firstName,
+          lastName: lastNameParts.join(' '),
+          email: userData.usuari,
+          role: userData.rol.toLowerCase(),
+        };
+
+        toast({
+          title: 'Sessió iniciada correctament',
+          description: `Benvingut/da de nou, ${foundUser.firstName}.`,
+        });
+        localStorage.setItem('loggedInUser', JSON.stringify(foundUser));
+        router.push('/dashboard');
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Error d\'inici de sessió',
+          description: 'Les credencials introduïdes no són correctes.',
+        });
+        setIsProcessing(false);
+      }
+    } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Error d\'inici de sessió',
-        description: 'Les credencials introduïdes no són correctes.',
+        title: 'Error de connexió',
+        description: error.message || "No s'ha pogut contactar el servidor. Intenta-ho de nou.",
       });
       setIsProcessing(false);
     }

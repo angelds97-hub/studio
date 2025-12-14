@@ -30,13 +30,15 @@ export type User = {
 };
 
 export type UserProfile = {
+  id?: string;
   firstName: string;
   lastName: string;
   email: string;
-  role: 'administrador' | 'treballador' | 'client/proveidor' | 'extern';
-  creationDate: string;
+  role: 'administrador' | 'treballador' | 'client/proveidor' | 'client' | 'extern';
+  creationDate?: string;
   avatarUrl?: string;
   password?: string;
+  empresa?: string;
 };
 
 export type RegistrationRequest = {

@@ -21,13 +21,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ShieldAlert } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
-import { users as mockUsers } from '@/lib/data';
 
 function UsersTable({
   users,
   isLoading,
 }: {
-  users: WithId<UserProfile>[] | null;
+  users: UserProfile[] | null;
   isLoading: boolean;
 }) {
   if (isLoading) {
@@ -64,7 +63,7 @@ function UsersTable({
       <div className="text-center py-10 text-muted-foreground">
         <h3 className="mt-2 text-lg font-semibold">No s'han trobat usuaris</h3>
         <p className="mt-1 text-sm">
-          No hi ha usuaris registrats a la plataforma.
+          No hi ha usuaris registrats a la base de dades externa.
         </p>
       </div>
     );
@@ -76,14 +75,16 @@ function UsersTable({
         <TableRow>
           <TableHead>Nom</TableHead>
           <TableHead>Correu Electrònic</TableHead>
+          <TableHead>Empresa</TableHead>
           <TableHead>Rol</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {users.map((user) => (
-          <TableRow key={user.id}>
+        {users.map((user, index) => (
+          <TableRow key={user.id || index}>
             <TableCell className="font-medium">{`${user.firstName} ${user.lastName}`}</TableCell>
             <TableCell>{user.email}</TableCell>
+            <TableCell>{user.empresa}</TableCell>
             <TableCell>
               <Badge
                 variant={
@@ -105,16 +106,56 @@ function UsersTable({
 }
 
 function AdminUserManagement() {
+  const [users, setUsers] = useState<UserProfile[] | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('https://sheetdb.io/api/v1/sjvdps9wa0f8z?sheet=usuaris');
+        if (!response.ok) {
+          throw new Error("No s'ha pogut carregar la llista d'usuaris.");
+        }
+        const data = await response.json();
+        const mappedUsers: UserProfile[] = data.map((item: any) => {
+             const [firstName, ...lastNameParts] = item.treballador.split(' ');
+             return {
+                email: item.usuari,
+                firstName: firstName,
+                lastName: lastNameParts.join(' '),
+                role: item.rol.toLowerCase(),
+                empresa: item.empresa
+             }
+        });
+        setUsers(mappedUsers);
+      } catch (e: any) {
+        setError(e.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchUsers();
+  }, []);
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Gestió d'Usuaris</CardTitle>
         <CardDescription>
-          Aquí pots visualitzar els usuaris actius de la plataforma. Per afegir, modificar o eliminar usuaris, has d'editar manualment l'arxiu `src/lib/data.ts`. Les noves altes se sol·liciten via Formspree i es gestionen des del correu.
+          Aquí pots visualitzar els usuaris actius de la plataforma des de la base de dades externa (Google Sheets).
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <UsersTable users={mockUsers} isLoading={false} />
+         {error ? (
+          <Alert variant="destructive">
+            <ShieldAlert className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        ) : (
+          <UsersTable users={users} isLoading={isLoading} />
+        )}
       </CardContent>
     </Card>
   );

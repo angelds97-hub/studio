@@ -4,8 +4,7 @@ import { subDays, addDays } from 'date-fns';
 
 
 // THIS FILE CONTAINS MOCK DATA.
-// THIS IS THE SINGLE SOURCE OF TRUTH FOR A STATIC EXPORT.
-// TO ADD A NEW USER, ADD THEM TO THE `users` ARRAY.
+// This data can be used for fallback or for pages not yet connected to a live data source.
 
 
 export const mainUser: WithId<UserProfile> = {
@@ -19,6 +18,8 @@ export const mainUser: WithId<UserProfile> = {
   password: '123456', // IMPORTANT: This is for demo purposes only.
 };
 
+// The 'users' array is now deprecated as user data is fetched from an external API.
+// It is kept here for potential fallback or reference purposes.
 export const users: WithId<UserProfile>[] = [
   mainUser,
   { id: 'user-1', firstName: 'Joan', lastName: 'Puig', email:'joan@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user1/100/100', password: 'password1' },
