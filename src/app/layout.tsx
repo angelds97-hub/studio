@@ -21,9 +21,6 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: 'EnTrans - La teva plataforma de transports',
   description: 'Contracta transports de manera fàcil i ràpida.',
-  icons: {
-    icon: '/favicon.ico',
-  },
 };
 
 export const viewport: Viewport = {
