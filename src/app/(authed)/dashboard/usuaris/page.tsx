@@ -19,16 +19,9 @@ import { Badge } from '@/components/ui/badge';
 import type { UserProfile, WithId } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ShieldAlert, History, ClipboardList } from 'lucide-react';
+import { ShieldAlert, Users } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
-type Shipment = {
-  id: string;
-  client: string;
-  desti: string;
-  descripcio: string;
-  estat: 'Pendent' | 'En preparació' | 'En trànsit' | 'Duanes' | 'Lliurat';
-};
 
 function UsersTable({
   users,
@@ -117,97 +110,10 @@ function UsersTable({
   );
 }
 
-function ShipmentHistory({
-  shipments,
-  companyName,
-  isLoading,
-  error
-}: {
-  shipments: Shipment[] | null;
-  companyName: string;
-  isLoading: boolean;
-  error: string | null;
-}) {
-  const companyShipments = shipments?.filter(s => s.client === companyName) || [];
-
-   if (error) {
-    return (
-      <Alert variant="destructive">
-        <ShieldAlert className="h-4 w-4" />
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>{error}</AlertDescription>
-      </Alert>
-    );
-  }
-
-  if (isLoading) {
-    return (
-       <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>ID Enviament</TableHead>
-            <TableHead>Destí</TableHead>
-            <TableHead>Descripció</TableHead>
-            <TableHead>Estat</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {[...Array(3)].map((_, i) => (
-            <TableRow key={i}>
-              <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-              <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-              <TableCell><Skeleton className="h-5 w-48" /></TableCell>
-              <TableCell><Skeleton className="h-6 w-28" /></TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    )
-  }
-
-  if (companyShipments.length === 0) {
-    return (
-       <div className="text-center py-16 text-muted-foreground">
-        <History className="mx-auto h-12 w-12" />
-        <h3 className="mt-4 text-lg font-semibold">No hi ha historial d'enviaments</h3>
-        <p className="mt-1 text-sm max-w-md mx-auto">
-          No s'han trobat enviaments associats a l'empresa '{companyName}'.
-        </p>
-      </div>
-    )
-  }
-
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>ID Enviament</TableHead>
-          <TableHead>Destí</TableHead>
-          <TableHead>Descripció</TableHead>
-          <TableHead>Estat</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {companyShipments.map((shipment) => (
-          <TableRow key={shipment.id}>
-            <TableCell className="font-mono text-xs">{shipment.id}</TableCell>
-            <TableCell>{shipment.desti}</TableCell>
-            <TableCell>{shipment.descripcio}</TableCell>
-            <TableCell>
-              <Badge variant="outline">{shipment.estat}</Badge>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
-}
-
 
 export default function UserManagementPage() {
   const [profile, setProfile] = useState<WithId<UserProfile> | null>(null);
   const [users, setUsers] = useState<UserProfile[] | null>(null);
-  const [shipments, setShipments] = useState<Shipment[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -219,10 +125,7 @@ export default function UserManagementPage() {
 
       if (parsedUser.role === 'administrador') {
         fetchUsers();
-      } else if (parsedUser.role === 'client/proveidor' || parsedUser.role === 'client') {
-        fetchShipments();
       } else {
-        // For other roles like 'treballador' or 'extern'
         setIsLoading(false);
       }
     } else {
@@ -256,22 +159,6 @@ export default function UserManagementPage() {
       }
     };
   
-  const fetchShipments = async () => {
-    try {
-        const response = await fetch('https://sheetdb.io/api/v1/sjvdps9wa0f8z?sheet=seguiment');
-        if (!response.ok) {
-            throw new Error("No s'ha pogut carregar l'historial d'enviaments.");
-        }
-        const data = await response.json();
-        setShipments(data);
-    } catch(e: any) {
-        setError(e.message);
-    } finally {
-        setIsLoading(false);
-    }
-  }
-
-
   if (isLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
@@ -280,25 +167,24 @@ export default function UserManagementPage() {
     );
   }
 
-  if (!profile) {
+  if (!profile || profile.role !== 'administrador') {
      return (
        <Alert variant="destructive">
         <ShieldAlert className="h-4 w-4" />
         <AlertTitle>Accés Denegat</AlertTitle>
         <AlertDescription>
-          No s'ha pogut verificar la teva sessió. Si us plau, torna a iniciar sessió.
+          Només els administradors poden accedir a aquesta pàgina.
         </AlertDescription>
       </Alert>
      )
   }
 
-  if (profile.role === 'administrador') {
-    return (
+  return (
       <Card>
         <CardHeader>
           <CardTitle>Gestió d'Usuaris</CardTitle>
           <CardDescription>
-            Visualitza els usuaris actius de la plataforma des de la base de dades externa (Google Sheets).
+            Visualitza i gestiona els usuaris actius de la plataforma des de la base de dades externa.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -314,41 +200,4 @@ export default function UserManagementPage() {
         </CardContent>
       </Card>
     )
-  }
-
-  if (profile.role === 'client/proveidor' || profile.role === 'client') {
-      return (
-        <Card>
-          <CardHeader>
-            <CardTitle>Historial d'Enviaments de la teva Empresa</CardTitle>
-            <CardDescription>
-              Aquí pots veure totes les comandes associades a la teva empresa,{' '}
-              <span className="font-bold text-primary">{profile.empresa}</span>.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ShipmentHistory shipments={shipments} companyName={profile.empresa || ''} isLoading={isLoading} error={error} />
-          </CardContent>
-        </Card>
-    )
-  }
-
-  // Fallback view for other roles like 'treballador' or 'extern'
-  return (
-    <Card>
-        <CardHeader>
-            <CardTitle>Historial</CardTitle>
-             <CardDescription>Aquesta secció mostra l'historial d'enviaments per a clients.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <div className="text-center py-16 text-muted-foreground">
-                <ClipboardList className="mx-auto h-12 w-12" />
-                <h3 className="mt-4 text-lg font-semibold">Sense historial per mostrar</h3>
-                <p className="mt-1 text-sm max-w-md mx-auto">
-                    La vista d'historial d'enviaments està disponible per a usuaris de tipus client/proveïdor.
-                </p>
-            </div>
-        </CardContent>
-    </Card>
-  )
 }
