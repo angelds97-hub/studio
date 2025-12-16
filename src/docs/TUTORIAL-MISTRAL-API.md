@@ -28,32 +28,32 @@ export async function POST(request: Request) {
   try {
     const { missatge } = await request.json();
 
-    // Comprovació de seguretat: si el missatge és buit.
     if (!missatge) {
         return NextResponse.json({ error: 'El missatge no pot estar buit.' }, { status: 400 });
     }
     
-    // Logs de control per depuració
+    // --- LÒGICA DEL PROMPT AMAGAT ---
+    const fullPrompt = `Actua com a expert logístic de l'empresa EnTrans. Parla en català, Sigues corporatiu i breu. La pregunta del client és: "${missatge}"`;
+
+    // --- LOGS DE CONTROL ---
     console.log("--- INICI DEPURACIÓ MISTRAL ---");
     console.log("Intentant connectar amb clau...");
     console.log(`Inici de la clau: ${apiKey.substring(0, 4)}...`);
     console.log(`Llargada de la clau: ${apiKey.length} caràcters`);
-    console.log("Missatge a enviar:", missatge);
+    console.log("Full Prompt a enviar a Mistral:", fullPrompt);
     console.log("----------------------------");
 
     const client = new MistralAI(apiKey);
 
-    // 3. Sintaxi correcta per a la crida a l'API (client.chat, no client.chat.complete)
     const chatResponse = await client.chat({
       model: 'mistral-small-latest',
-      messages: [{ role: 'user', content: missatge }],
+      messages: [{ role: 'user', content: fullPrompt }], // Enviem el prompt complet
     });
 
     console.log("Resposta rebuda de Mistral!"); 
     return NextResponse.json({ resposta: chatResponse.choices[0].message.content });
     
   } catch (error: any) {
-    // 4. Gestió d'errors detallada
     console.error("--- ERROR DETALLAT MISTRAL ---");
     console.error(JSON.stringify(error, null, 2));
     console.error("-------------------------------");
@@ -85,9 +85,9 @@ MISTRAL_API_KEY="la-teva-clau-secreta-enganxada-aqui"
 
 Aquest component és la interfície que l'usuari veu. Només ha de recollir la informació i enviar-la a la nostra API Route, mai directament a Mistral.
 
-**Acció**: Crear una pàgina o component amb la directiva `'use client'`. Exemple: `src/app/test/page.tsx`.
+**Acció**: Crear una pàgina o component amb la directiva `'use client'`. Exemple: `src/app/assistent/page.tsx`.
 
-**Codi Final per a `src/app/test/page.tsx`:**
+**Codi Final per a `src/app/assistent/page.tsx`:**
 
 ```tsx
 'use client';
@@ -98,22 +98,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import ReactMarkdown from 'react-markdown';
 
-export default function TestAIPage() {
+export default function AssistentAIPage() {
   const [prompt, setPrompt] = useState('');
   const [response, setResponse] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 1. Fer servir un <form> amb un event onSubmit és la manera correcta
   const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault(); // Evita que la pàgina es recarregui
+    event.preventDefault();
     setIsLoading(true);
     setResponse('');
     setError(null);
 
     try {
-      // 2. La crida es fa a la nostra pròpia API Route (/api/mistral)
       const res = await fetch('/api/mistral', {
         method: 'POST',
         headers: {
@@ -140,9 +139,9 @@ export default function TestAIPage() {
     <div className="container mx-auto max-w-3xl py-12">
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline text-3xl">Prova de IA Logística</CardTitle>
+          <CardTitle className="font-headline text-3xl">Assistent d'IA Logística</CardTitle>
           <CardDescription>
-            Fes una pregunta o descriu una situació logística per obtenir una recomanació.
+            Fes una pregunta o descriu una situació logística per obtenir una recomanació de la nostra IA.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -153,14 +152,13 @@ export default function TestAIPage() {
                 id="prompt"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Ex: 'Què és un Incoterm EXW?'"
+                placeholder="Ex: 'Quines són les 5 ciutats de Catalunya amb més trànsit de mercaderies?' o 'Dona'm consells per optimitzar una ruta entre Barcelona i València.'"
                 className="min-h-[120px] text-base"
                 required
               />
             </div>
-            {/* 3. El botó ha de ser de tipus "submit" */}
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Consultant...' : 'Consultar Mistral'}
+              {isLoading ? 'Consultant...' : 'Consultar Assistent'}
             </Button>
           </form>
 
@@ -175,7 +173,9 @@ export default function TestAIPage() {
             <div className="mt-8">
               <h3 className="text-xl font-semibold mb-4 font-headline">Resposta de l'Assistent:</h3>
               <div className="bg-muted p-6 rounded-lg border">
-                <p className="text-muted-foreground whitespace-pre-wrap">{response}</p>
+                <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none">
+                  {response}
+                </ReactMarkdown>
               </div>
             </div>
           )}
@@ -184,7 +184,6 @@ export default function TestAIPage() {
     </div>
   );
 }
-
 ```
 
 ## Pas 4: Configurar el Desplegament (Exemple Netlify)
@@ -199,9 +198,6 @@ Perquè les API Routes funcionin, Next.js no pot ser exportat com un lloc estàt
     [build]
       command = "npm run build"
       publish = ".next"
-
-    [environment]
-      NODE_VERSION = "20"
     ```
 
 Seguint aquests passos, la integració hauria de ser segura, robusta i fàcil de depurar.
