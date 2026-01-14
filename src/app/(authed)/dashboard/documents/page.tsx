@@ -26,6 +26,7 @@ type InvoiceLine = {
 type FormattedInvoice = {
   invoiceNumber: string;
   date: string;
+  userEmail: string; // Afegim l'email per poder filtrar
   client: {
     name: string;
     nif: string;
@@ -72,7 +73,6 @@ export default function DocumentsPage() {
     if (profile?.email) {
       fetchAndProcessInvoices(profile.email);
     } else if (profile !== null) {
-      // User is logged in but has no email, shouldn't happen but good to handle
       setError('El teu perfil d\'usuari no té un correu electrònic associat.');
       setIsLoading(false);
     }
@@ -86,19 +86,17 @@ export default function DocumentsPage() {
       if (!response.ok) {
         throw new Error("No s'ha pogut connectar amb el servei de documents.");
       }
-      const data: InvoiceLine[] = await response.json();
+      const allInvoiceLines: InvoiceLine[] = await response.json();
 
-      // Filter by user email first
-      const userInvoiceLines = data.filter(line => line.usuari === userEmail);
-      
-      if (userInvoiceLines.length === 0) {
+      if (allInvoiceLines.length === 0) {
         setInvoices([]);
         setIsLoading(false);
         return;
       }
 
-      // Group lines by invoice number
-      const grouped = userInvoiceLines.reduce((acc, line) => {
+      // 1. Agrupar totes les línies per número de factura
+      const grouped = allInvoiceLines.reduce((acc, line) => {
+        if (!line.num_factura) return acc; // Ignorar línies sense número de factura
         const { num_factura } = line;
         if (!acc[num_factura]) {
           acc[num_factura] = [];
@@ -107,14 +105,14 @@ export default function DocumentsPage() {
         return acc;
       }, {} as Record<string, InvoiceLine[]>);
 
-      // Format into structured invoices
-      const formattedInvoices: FormattedInvoice[] = Object.values(grouped).map(lines => {
+      // 2. Formatejar en factures estructurades
+      const allFormattedInvoices: FormattedInvoice[] = Object.values(grouped).map(lines => {
         const firstLine = lines[0];
         const invoiceLines = lines.map(l => ({
           concept: l.concepte,
           quantity: parseFloat(l.unitats) || 0,
-          unitPrice: parseFloat(l.preu_unitari) || 0,
-          total: (parseFloat(l.preu_unitari) || 0) * (parseFloat(l.unitats) || 0),
+          unitPrice: parseFloat(l.preu_unitari.replace(',', '.')) || 0,
+          total: (parseFloat(l.preu_unitari.replace(',', '.')) || 0) * (parseFloat(l.unitats) || 0),
         }));
 
         const subtotal = invoiceLines.reduce((sum, l) => sum + l.total, 0);
@@ -124,6 +122,7 @@ export default function DocumentsPage() {
         return {
           invoiceNumber: firstLine.num_factura,
           date: firstLine.data,
+          userEmail: firstLine.usuari, // Guardem l'email de l'usuari de la factura
           client: {
             name: firstLine.nom_client,
             nif: firstLine.nif_client,
@@ -136,7 +135,11 @@ export default function DocumentsPage() {
         };
       });
 
-      setInvoices(formattedInvoices.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      // 3. Filtrar les factures per l'usuari que ha iniciat sessió
+      const userInvoices = allFormattedInvoices.filter(invoice => invoice.userEmail === userEmail);
+
+      setInvoices(userInvoices.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+
     } catch (e: any) {
       setError(e.message);
       toast({
@@ -383,3 +386,5 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
     </div>
   );
 }
+
+    
