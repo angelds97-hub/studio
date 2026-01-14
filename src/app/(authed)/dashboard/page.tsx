@@ -18,6 +18,7 @@ import {
   ShieldAlert,
   Info,
   CheckCircle2,
+  Folder,
 } from 'lucide-react';
 import Link from 'next/link';
 import type { UserProfile } from '@/lib/types';
@@ -34,6 +35,7 @@ const roleDashboardConfig = {
       { href: '/dashboard/usuaris', label: 'Gestionar Usuaris', icon: Users },
       { href: '/dashboard/blog', label: 'Gestionar Blog', icon: Newspaper },
       { href: '/solicituts', label: 'Veure Sol·licituds', icon: FileText },
+      { href: '/dashboard/documents', label: 'Gestionar Documents', icon: Folder },
     ],
   },
   treballador: {
@@ -42,6 +44,7 @@ const roleDashboardConfig = {
     links: [
       { href: '/dashboard/blog', label: 'Gestionar Blog', icon: Newspaper },
       { href: '/dashboard/blog/nou', label: 'Nou Article', icon: PlusCircle },
+      { href: '/dashboard/documents', label: 'Gestionar Documents', icon: Folder },
     ],
   },
   'client/proveidor': {
@@ -57,6 +60,11 @@ const roleDashboardConfig = {
         href: '/solicituts',
         label: 'Les meves Sol·licituds',
         icon: FileText,
+      },
+      {
+        href: '/dashboard/documents',
+        label: 'Els meus Documents',
+        icon: Folder,
       },
       {
         href: '/configuracio',
