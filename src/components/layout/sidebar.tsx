@@ -60,23 +60,18 @@ export function AppSidebar() {
       { href: '/blog', label: 'Blog', icon: Newspaper },
       { href: '/configuracio', label: 'Configuració', icon: Settings },
     ],
+     client: [
+      { href: '/solicituts', label: 'Sol·licituds', icon: FileText },
+      { href: '/dashboard/documents', label: 'Documents', icon: Folder },
+      { href: '/blog', label: 'Blog', icon: Newspaper },
+      { href: '/configuracio', label: 'Configuració', icon: Settings },
+    ],
     extern: [{ href: '/configuracio', label: 'Configuració', icon: Settings }],
   };
 
   const getNavItems = () => {
     if (!userProfile) return [];
-
-    let roleNavs = [];
-
-    // Prioritize 'administrador' role to include 'treballador' items
-    if (userProfile.role === 'administrador') {
-      // Use a Set to avoid duplicates if items are in both lists
-      const combinedItems = [...navItems.administrador];
-      roleNavs = combinedItems;
-    } else {
-       roleNavs = navItems[userProfile.role] || [];
-    }
-    
+    const roleNavs = navItems[userProfile.role] || [];
     return [...navItems.all, ...roleNavs];
   };
 

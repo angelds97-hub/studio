@@ -74,6 +74,29 @@ const roleDashboardConfig = {
       { href: '/blog', label: 'Blog', icon: Newspaper },
     ],
   },
+  client: {
+    title: 'La teva Àrea de Client',
+    description: 'Gestiona les teves sol·licituds i documents.',
+    links: [
+      {
+        href: '/solicituts/nova',
+        label: 'Nova Sol·licitud',
+        icon: PlusCircle,
+      },
+      {
+        href: '/solicituts',
+        label: 'Les meves Sol·licituds',
+        icon: FileText,
+      },
+      {
+        href: '/dashboard/documents',
+        label: 'Els meus Documents',
+        icon: Folder,
+      },
+      { href: '/dashboard/perfil', label: 'El meu Perfil', icon: UserIcon },
+      { href: '/blog', label: 'Blog', icon: Newspaper },
+    ],
+  },
   extern: {
     title: 'El teu Perfil',
     description: 'Actualitza la teva informació personal i preferències.',
