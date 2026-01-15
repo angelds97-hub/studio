@@ -19,6 +19,7 @@ import {
   Info,
   CheckCircle2,
   Folder,
+  User as UserIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import type { UserProfile } from '@/lib/types';
@@ -36,6 +37,7 @@ const roleDashboardConfig = {
       { href: '/dashboard/blog', label: 'Gestionar Blog', icon: Newspaper },
       { href: '/solicituts', label: 'Veure Sol·licituds', icon: FileText },
       { href: '/dashboard/documents', label: 'Gestionar Documents', icon: Folder },
+      { href: '/dashboard/perfil', label: 'El meu Perfil', icon: UserIcon },
     ],
   },
   treballador: {
@@ -45,11 +47,13 @@ const roleDashboardConfig = {
       { href: '/dashboard/blog', label: 'Gestionar Blog', icon: Newspaper },
       { href: '/dashboard/blog/nou', label: 'Nou Article', icon: PlusCircle },
       { href: '/dashboard/documents', label: 'Gestionar Documents', icon: Folder },
+      { href: '/dashboard/perfil', label: 'El meu Perfil', icon: UserIcon },
+      { href: '/configuracio', label: 'Configuració', icon: Settings },
     ],
   },
   'client/proveidor': {
     title: 'La teva Àrea de Client',
-    description: 'Gestiona les teves sol·licituds de transport.',
+    description: 'Gestiona les teves sol·licituds i documents.',
     links: [
       {
         href: '/solicituts/nova',
@@ -66,6 +70,8 @@ const roleDashboardConfig = {
         label: 'Els meus Documents',
         icon: Folder,
       },
+      { href: '/dashboard/perfil', label: 'El meu Perfil', icon: UserIcon },
+      { href: '/blog', label: 'Blog', icon: Newspaper },
       {
         href: '/configuracio',
         label: 'Configuració del Compte',
@@ -77,6 +83,8 @@ const roleDashboardConfig = {
     title: 'El teu Perfil',
     description: 'Actualitza la teva informació personal i preferències.',
     links: [
+      { href: '/dashboard/perfil', label: 'El meu Perfil', icon: UserIcon },
+      { href: '/blog', label: 'Blog', icon: Newspaper },
       {
         href: '/configuracio',
         label: 'Anar a la Configuració',
