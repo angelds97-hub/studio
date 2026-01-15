@@ -56,6 +56,17 @@ const safeFormatDate = (dateString: string) => {
   if (!isNaN(date.getTime())) {
     return date.toLocaleDateString('ca-ES');
   }
+  // If the date is not valid, let's try to parse it as DD/MM/YYYY
+  const parts = dateString.split('/');
+  if (parts.length === 3) {
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
+      const year = parseInt(parts[2], 10);
+      const newDate = new Date(year, month, day);
+      if (!isNaN(newDate.getTime())) {
+          return newDate.toLocaleDateString('ca-ES');
+      }
+  }
   return dateString; // Retorna el string original si no és una data vàlida
 };
 
@@ -156,13 +167,13 @@ export default function DocumentsPage() {
       }
       
       setInvoices(userInvoices.sort((a, b) => {
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
-        if (!isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) {
-          return dateB.getTime() - dateA.getTime();
-        }
-        return 0; // No ordenar si les dates no són vàlides
-      }));
+          const dateA = new Date(a.date.split('/').reverse().join('-'));
+          const dateB = new Date(b.date.split('/').reverse().join('-'));
+          if (!isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) {
+            return dateB.getTime() - dateA.getTime();
+          }
+          return 0; // No ordenar si les dates no són vàlides
+        }));
 
 
     } catch (e: any) {
@@ -205,25 +216,19 @@ export default function DocumentsPage() {
     <>
       <style jsx global>{`
         @media print {
-          body * {
-            visibility: hidden;
-          }
-          #printable-invoice, #printable-invoice * {
-            visibility: visible;
+          body > :not(#printable-invoice) {
+            display: none !important;
           }
           #printable-invoice {
             position: absolute;
             left: 0;
             top: 0;
             width: 100%;
-            height: 100%;
+            height: auto;
             margin: 0;
-            padding: 20mm;
+            padding: 0;
             border: none;
             box-shadow: none;
-          }
-          .no-print {
-            display: none !important;
           }
         }
       `}</style>
@@ -308,27 +313,32 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
 
       <div id="printable-invoice" className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto border border-gray-200 printable-a4">
          <style jsx global>{`
-          .printable-a4 {
-            width: 210mm;
-            min-height: 297mm;
-            padding: 20mm;
-            margin: 1cm auto;
-            border: 1px #D1D5DB solid;
-            background: white;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-          }
-           @page {
+          @page {
             size: A4;
             margin: 0;
           }
-           @media print {
+          @media print {
             html, body {
               width: 210mm;
               height: 297mm;        
             }
+             body > :not(#printable-invoice) {
+               display: none;
+             }
             .printable-a4 {
+              margin: 0;
+              border: initial;
+              border-radius: initial;
+              width: initial;
+              min-height: initial;
+              box-shadow: initial;
+              background: initial;
+              page-break-after: always;
               -webkit-print-color-adjust: exact;
               print-color-adjust: exact;
+            }
+             .no-print {
+                display: none !important;
             }
           }
       `}</style>
@@ -413,3 +423,5 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
     </div>
   );
 }
+
+    
