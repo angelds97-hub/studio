@@ -214,24 +214,6 @@ export default function DocumentsPage() {
 
   return (
     <>
-      <style jsx global>{`
-        @media print {
-          body > :not(#printable-invoice) {
-            display: none !important;
-          }
-          #printable-invoice {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: auto;
-            margin: 0;
-            padding: 0;
-            border: none;
-            box-shadow: none;
-          }
-        }
-      `}</style>
       <Card>
         <CardHeader>
           <CardTitle>Gestió de Factures</CardTitle>
@@ -301,127 +283,119 @@ function InvoiceListView({ invoices, onSelectInvoice }: { invoices: FormattedInv
 
 function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInvoice; onBack: () => void; onPrint: () => void; }) {
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6 no-print">
-        <Button variant="outline" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Tornar a la llista
-        </Button>
-        <Button onClick={onPrint}>
-          <Printer className="mr-2 h-4 w-4" /> Imprimir PDF
-        </Button>
-      </div>
-
-      <div id="printable-invoice" className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto border border-gray-200 printable-a4">
-         <style jsx global>{`
-          @page {
+    <>
+      <style jsx global>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          #printable-invoice, #printable-invoice * {
+            visibility: visible;
+          }
+          #printable-invoice {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+           @page {
             size: A4;
             margin: 0;
           }
-          @media print {
-            html, body {
-              width: 210mm;
-              height: 297mm;        
-            }
-             body > :not(#printable-invoice) {
-               display: none;
-             }
-            .printable-a4 {
-              margin: 0;
-              border: initial;
-              border-radius: initial;
-              width: initial;
-              min-height: initial;
-              box-shadow: initial;
-              background: initial;
-              page-break-after: always;
-              -webkit-print-color-adjust: exact;
-              print-color-adjust: exact;
-            }
-             .no-print {
-                display: none !important;
-            }
-          }
+        }
       `}</style>
-        {/* Capçalera */}
-        <header className="flex justify-between items-start pb-8 border-b-2 border-gray-800">
-          <div className="flex items-center gap-4">
-             <Truck className="h-10 w-10 text-primary" />
-             <div>
-                <h1 className="text-2xl font-bold text-gray-800">{MY_COMPANY_DETAILS.name}</h1>
-                <p className="text-sm text-gray-500 whitespace-pre-line">{MY_COMPANY_DETAILS.address}</p>
-                <p className="text-sm text-gray-500">{MY_COMPANY_DETAILS.nif}</p>
+      <div>
+        <div className="flex justify-between items-center mb-6">
+          <Button variant="outline" onClick={onBack}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> Tornar a la llista
+          </Button>
+          <Button onClick={onPrint}>
+            <Printer className="mr-2 h-4 w-4" /> Imprimir PDF
+          </Button>
+        </div>
+
+        <div id="printable-invoice" className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto border border-gray-200">
+          {/* Capçalera */}
+          <header className="flex justify-between items-start pb-8 border-b-2 border-gray-800">
+            <div className="flex items-center gap-4">
+               <Truck className="h-10 w-10 text-primary" />
+               <div>
+                  <h1 className="text-2xl font-bold text-gray-800">{MY_COMPANY_DETAILS.name}</h1>
+                  <p className="text-sm text-gray-500 whitespace-pre-line">{MY_COMPANY_DETAILS.address}</p>
+                  <p className="text-sm text-gray-500">{MY_COMPANY_DETAILS.nif}</p>
+              </div>
             </div>
-          </div>
-          <div className="text-right">
-            <h2 className="text-4xl font-bold uppercase text-gray-400">Factura</h2>
-            <p className="text-sm text-gray-600 mt-2">
-              <span className="font-semibold">Nº Factura:</span> {invoice.invoiceNumber}
-            </p>
-            <p className="text-sm text-gray-600">
-              <span className="font-semibold">Data:</span> {safeFormatDate(invoice.date)}
-            </p>
-          </div>
-        </header>
+            <div className="text-right">
+              <h2 className="text-4xl font-bold uppercase text-gray-400">Factura</h2>
+              <p className="text-sm text-gray-600 mt-2">
+                <span className="font-semibold">Nº Factura:</span> {invoice.invoiceNumber}
+              </p>
+              <p className="text-sm text-gray-600">
+                <span className="font-semibold">Data:</span> {safeFormatDate(invoice.date)}
+              </p>
+            </div>
+          </header>
 
-        {/* Dades del Client */}
-        <section className="my-8">
-          <div className="bg-gray-100 p-4 rounded-lg">
-            <h3 className="font-semibold text-gray-800">Facturar a:</h3>
-            <p className="font-bold text-gray-700">{invoice.client.name}</p>
-            <p className="text-sm text-gray-600">{invoice.client.nif}</p>
-            <p className="text-sm text-gray-600 whitespace-pre-line">{invoice.client.address}</p>
-          </div>
-        </section>
+          {/* Dades del Client */}
+          <section className="my-8">
+            <div className="bg-gray-100 p-4 rounded-lg">
+              <h3 className="font-semibold text-gray-800">Facturar a:</h3>
+              <p className="font-bold text-gray-700">{invoice.client.name}</p>
+              <p className="text-sm text-gray-600">{invoice.client.nif}</p>
+              <p className="text-sm text-gray-600 whitespace-pre-line">{invoice.client.address}</p>
+            </div>
+          </section>
 
-        {/* Línies de la factura */}
-        <section>
-          <Table>
-            <TableHeader className="bg-gray-200 text-gray-800">
-              <TableRow>
-                <TableHead className="w-1/2">Concepte</TableHead>
-                <TableHead className="text-center">Unitats</TableHead>
-                <TableHead className="text-right">Preu Unitari</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {invoice.lines.map((line, index) => (
-                <TableRow key={index} className="border-b">
-                  <TableCell className="font-medium text-gray-700">{line.concept}</TableCell>
-                  <TableCell className="text-center text-gray-600">{line.quantity}</TableCell>
-                  <TableCell className="text-right text-gray-600">{line.unitPrice.toFixed(2)} €</TableCell>
-                  <TableCell className="text-right font-medium text-gray-700">{line.total.toFixed(2)} €</TableCell>
+          {/* Línies de la factura */}
+          <section>
+            <Table>
+              <TableHeader className="bg-gray-200 text-gray-800">
+                <TableRow>
+                  <TableHead className="w-1/2">Concepte</TableHead>
+                  <TableHead className="text-center">Unitats</TableHead>
+                  <TableHead className="text-right">Preu Unitari</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </section>
+              </TableHeader>
+              <TableBody>
+                {invoice.lines.map((line, index) => (
+                  <TableRow key={index} className="border-b">
+                    <TableCell className="font-medium text-gray-700">{line.concept}</TableCell>
+                    <TableCell className="text-center text-gray-600">{line.quantity}</TableCell>
+                    <TableCell className="text-right text-gray-600">{line.unitPrice.toFixed(2)} €</TableCell>
+                    <TableCell className="text-right font-medium text-gray-700">{line.total.toFixed(2)} €</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </section>
 
-        {/* Totals */}
-        <section className="mt-8 flex justify-end">
-          <div className="w-full max-w-xs space-y-2 text-gray-700">
-            <div className="flex justify-between">
-              <span>Base Imposable:</span>
-              <span className="font-medium">{invoice.subtotal.toFixed(2)} €</span>
+          {/* Totals */}
+          <section className="mt-8 flex justify-end">
+            <div className="w-full max-w-xs space-y-2 text-gray-700">
+              <div className="flex justify-between">
+                <span>Base Imposable:</span>
+                <span className="font-medium">{invoice.subtotal.toFixed(2)} €</span>
+              </div>
+              <div className="flex justify-between">
+                <span>IVA (21%):</span>
+                <span className="font-medium">{invoice.vat.toFixed(2)} €</span>
+              </div>
+              <div className="flex justify-between pt-2 border-t-2 border-gray-800 mt-2">
+                <span className="text-lg font-bold">TOTAL A PAGAR:</span>
+                <span className="text-lg font-bold">{invoice.total.toFixed(2)} €</span>
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span>IVA (21%):</span>
-              <span className="font-medium">{invoice.vat.toFixed(2)} €</span>
-            </div>
-            <div className="flex justify-between pt-2 border-t-2 border-gray-800 mt-2">
-              <span className="text-lg font-bold">TOTAL A PAGAR:</span>
-              <span className="text-lg font-bold">{invoice.total.toFixed(2)} €</span>
-            </div>
-          </div>
-        </section>
-        
-        <footer className="mt-12 pt-4 border-t text-center text-xs text-gray-400">
-            <p>Gràcies per la seva confiança.</p>
-            <p>{MY_COMPANY_DETAILS.name} | {MY_COMPANY_DETAILS.email}</p>
-        </footer>
+          </section>
+          
+          <footer className="mt-12 pt-4 border-t text-center text-xs text-gray-400">
+              <p>Gràcies per la seva confiança.</p>
+              <p>{MY_COMPANY_DETAILS.name} | {MY_COMPANY_DETAILS.email}</p>
+          </footer>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
-
-    
