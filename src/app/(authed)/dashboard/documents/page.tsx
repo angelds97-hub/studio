@@ -14,19 +14,25 @@ type InvoiceLine = {
   id: string;
   num_factura: string;
   data: string;
-  usuari: string;
-  nom_client: string;
-  nif_client: string;
-  adreca_client: string;
+  usuari: string; // email del client
   concepte: string;
   preu_unitari: string;
   unitats: string;
 };
 
+type SheetDbUser = {
+  usuari: string; // email
+  treballador: string; // Nom i cognom
+  empresa: string;
+  rol: string;
+  fiscalid: string; // NIF/CIF
+  adreca: string;
+};
+
 type FormattedInvoice = {
   invoiceNumber: string;
   date: string;
-  userEmail: string; // Afegim l'email per poder filtrar
+  userEmail: string; 
   client: {
     name: string;
     nif: string;
@@ -56,18 +62,17 @@ const safeFormatDate = (dateString: string) => {
   if (!isNaN(date.getTime())) {
     return date.toLocaleDateString('ca-ES');
   }
-  // If the date is not valid, let's try to parse it as DD/MM/YYYY
   const parts = dateString.split('/');
   if (parts.length === 3) {
       const day = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
+      const month = parseInt(parts[1], 10) - 1;
       const year = parseInt(parts[2], 10);
       const newDate = new Date(year, month, day);
       if (!isNaN(newDate.getTime())) {
           return newDate.toLocaleDateString('ca-ES');
       }
   }
-  return dateString; // Retorna el string original si no és una data vàlida
+  return dateString;
 };
 
 
@@ -91,35 +96,36 @@ export default function DocumentsPage() {
   }, []);
 
   useEffect(() => {
-    if (profile) { // Check if profile is loaded
-      fetchAndProcessInvoices(profile.email);
+    if (profile) {
+      fetchAndProcessInvoices(profile);
     } else if (!isLoading && !profile) {
-      // Handle the case where loading is finished but there's no profile
        setError('El perfil d\'usuari no s\'ha pogut carregar.');
        setIsLoading(false);
     }
   }, [profile]);
 
 
-  const fetchAndProcessInvoices = async (userEmail: string) => {
+  const fetchAndProcessInvoices = async (userProfile: UserProfile) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('https://sheetdb.io/api/v1/sjvdps9wa0f8z?sheet=documents');
-      if (!response.ok) {
+      // 1. Fer les dues peticions a la vegada
+      const [invoiceLinesResponse, usersResponse] = await Promise.all([
+        fetch('https://sheetdb.io/api/v1/sjvdps9wa0f8z?sheet=documents'),
+        fetch('https://sheetdb.io/api/v1/sjvdps9wa0f8z?sheet=usuaris')
+      ]);
+
+      if (!invoiceLinesResponse.ok || !usersResponse.ok) {
         throw new Error("No s'ha pogut connectar amb el servei de documents.");
       }
-      const allInvoiceLines: InvoiceLine[] = await response.json();
+      const allInvoiceLines: InvoiceLine[] = await invoiceLinesResponse.json();
+      const allSheetDbUsers: SheetDbUser[] = await usersResponse.json();
+      
+      const usersMap = new Map(allSheetDbUsers.map(u => [u.usuari, u]));
 
-      if (allInvoiceLines.length === 0) {
-        setInvoices([]);
-        setIsLoading(false);
-        return;
-      }
-
-      // 1. Agrupar totes les línies per número de factura
+      // 2. Agrupar totes les línies per número de factura
       const grouped = allInvoiceLines.reduce((acc, line) => {
-        if (!line.num_factura) return acc; // Ignorar línies sense número de factura
+        if (!line.num_factura) return acc;
         const { num_factura } = line;
         if (!acc[num_factura]) {
           acc[num_factura] = [];
@@ -128,9 +134,11 @@ export default function DocumentsPage() {
         return acc;
       }, {} as Record<string, InvoiceLine[]>);
 
-      // 2. Formatejar en factures estructurades
+      // 3. Formatejar en factures estructurades i fer el "JOIN"
       const allFormattedInvoices: FormattedInvoice[] = Object.values(grouped).map(lines => {
         const firstLine = lines[0];
+        const clientData = usersMap.get(firstLine.usuari);
+
         const invoiceLines = lines.map(l => ({
           concept: l.concepte,
           quantity: parseFloat(l.unitats) || 0,
@@ -145,11 +153,11 @@ export default function DocumentsPage() {
         return {
           invoiceNumber: firstLine.num_factura,
           date: firstLine.data,
-          userEmail: firstLine.usuari, // Guardem l'email de l'usuari de la factura
+          userEmail: firstLine.usuari,
           client: {
-            name: firstLine.nom_client,
-            nif: firstLine.nif_client,
-            address: firstLine.adreca_client,
+            name: clientData?.empresa || firstLine.usuari, // Fallback al email si no es troba
+            nif: clientData?.fiscalid || 'N/A',
+            address: clientData?.adreca || 'N/A',
           },
           lines: invoiceLines,
           subtotal,
@@ -158,12 +166,12 @@ export default function DocumentsPage() {
         };
       });
 
-      // 3. Filtrar les factures per l'usuari que ha iniciat sessió
+      // 4. Filtrar les factures per l'usuari que ha iniciat sessió
       let userInvoices;
-      if (profile?.role === 'administrador' || profile?.role === 'treballador') {
+      if (userProfile?.role === 'administrador' || userProfile?.role === 'treballador') {
         userInvoices = allFormattedInvoices;
       } else {
-        userInvoices = allFormattedInvoices.filter(invoice => invoice.userEmail === userEmail);
+        userInvoices = allFormattedInvoices.filter(invoice => invoice.userEmail === userProfile.email);
       }
       
       setInvoices(userInvoices.sort((a, b) => {
@@ -172,7 +180,7 @@ export default function DocumentsPage() {
           if (!isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) {
             return dateB.getTime() - dateA.getTime();
           }
-          return 0; // No ordenar si les dates no són vàlides
+          return 0;
         }));
 
 
@@ -181,7 +189,7 @@ export default function DocumentsPage() {
       toast({
         variant: 'destructive',
         title: 'Error en carregar documents',
-        description: e.message,
+        description: e.message || 'Hi ha hagut un problema al connectar amb el servidor de dades.',
       });
     } finally {
       setIsLoading(false);
@@ -399,3 +407,5 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
     </>
   );
 }
+
+    
