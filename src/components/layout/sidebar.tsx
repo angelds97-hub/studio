@@ -60,12 +60,6 @@ export function AppSidebar() {
       { href: '/dashboard/blog', label: 'Blog', icon: Newspaper },
       { href: '/configuracio', label: 'Configuració', icon: Settings },
     ],
-    client: [
-      { href: '/solicituts', label: 'Sol·licituds', icon: FileText },
-      { href: '/dashboard/documents', label: 'Documents', icon: Folder },
-      { href: '/dashboard/blog', label: 'Blog', icon: Newspaper },
-      { href: '/configuracio', label: 'Configuració', icon: Settings },
-    ],
     extern: [{ href: '/configuracio', label: 'Configuració', icon: Settings }],
   };
 
