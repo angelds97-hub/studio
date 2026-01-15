@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Loader2, Printer, ArrowLeft, ShieldAlert } from 'lucide-react';
+import { Loader2, Printer, ArrowLeft, ShieldAlert, Truck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { UserProfile } from '@/lib/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -70,13 +70,15 @@ export default function DocumentsPage() {
   }, []);
 
   useEffect(() => {
-    if (profile?.email) {
+    if (profile) { // Check if profile is loaded
       fetchAndProcessInvoices(profile.email);
-    } else if (profile !== null) {
-      setError('El teu perfil d\'usuari no té un correu electrònic associat.');
-      setIsLoading(false);
+    } else if (!isLoading && !profile) {
+      // Handle the case where loading is finished but there's no profile
+       setError('El perfil d\'usuari no s\'ha pogut carregar.');
+       setIsLoading(false);
     }
-  }, [profile]);
+  }, [profile, isLoading]);
+
 
   const fetchAndProcessInvoices = async (userEmail: string) => {
     setIsLoading(true);
@@ -136,8 +138,13 @@ export default function DocumentsPage() {
       });
 
       // 3. Filtrar les factures per l'usuari que ha iniciat sessió
-      const userInvoices = allFormattedInvoices.filter(invoice => invoice.userEmail === userEmail);
-
+      let userInvoices;
+      if (profile?.role === 'administrador' || profile?.role === 'treballador') {
+        userInvoices = allFormattedInvoices;
+      } else {
+        userInvoices = allFormattedInvoices.filter(invoice => invoice.userEmail === userEmail);
+      }
+      
       setInvoices(userInvoices.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
 
     } catch (e: any) {
@@ -183,18 +190,22 @@ export default function DocumentsPage() {
           body * {
             visibility: hidden;
           }
-          #printable-invoice, #printable-invoice * {
+          .printable-invoice, .printable-invoice * {
             visibility: visible;
           }
-          #printable-invoice {
+          .printable-invoice {
             position: absolute;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
+            margin: 0;
+            padding: 20mm;
+            border: none;
+            box-shadow: none;
           }
           .no-print {
-            display: none;
+            display: none !important;
           }
         }
       `}</style>
@@ -232,13 +243,16 @@ export default function DocumentsPage() {
 // --- COMPONENTS DE VISTA ---
 
 function InvoiceListView({ invoices, onSelectInvoice }: { invoices: FormattedInvoice[]; onSelectInvoice: (invoice: FormattedInvoice) => void; }) {
+  const profileRole = JSON.parse(localStorage.getItem('loggedInUser') || '{}').role;
+  const isAdminOrWorker = profileRole === 'administrador' || profileRole === 'treballador';
+
   return (
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead>Data</TableHead>
           <TableHead>Número de Factura</TableHead>
-          <TableHead>Client</TableHead>
+          {isAdminOrWorker && <TableHead>Client</TableHead>}
           <TableHead className="text-right">Total</TableHead>
           <TableHead className="text-right">Accions</TableHead>
         </TableRow>
@@ -248,7 +262,7 @@ function InvoiceListView({ invoices, onSelectInvoice }: { invoices: FormattedInv
           <TableRow key={invoice.invoiceNumber}>
             <TableCell>{new Date(invoice.date).toLocaleDateString('ca-ES')}</TableCell>
             <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
-            <TableCell>{invoice.client.name}</TableCell>
+            {isAdminOrWorker && <TableCell>{invoice.client.name}</TableCell>}
             <TableCell className="text-right font-mono">{invoice.total.toFixed(2)} €</TableCell>
             <TableCell className="text-right">
               <Button variant="outline" size="sm" onClick={() => onSelectInvoice(invoice)}>
@@ -284,8 +298,6 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
             border: 1px #D1D5DB solid;
             background: white;
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-            -webkit-print-color-adjust: exact;
-             print-color-adjust: exact;
           }
            @page {
             size: A4;
@@ -297,23 +309,20 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
               height: 297mm;        
             }
             .printable-a4 {
-              margin: 0;
-              border: initial;
-              border-radius: initial;
-              width: initial;
-              min-height: initial;
-              box-shadow: initial;
-              background: initial;
-              page-break-after: always;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
             }
           }
       `}</style>
         {/* Capçalera */}
         <header className="flex justify-between items-start pb-8 border-b-2 border-gray-800">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">{MY_COMPANY_DETAILS.name}</h1>
-            <p className="text-sm text-gray-500 whitespace-pre-line">{MY_COMPANY_DETAILS.address}</p>
-            <p className="text-sm text-gray-500">{MY_COMPANY_DETAILS.nif}</p>
+          <div className="flex items-center gap-4">
+             <Truck className="h-10 w-10 text-primary" />
+             <div>
+                <h1 className="text-2xl font-bold text-gray-800">{MY_COMPANY_DETAILS.name}</h1>
+                <p className="text-sm text-gray-500 whitespace-pre-line">{MY_COMPANY_DETAILS.address}</p>
+                <p className="text-sm text-gray-500">{MY_COMPANY_DETAILS.nif}</p>
+            </div>
           </div>
           <div className="text-right">
             <h2 className="text-4xl font-bold uppercase text-gray-400">Factura</h2>
@@ -386,5 +395,3 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
     </div>
   );
 }
-
-    
