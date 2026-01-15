@@ -87,7 +87,7 @@ export default function DocumentsPage() {
        setError('El perfil d\'usuari no s\'ha pogut carregar.');
        setIsLoading(false);
     }
-  }, [profile, isLoading]);
+  }, [profile]);
 
 
   const fetchAndProcessInvoices = async (userEmail: string) => {
