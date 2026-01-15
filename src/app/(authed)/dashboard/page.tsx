@@ -72,11 +72,6 @@ const roleDashboardConfig = {
       },
       { href: '/dashboard/perfil', label: 'El meu Perfil', icon: UserIcon },
       { href: '/blog', label: 'Blog', icon: Newspaper },
-      {
-        href: '/configuracio',
-        label: 'Configuració del Compte',
-        icon: Settings,
-      },
     ],
   },
   extern: {
