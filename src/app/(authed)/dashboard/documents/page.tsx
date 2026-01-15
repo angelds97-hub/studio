@@ -50,6 +50,16 @@ const MY_COMPANY_DETAILS = {
   email: 'facturacio@entrans.app',
 };
 
+// Funció per formatar dates de manera segura
+const safeFormatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  if (!isNaN(date.getTime())) {
+    return date.toLocaleDateString('ca-ES');
+  }
+  return dateString; // Retorna el string original si no és una data vàlida
+};
+
+
 // --- COMPONENT DE LA PÀGINA ---
 export default function DocumentsPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -145,7 +155,15 @@ export default function DocumentsPage() {
         userInvoices = allFormattedInvoices.filter(invoice => invoice.userEmail === userEmail);
       }
       
-      setInvoices(userInvoices.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      setInvoices(userInvoices.sort((a, b) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        if (!isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) {
+          return dateB.getTime() - dateA.getTime();
+        }
+        return 0; // No ordenar si les dates no són vàlides
+      }));
+
 
     } catch (e: any) {
       setError(e.message);
@@ -190,10 +208,10 @@ export default function DocumentsPage() {
           body * {
             visibility: hidden;
           }
-          .printable-invoice, .printable-invoice * {
+          #printable-invoice, #printable-invoice * {
             visibility: visible;
           }
-          .printable-invoice {
+          #printable-invoice {
             position: absolute;
             left: 0;
             top: 0;
@@ -260,7 +278,7 @@ function InvoiceListView({ invoices, onSelectInvoice }: { invoices: FormattedInv
       <TableBody>
         {invoices.map((invoice) => (
           <TableRow key={invoice.invoiceNumber}>
-            <TableCell>{new Date(invoice.date).toLocaleDateString('ca-ES')}</TableCell>
+            <TableCell>{safeFormatDate(invoice.date)}</TableCell>
             <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
             {isAdminOrWorker && <TableCell>{invoice.client.name}</TableCell>}
             <TableCell className="text-right font-mono">{invoice.total.toFixed(2)} €</TableCell>
@@ -330,7 +348,7 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
               <span className="font-semibold">Nº Factura:</span> {invoice.invoiceNumber}
             </p>
             <p className="text-sm text-gray-600">
-              <span className="font-semibold">Data:</span> {new Date(invoice.date).toLocaleDateString('ca-ES')}
+              <span className="font-semibold">Data:</span> {safeFormatDate(invoice.date)}
             </p>
           </div>
         </header>
