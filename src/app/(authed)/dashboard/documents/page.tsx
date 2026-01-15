@@ -58,6 +58,7 @@ const MY_COMPANY_DETAILS = {
 
 // Funció per formatar dates de manera segura
 const safeFormatDate = (dateString: string) => {
+  if (!dateString) return '';
   const date = new Date(dateString);
   if (!isNaN(date.getTime())) {
     return date.toLocaleDateString('ca-ES');
@@ -175,12 +176,19 @@ export default function DocumentsPage() {
       }
       
       setInvoices(userInvoices.sort((a, b) => {
-          const dateA = new Date(a.date.split('/').reverse().join('-'));
-          const dateB = new Date(b.date.split('/').reverse().join('-'));
-          if (!isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) {
-            return dateB.getTime() - dateA.getTime();
+          // Intentar parsejar les dates per ordenar-les correctament
+          const datePartsA = a.date.split('/');
+          const datePartsB = b.date.split('/');
+          
+          if (datePartsA.length === 3 && datePartsB.length === 3) {
+            const dateA = new Date(+datePartsA[2], +datePartsA[1] - 1, +datePartsA[0]);
+            const dateB = new Date(+datePartsB[2], +datePartsB[1] - 1, +datePartsB[0]);
+            if (!isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) {
+                return dateB.getTime() - dateA.getTime();
+            }
           }
-          return 0;
+          // Fallback per si les dates no tenen el format esperat
+          return b.date.localeCompare(a.date);
         }));
 
 
@@ -407,5 +415,3 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
     </>
   );
 }
-
-    
