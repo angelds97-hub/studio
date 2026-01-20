@@ -20,6 +20,7 @@ type InvoiceLine = {
   unitats: string;
   iva?: string; // Columna opcional
   dte?: string; // Columna opcional de descompte
+  fpagament?: string; // Forma de pagament
 };
 
 type SheetDbUser = {
@@ -36,10 +37,12 @@ type FormattedInvoice = {
   invoiceNumber: string;
   date: string;
   userEmail: string; 
+  paymentMethod?: string;
   client: {
     name: string;
     nif: string;
     address: string;
+    phone?: string;
   };
   lines: {
     concept: string;
@@ -160,7 +163,7 @@ export default function DocumentsPage() {
           const quantity = parseFloat(l.unitats) || 0;
           const unitPrice = parseFloat(l.preu_unitari.replace(',', '.')) || 0;
           const discountPercentage = parseFloat(l.dte || '0') || 0;
-          const vatPercentage = parseFloat(l.iva || '21') || 21;
+          const vatPercentage = parseFloat(l.iva || '0') || 0;
 
           const lineTotal = unitPrice * quantity;
           const lineDiscountAmount = lineTotal * (discountPercentage / 100);
@@ -196,10 +199,12 @@ export default function DocumentsPage() {
           invoiceNumber: firstLine.num_factura,
           date: firstLine.data,
           userEmail: firstLine.usuari,
+          paymentMethod: firstLine.fpagament,
           client: {
             name: clientData?.empresa || firstLine.usuari,
             nif: clientData?.fiscalid || 'N/A',
             address: clientData?.adreca || 'N/A',
+            phone: clientData?.telefon,
           },
           lines: invoiceLines,
           subtotal,
@@ -345,6 +350,9 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
           body * {
             visibility: hidden;
           }
+          .no-print {
+            display: none !important;
+          }
           #printable-invoice, #printable-invoice * {
             visibility: visible;
           }
@@ -392,6 +400,11 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
               <p className="text-sm text-gray-600">
                 <span className="font-semibold">Data:</span> {safeFormatDate(invoice.date)}
               </p>
+               {invoice.paymentMethod && (
+                 <p className="text-sm text-gray-600">
+                    <span className="font-semibold">Pagament:</span> {invoice.paymentMethod}
+                </p>
+              )}
             </div>
           </header>
 
@@ -402,6 +415,9 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
               <p className="font-bold text-gray-700">{invoice.client.name}</p>
               <p className="text-sm text-gray-600">{invoice.client.nif}</p>
               <p className="text-sm text-gray-600 whitespace-pre-line">{invoice.client.address}</p>
+               {invoice.client.phone && (
+                <p className="text-sm text-gray-600 mt-1">Tel: {invoice.client.phone}</p>
+              )}
             </div>
           </section>
 
@@ -413,7 +429,8 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
                   <TableHead className="w-2/5">Concepte</TableHead>
                   <TableHead className="text-center">Unitats</TableHead>
                   <TableHead className="text-right">Preu Unitari</TableHead>
-                  <TableHead className="text-right">Dte. %</TableHead>
+                  <TableHead className="text-center">Dte.%</TableHead>
+                  <TableHead className="text-center">IVA%</TableHead>
                   <TableHead className="text-right">Total</TableHead>
                 </TableRow>
               </TableHeader>
@@ -423,7 +440,8 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
                     <TableCell className="font-medium text-gray-700">{line.concept}</TableCell>
                     <TableCell className="text-center text-gray-600">{line.quantity}</TableCell>
                     <TableCell className="text-right text-gray-600">{line.unitPrice.toFixed(2)} €</TableCell>
-                    <TableCell className="text-right text-gray-600">{line.discountPercentage > 0 ? `${line.discountPercentage}%` : '-'}</TableCell>
+                    <TableCell className="text-center text-gray-600">{line.discountPercentage > 0 ? `${line.discountPercentage}%` : '-'}</TableCell>
+                    <TableCell className="text-center text-gray-600">{line.vatPercentage}%</TableCell>
                     <TableCell className="text-right font-medium text-gray-700">{line.lineTaxableBase.toFixed(2)} €</TableCell>
                   </TableRow>
                 ))}
@@ -449,10 +467,12 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
                 <span>{invoice.taxableBase.toFixed(2)} €</span>
               </div>
               {Object.entries(invoice.vatTotals).map(([rate, amount]) => (
-                <div key={rate} className="flex justify-between">
-                    <span>IVA ({rate}%):</span>
-                    <span className="font-medium">{amount.toFixed(2)} €</span>
-                </div>
+                 amount > 0 && (
+                    <div key={rate} className="flex justify-between">
+                        <span>IVA ({rate}%):</span>
+                        <span className="font-medium">{amount.toFixed(2)} €</span>
+                    </div>
+                )
               ))}
               <div className="flex justify-between pt-2 border-t-2 border-gray-800 mt-2">
                 <span className="text-lg font-bold">TOTAL A PAGAR:</span>
