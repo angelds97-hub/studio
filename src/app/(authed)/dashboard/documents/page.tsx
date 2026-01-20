@@ -378,16 +378,13 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 15mm;
+            height: auto;
+            padding: 10px 20mm;
             background-color: #f3f4f6;
             color: #4b5563;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
+            text-align: center;
+            font-size: 9px;
             border-top: 1px solid #d1d5db;
-            text-transform: uppercase;
-            letter-spacing: 1px;
             z-index: 9999;
           }
 
@@ -504,17 +501,20 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
               </div>
             </div>
           </section>
-
-          {invoice.paymentMethod && (
-            <div className="mt-8 pt-4 border-t text-sm">
-                <span className="font-semibold text-gray-800">Forma de pagament: </span>
-                <span className="text-gray-600">{invoice.paymentMethod}</span>
-            </div>
-          )}
           
-          <div id="footer-legal">
-            Gràcies per la seva confiança. EnTrans Solucions Logístiques - www.entrans.cat - admin@entrans.cat
+          <div 
+            id="footer-legal" 
+            className="mt-12 pt-6 border-t text-xs text-muted-foreground text-center"
+          >
+            <p className="font-bold">{MY_COMPANY_DETAILS.name} ({MY_COMPANY_DETAILS.nif})</p>
+            <p>{MY_COMPANY_DETAILS.address.replace('\\n', ' - ')}</p>
+            <p>Inscrita al Registre Mercantil de Barcelona, Tom 1234, Foli 56, Full B-78901.</p>
+            <p className="mt-2">
+                En compliment del RGPD, l'informem que les seves dades seran tractades per a la gestió de la facturació.
+                Pot exercir els seus drets a {MY_COMPANY_DETAILS.email}.
+            </p>
           </div>
+
         </div>
       </div>
     </>
