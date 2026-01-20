@@ -499,19 +499,37 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
                 <span className="text-lg font-bold">TOTAL A PAGAR:</span>
                 <span className="text-lg font-bold">{invoice.total.toFixed(2)} €</span>
               </div>
+               {invoice.paymentMethod && (
+                <div className="flex justify-between pt-4">
+                  <span className="font-semibold">Forma de pagament:</span>
+                  <span className="font-medium">{invoice.paymentMethod}</span>
+                </div>
+              )}
             </div>
           </section>
           
-          <div 
-            id="footer-legal" 
-            className="mt-12 pt-6 border-t text-xs text-muted-foreground text-center"
+          <div
+            id="footer-legal"
+            className="mt-12 pt-6 border-t text-xs text-muted-foreground text-center space-y-2"
           >
-            <p className="font-bold">{MY_COMPANY_DETAILS.name} ({MY_COMPANY_DETAILS.nif})</p>
-            <p>{MY_COMPANY_DETAILS.address.replace('\\n', ' - ')}</p>
-            <p>Inscrita al Registre Mercantil de Barcelona, Tom 1234, Foli 56, Full B-78901.</p>
-            <p className="mt-2">
-                En compliment del RGPD, l'informem que les seves dades seran tractades per a la gestió de la facturació.
-                Pot exercir els seus drets a {MY_COMPANY_DETAILS.email}.
+            <p>Gràcies per la seva confiança.</p>
+            <p className="font-bold">EnTrans Solucions Logístiques S.L.</p>
+            <p>
+              <a href="https://entrans.cat" target="_blank" rel="noopener noreferrer" className="hover:text-primary">
+                entrans.cat
+              </a>
+            </p>
+            <div className="pt-2">
+              <p>EnTrans Solucions Logístiques S.L. - NIF: B12345678</p>
+              <p>Inscrita al Registre Mercantil de Barcelona, Tom 12345, Foli 67, Full B-891011, Inscripció 1ª.</p>
+            </div>
+            <p className="pt-2 text-[10px]">
+              En compliment del que estableix el Reglament (UE) 2016/679, l'informem que les seves dades seran tractades sota la
+              responsabilitat d'EnTrans Solucions Logístiques S.L. amb la finalitat de gestionar la nostra relació comercial.
+              Pot exercir els seus drets a{' '}
+              <a href="https://entrans.cat" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">
+                entrans.cat
+              </a>.
             </p>
           </div>
 
