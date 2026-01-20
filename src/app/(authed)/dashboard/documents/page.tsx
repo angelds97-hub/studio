@@ -348,50 +348,57 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
     <>
       <style jsx global>{`
         @media print {
-          body * {
-            visibility: hidden;
-          }
-          .no-print {
-            display: none !important;
-          }
-          #printable-invoice, #printable-invoice *, .print-footer, .print-footer * {
-            visibility: visible;
-          }
-          #printable-invoice {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            margin: 0;
-            padding-bottom: 40px; /* Space for footer */
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
-           .print-footer {
-             position: fixed;
-             bottom: 0;
-             left: 0;
-             width: 100%;
-             background-color: #f3f4f6; /* bg-gray-100 */
-             padding: 8px;
-             text-align: center;
-             font-size: 10px;
-             color: #4b5563; /* text-gray-600 */
-             border-top: 1px solid #e5e7eb; /* border-gray-200 */
-           }
           @page {
             size: A4;
             margin: 0;
           }
+
+          body * { 
+            visibility: hidden; 
+          }
+          
+          #zona-factura, #zona-factura * { 
+            visibility: visible; 
+          }
+
+          #zona-factura {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm 20mm 30mm 20mm; 
+            margin: 0;
+            background: white;
+            font-size: 12px;
+          }
+
+          #footer-legal {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 15mm;
+            background-color: #f3f4f6;
+            color: #4b5563;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            border-top: 1px solid #d1d5db;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 9999;
+          }
+
+          .print\\:hidden { 
+            display: none !important; 
+          }
         }
       `}</style>
       
-      <div className="hidden print-footer">
-        Gràcies per la seva confiança. EnTrans Solucions Logístiques - www.entrans.cat - admin@entrans.cat
-      </div>
-
       <div>
-        <div className="flex justify-between items-center mb-6 no-print">
+        <div className="flex justify-between items-center mb-6 print:hidden">
           <Button variant="outline" onClick={onBack}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Tornar a la llista
           </Button>
@@ -400,7 +407,7 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
           </Button>
         </div>
 
-        <div id="printable-invoice" className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto border border-gray-200">
+        <div id="zona-factura" className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto border border-gray-200">
           {/* Capçalera */}
           <header className="flex justify-between items-start pb-8 border-b-2 border-gray-800">
             <div className="flex items-center gap-4">
@@ -504,10 +511,12 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
                 <span className="text-gray-600">{invoice.paymentMethod}</span>
             </div>
           )}
+          
+          <div id="footer-legal">
+            Gràcies per la seva confiança. EnTrans Solucions Logístiques - www.entrans.cat - admin@entrans.cat
+          </div>
         </div>
       </div>
     </>
   );
 }
-
-    
