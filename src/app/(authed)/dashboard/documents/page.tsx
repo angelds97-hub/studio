@@ -400,11 +400,6 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
               <p className="text-sm text-gray-600">
                 <span className="font-semibold">Data:</span> {safeFormatDate(invoice.date)}
               </p>
-               {invoice.paymentMethod && (
-                 <p className="text-sm text-gray-600">
-                    <span className="font-semibold">Pagament:</span> {invoice.paymentMethod}
-                </p>
-              )}
             </div>
           </header>
 
@@ -440,7 +435,7 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
                     <TableCell className="font-medium text-gray-700">{line.concept}</TableCell>
                     <TableCell className="text-center text-gray-600">{line.quantity}</TableCell>
                     <TableCell className="text-right text-gray-600">{line.unitPrice.toFixed(2)} €</TableCell>
-                    <TableCell className="text-center text-gray-600">{line.discountPercentage > 0 ? `${line.discountPercentage}%` : '-'}</TableCell>
+                    <TableCell className="text-center text-gray-600">{line.discountPercentage > 0 ? `${line.discountPercentage}%` : '0%'}</TableCell>
                     <TableCell className="text-center text-gray-600">{line.vatPercentage}%</TableCell>
                     <TableCell className="text-right font-medium text-gray-700">{line.lineTaxableBase.toFixed(2)} €</TableCell>
                   </TableRow>
@@ -480,10 +475,22 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
               </div>
             </div>
           </section>
+
+          {invoice.paymentMethod && (
+            <div className="mt-8 pt-4 border-t text-sm">
+                <span className="font-semibold text-gray-800">Forma de pagament: </span>
+                <span className="text-gray-600">{invoice.paymentMethod}</span>
+            </div>
+          )}
           
-          <footer className="mt-12 pt-4 border-t text-center text-xs text-gray-400">
+          <footer className="mt-12 pt-4 border-t text-center text-xs text-gray-500 space-y-3">
               <p>Gràcies per la seva confiança.</p>
               <p>{MY_COMPANY_DETAILS.name} | {MY_COMPANY_DETAILS.email}</p>
+              <div className="pt-3 border-t border-dashed">
+                <p>EnTrans Solucions Logístiques S.L. - NIF: {MY_COMPANY_DETAILS.nif}</p>
+                <p>Inscrita al Registre Mercantil de Barcelona, Tom 12345, Foli 67, Full B-891011, Inscripció 1ª.</p>
+                <p className="mt-2">En compliment del que estableix el Reglament (UE) 2016/679, l'informem que les seves dades seran tractades sota la responsabilitat d'EnTrans Solucions Logístiques S.L. amb la finalitat de gestionar la nostra relació comercial.</p>
+              </div>
           </footer>
         </div>
       </div>
