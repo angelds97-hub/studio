@@ -18,6 +18,8 @@ type InvoiceLine = {
   concepte: string;
   preu_unitari: string;
   unitats: string;
+  iva?: string; // Columna opcional
+  dte?: string; // Columna opcional de descompte
 };
 
 type SheetDbUser = {
@@ -27,6 +29,7 @@ type SheetDbUser = {
   rol: string;
   fiscalid: string; // NIF/CIF
   adreca: string;
+  telefon?: string;
 };
 
 type FormattedInvoice = {
@@ -42,12 +45,21 @@ type FormattedInvoice = {
     concept: string;
     quantity: number;
     unitPrice: number;
-    total: number;
+    discountPercentage: number;
+    vatPercentage: number;
+    lineTotal: number; // (unitPrice * quantity)
+    lineDiscountAmount: number;
+    lineTaxableBase: number;
+    lineVatAmount: number;
   }[];
-  subtotal: number;
-  vat: number;
-  total: number;
+  subtotal: number; // Suma de (unitPrice * quantity)
+  totalDiscount: number;
+  taxableBase: number; // subtotal - totalDiscount
+  vatTotals: Record<string, number>; // Ex: { '21': 120.50, '10': 30.20 }
+  totalVat: number; // Suma de tots els IVAs
+  total: number; // taxableBase + totalVat
 };
+
 
 const MY_COMPANY_DETAILS = {
   name: 'EnTrans Solucions Logístiques S.L.',
@@ -100,7 +112,7 @@ export default function DocumentsPage() {
     if (profile) {
       fetchAndProcessInvoices(profile);
     } else if (!isLoading && !profile) {
-       setError('El perfil d\'usuari no s\'ha pogut carregar.');
+       setError("El perfil d'usuari no s'ha pogut carregar.");
        setIsLoading(false);
     }
   }, [profile]);
@@ -139,30 +151,62 @@ export default function DocumentsPage() {
       const allFormattedInvoices: FormattedInvoice[] = Object.values(grouped).map(lines => {
         const firstLine = lines[0];
         const clientData = usersMap.get(firstLine.usuari);
+        
+        let subtotal = 0;
+        let totalDiscount = 0;
+        const vatTotals: Record<string, number> = {};
 
-        const invoiceLines = lines.map(l => ({
-          concept: l.concepte,
-          quantity: parseFloat(l.unitats) || 0,
-          unitPrice: parseFloat(l.preu_unitari.replace(',', '.')) || 0,
-          total: (parseFloat(l.preu_unitari.replace(',', '.')) || 0) * (parseFloat(l.unitats) || 0),
-        }));
+        const invoiceLines = lines.map(l => {
+          const quantity = parseFloat(l.unitats) || 0;
+          const unitPrice = parseFloat(l.preu_unitari.replace(',', '.')) || 0;
+          const discountPercentage = parseFloat(l.dte || '0') || 0;
+          const vatPercentage = parseFloat(l.iva || '21') || 21;
 
-        const subtotal = invoiceLines.reduce((sum, l) => sum + l.total, 0);
-        const vat = subtotal * 0.21;
-        const total = subtotal + vat;
+          const lineTotal = unitPrice * quantity;
+          const lineDiscountAmount = lineTotal * (discountPercentage / 100);
+          const lineTaxableBase = lineTotal - lineDiscountAmount;
+          const lineVatAmount = lineTaxableBase * (vatPercentage / 100);
+
+          subtotal += lineTotal;
+          totalDiscount += lineDiscountAmount;
+          
+          if (!vatTotals[vatPercentage]) {
+            vatTotals[vatPercentage] = 0;
+          }
+          vatTotals[vatPercentage] += lineVatAmount;
+
+          return {
+            concept: l.concepte,
+            quantity,
+            unitPrice,
+            discountPercentage,
+            vatPercentage,
+            lineTotal,
+            lineDiscountAmount,
+            lineTaxableBase,
+            lineVatAmount,
+          };
+        });
+
+        const taxableBase = subtotal - totalDiscount;
+        const totalVat = Object.values(vatTotals).reduce((sum, amount) => sum + amount, 0);
+        const total = taxableBase + totalVat;
 
         return {
           invoiceNumber: firstLine.num_factura,
           date: firstLine.data,
           userEmail: firstLine.usuari,
           client: {
-            name: clientData?.empresa || firstLine.usuari, // Fallback al email si no es troba
+            name: clientData?.empresa || firstLine.usuari,
             nif: clientData?.fiscalid || 'N/A',
             address: clientData?.adreca || 'N/A',
           },
           lines: invoiceLines,
           subtotal,
-          vat,
+          totalDiscount,
+          taxableBase,
+          vatTotals,
+          totalVat,
           total,
         };
       });
@@ -176,10 +220,8 @@ export default function DocumentsPage() {
       }
       
       setInvoices(userInvoices.sort((a, b) => {
-          // Intentar parsejar les dates per ordenar-les correctament
           const datePartsA = a.date.split('/');
           const datePartsB = b.date.split('/');
-          
           if (datePartsA.length === 3 && datePartsB.length === 3) {
             const dateA = new Date(+datePartsA[2], +datePartsA[1] - 1, +datePartsA[0]);
             const dateB = new Date(+datePartsB[2], +datePartsB[1] - 1, +datePartsB[0]);
@@ -187,10 +229,8 @@ export default function DocumentsPage() {
                 return dateB.getTime() - dateA.getTime();
             }
           }
-          // Fallback per si les dates no tenen el format esperat
           return b.date.localeCompare(a.date);
         }));
-
 
     } catch (e: any) {
       setError(e.message);
@@ -313,17 +353,18 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
             left: 0;
             top: 0;
             width: 100%;
+            margin: 0;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }
-           @page {
+          @page {
             size: A4;
             margin: 0;
           }
         }
       `}</style>
       <div>
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-6 no-print">
           <Button variant="outline" onClick={onBack}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Tornar a la llista
           </Button>
@@ -369,9 +410,10 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
             <Table>
               <TableHeader className="bg-gray-200 text-gray-800">
                 <TableRow>
-                  <TableHead className="w-1/2">Concepte</TableHead>
+                  <TableHead className="w-2/5">Concepte</TableHead>
                   <TableHead className="text-center">Unitats</TableHead>
                   <TableHead className="text-right">Preu Unitari</TableHead>
+                  <TableHead className="text-right">Dte. %</TableHead>
                   <TableHead className="text-right">Total</TableHead>
                 </TableRow>
               </TableHeader>
@@ -381,7 +423,8 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
                     <TableCell className="font-medium text-gray-700">{line.concept}</TableCell>
                     <TableCell className="text-center text-gray-600">{line.quantity}</TableCell>
                     <TableCell className="text-right text-gray-600">{line.unitPrice.toFixed(2)} €</TableCell>
-                    <TableCell className="text-right font-medium text-gray-700">{line.total.toFixed(2)} €</TableCell>
+                    <TableCell className="text-right text-gray-600">{line.discountPercentage > 0 ? `${line.discountPercentage}%` : '-'}</TableCell>
+                    <TableCell className="text-right font-medium text-gray-700">{line.lineTaxableBase.toFixed(2)} €</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -390,15 +433,27 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
 
           {/* Totals */}
           <section className="mt-8 flex justify-end">
-            <div className="w-full max-w-xs space-y-2 text-gray-700">
+            <div className="w-full max-w-sm space-y-2 text-gray-700">
               <div className="flex justify-between">
-                <span>Base Imposable:</span>
+                <span>Subtotal:</span>
                 <span className="font-medium">{invoice.subtotal.toFixed(2)} €</span>
               </div>
-              <div className="flex justify-between">
-                <span>IVA (21%):</span>
-                <span className="font-medium">{invoice.vat.toFixed(2)} €</span>
+              {invoice.totalDiscount > 0 && (
+                 <div className="flex justify-between">
+                    <span>Descomptes:</span>
+                    <span className="font-medium text-red-600">- {invoice.totalDiscount.toFixed(2)} €</span>
+                </div>
+              )}
+               <div className="flex justify-between font-semibold border-t pt-2 mt-2">
+                <span>Base Imposable:</span>
+                <span>{invoice.taxableBase.toFixed(2)} €</span>
               </div>
+              {Object.entries(invoice.vatTotals).map(([rate, amount]) => (
+                <div key={rate} className="flex justify-between">
+                    <span>IVA ({rate}%):</span>
+                    <span className="font-medium">{amount.toFixed(2)} €</span>
+                </div>
+              ))}
               <div className="flex justify-between pt-2 border-t-2 border-gray-800 mt-2">
                 <span className="text-lg font-bold">TOTAL A PAGAR:</span>
                 <span className="text-lg font-bold">{invoice.total.toFixed(2)} €</span>
