@@ -354,7 +354,7 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
           .no-print {
             display: none !important;
           }
-          #printable-invoice, #printable-invoice * {
+          #printable-invoice, #printable-invoice *, .print-footer, .print-footer * {
             visibility: visible;
           }
           #printable-invoice {
@@ -363,15 +363,33 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
             top: 0;
             width: 100%;
             margin: 0;
+            padding-bottom: 40px; /* Space for footer */
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }
+           .print-footer {
+             position: fixed;
+             bottom: 0;
+             left: 0;
+             width: 100%;
+             background-color: #f3f4f6; /* bg-gray-100 */
+             padding: 8px;
+             text-align: center;
+             font-size: 10px;
+             color: #4b5563; /* text-gray-600 */
+             border-top: 1px solid #e5e7eb; /* border-gray-200 */
+           }
           @page {
             size: A4;
             margin: 0;
           }
         }
       `}</style>
+      
+      <div className="hidden print-footer">
+        Gràcies per la seva confiança. EnTrans Solucions Logístiques - www.entrans.cat - admin@entrans.cat
+      </div>
+
       <div>
         <div className="flex justify-between items-center mb-6 no-print">
           <Button variant="outline" onClick={onBack}>
@@ -486,16 +504,6 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
                 <span className="text-gray-600">{invoice.paymentMethod}</span>
             </div>
           )}
-          
-          <footer className="mt-12 pt-4 border-t text-center text-xs text-gray-500 space-y-3">
-              <p>Gràcies per la seva confiança.</p>
-              <p>{MY_COMPANY_DETAILS.name} | {MY_COMPANY_DETAILS.email}</p>
-              <div className="pt-3 border-t border-dashed">
-                <p>EnTrans Solucions Logístiques S.L. - NIF: {MY_COMPANY_DETAILS.nif}</p>
-                <p>Inscrita al Registre Mercantil de Barcelona, Tom 12345, Foli 67, Full B-891011, Inscripció 1ª.</p>
-                <p className="mt-2">En compliment del que estableix el Reglament (UE) 2016/679, l'informem que les seves dades seran tractades sota la responsabilitat d'EnTrans Solucions Logístiques S.L. amb la finalitat de gestionar la nostra relació comercial.</p>
-              </div>
-          </footer>
         </div>
       </div>
     </>
