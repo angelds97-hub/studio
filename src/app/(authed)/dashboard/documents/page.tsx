@@ -58,7 +58,7 @@ type FormattedInvoice = {
   subtotal: number; // Suma de (unitPrice * quantity)
   totalDiscount: number;
   taxableBase: number; // subtotal - totalDiscount
-  vatTotals: Record<string, number>; // Ex: { '21': 120.50, '10': 30.20 }
+  vatBreakdown: Record<string, { base: number; amount: number; }>; // Ex: { '21': { base: 120.50, amount: 25.30 } }
   totalVat: number; // Suma de tots els IVAs
   total: number; // taxableBase + totalVat
 };
@@ -157,7 +157,7 @@ export default function DocumentsPage() {
         
         let subtotal = 0;
         let totalDiscount = 0;
-        const vatTotals: Record<string, number> = {};
+        const vatBreakdown: Record<string, { base: number; amount: number; }> = {};
 
         const invoiceLines = lines.map(l => {
           const quantity = parseFloat(l.unitats) || 0;
@@ -173,10 +173,11 @@ export default function DocumentsPage() {
           subtotal += lineTotal;
           totalDiscount += lineDiscountAmount;
           
-          if (!vatTotals[vatPercentage]) {
-            vatTotals[vatPercentage] = 0;
+          if (!vatBreakdown[vatPercentage]) {
+            vatBreakdown[vatPercentage] = { base: 0, amount: 0 };
           }
-          vatTotals[vatPercentage] += lineVatAmount;
+          vatBreakdown[vatPercentage].base += lineTaxableBase;
+          vatBreakdown[vatPercentage].amount += lineVatAmount;
 
           return {
             concept: l.concepte,
@@ -192,7 +193,7 @@ export default function DocumentsPage() {
         });
 
         const taxableBase = subtotal - totalDiscount;
-        const totalVat = Object.values(vatTotals).reduce((sum, amount) => sum + amount, 0);
+        const totalVat = Object.values(vatBreakdown).reduce((sum, breakdown) => sum + breakdown.amount, 0);
         const total = taxableBase + totalVat;
 
         return {
@@ -210,7 +211,7 @@ export default function DocumentsPage() {
           subtotal,
           totalDiscount,
           taxableBase,
-          vatTotals,
+          vatBreakdown,
           totalVat,
           total,
         };
@@ -457,16 +458,19 @@ function InvoiceDetailView({ invoice, onBack, onPrint }: { invoice: FormattedInv
                     <span className="font-medium text-red-600">- {invoice.totalDiscount.toFixed(2)} €</span>
                 </div>
               )}
-               <div className="flex justify-between font-semibold border-t pt-2 mt-2">
-                <span>Base Imposable:</span>
-                <span>{invoice.taxableBase.toFixed(2)} €</span>
-              </div>
-              {Object.entries(invoice.vatTotals).map(([rate, amount]) => (
+              <div className="border-t pt-2 mt-2" />
+              {Object.entries(invoice.vatBreakdown).map(([rate, { base, amount }]) => (
                  amount > 0 && (
-                    <div key={rate} className="flex justify-between">
-                        <span>IVA ({rate}%):</span>
-                        <span className="font-medium">{amount.toFixed(2)} €</span>
-                    </div>
+                    <React.Fragment key={rate}>
+                        <div className="flex justify-between">
+                            <span>Base Imposable ({rate}%):</span>
+                            <span className="font-medium">{base.toFixed(2)} €</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span>Quota IVA ({rate}%):</span>
+                            <span className="font-medium">{amount.toFixed(2)} €</span>
+                        </div>
+                    </React.Fragment>
                 )
               ))}
               <div className="flex justify-between pt-2 border-t-2 border-gray-800 mt-2">
