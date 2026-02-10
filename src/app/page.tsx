@@ -13,11 +13,6 @@ export default function HomePage() {
       description: "Solucions eficients i segures per al transport de les teves mercaderies."
     },
     {
-      icon: <Users className="w-8 h-8 text-primary" />,
-      title: "Transport de Passatgers",
-      description: "Viatges còmodes i puntuals per a grups de totes les mides."
-    },
-    {
       icon: <CheckCircle className="w-8 h-8 text-primary" />,
       title: "Solucions a Mida",
       description: "Adaptem els nostres serveis a les teves necessitats específiques."
@@ -57,7 +52,7 @@ export default function HomePage() {
                   <h2 className="text-3xl font-bold font-headline">Què oferim?</h2>
                   <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">Ens especialitzem a oferir una plataforma robusta per a totes les teves necessitats de transport.</p>
               </div>
-              <div className="grid md:grid-cols-3 gap-8">
+              <div className="grid md:grid-cols-2 gap-8">
                   {services.map(service => (
                       <Card key={service.title} className="text-center">
                           <CardContent className="p-6">

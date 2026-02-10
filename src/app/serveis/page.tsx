@@ -9,11 +9,6 @@ export default function ServeisPage() {
       features: ["Flota de vehicles moderna", "Seguiment en temps real", "Assegurança de mercaderies", "Emmagatzematge i distribució"]
     },
     {
-      title: "Transport de Passatgers",
-      description: "Serveis de transport per a grups, empreses i esdeveniments.",
-      features: ["Autocars i minibusos confortables", "Conductors professionals", "Rutes personalitzades", "Transfers a aeroports i estacions"]
-    },
-    {
       title: "Logística Integral",
       description: "Optimitzem tota la teva cadena de subministrament.",
       features: ["Gestió d'estocs", "Picking i packing", "Cross-docking", "Logística inversa"]
@@ -26,7 +21,7 @@ export default function ServeisPage() {
         <p className="text-lg text-muted-foreground mt-4 max-w-3xl mx-auto">Oferim una gamma completa de solucions de transport i logística dissenyades per a la màxima eficiència i fiabilitat.</p>
       </div>
 
-      <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
         {serviceFeatures.map(service => (
           <Card key={service.title} className="flex flex-col">
             <CardHeader>

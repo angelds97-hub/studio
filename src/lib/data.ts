@@ -44,18 +44,6 @@ export const mockTransportRequests: (TransportRequest & {requesterId: string, of
     offersCount: 3,
   },
   {
-    id: 'req-2',
-    userProfileId: 'user-2',
-    requesterId: 'user-2',
-    transportType: 'passatgers',
-    origin: 'Girona',
-    destination: 'Lleida',
-    dates: { from: addDays(new Date(), 5).toISOString(), to: addDays(new Date(), 5).toISOString() },
-    specialRequirements: 'Grup de 15 persones. Anada i tornada el mateix dia.',
-    status: 'oberta',
-    offersCount: 1,
-  },
-  {
     id: 'req-3',
     userProfileId: 'user-3',
     requesterId: 'user-3',
@@ -146,15 +134,6 @@ export const mockTransportOffers: { [key: string]: TransportOffer[] } = {
       price: 430,
       estimatedArrival: addDays(new Date(), 3),
       vehicle: 'Mercedes-Benz Actros',
-    },
-  ],
-  'req-2': [
-     {
-      id: 'offer-2-1',
-      company: { name: 'Bus & Go', logoUrl: 'https://picsum.photos/seed/logo4/100/100', rating: 4.9 },
-      price: 600,
-      estimatedArrival: addDays(new Date(), 5),
-      vehicle: 'Minibús Mercedes Sprinter (20 places)',
     },
   ]
 };

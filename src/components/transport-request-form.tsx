@@ -91,16 +91,9 @@ export function TransportRequestForm() {
         <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-2">
                 <Label>Tipus de Transport</Label>
-                <Select name="transportType" required>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Selecciona un tipus" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="passatgers">Passatgers</SelectItem>
-                      <SelectItem value="càrrega">Càrrega</SelectItem>
-                    </SelectContent>
-                </Select>
-                 <p className="text-sm text-muted-foreground">Quin tipus de transport necessites?</p>
+                <Input value="Càrrega de mercaderies" disabled />
+                <input type="hidden" name="transportType" value="càrrega" />
+                <p className="text-sm text-muted-foreground">Actualment només gestionem transport de mercaderies.</p>
             </div>
 
             <div className="space-y-2">

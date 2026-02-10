@@ -4,7 +4,7 @@ export type TransportRequest = {
   id: string;
   userProfileId: string;
   requesterId: string;
-  transportType: 'passatgers' | 'càrrega';
+  transportType: 'càrrega';
   origin: string;
   destination: string;
   dates: { from: string; to?: string };

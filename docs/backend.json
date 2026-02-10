@@ -124,7 +124,7 @@
         },
         "transportType": {
           "type": "string",
-          "description": "The type of transport requested (e.g., 'passenger', 'cargo')."
+          "description": "The type of transport requested (e.g., 'cargo')."
         },
         "origin": {
           "type": "string",
@@ -178,7 +178,7 @@
         },
         "transportType": {
           "type": "string",
-          "description": "The type of transport offered (e.g., 'passenger', 'cargo')."
+          "description": "The type of transport offered (e.g., 'cargo')."
         },
         "origin": {
           "type": "string",
@@ -200,7 +200,7 @@
         },
         "capacity": {
           "type": "number",
-          "description": "The capacity of the transport offering (e.g., number of passengers, cargo weight)."
+          "description": "The capacity of the transport offering (e.g., cargo weight)."
         },
         "price": {
           "type": "number",

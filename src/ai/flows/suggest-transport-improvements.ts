@@ -13,7 +13,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const SuggestTransportImprovementsInputSchema = z.object({
-  transportType: z.string().describe('The type of transport needed (e.g., passenger, cargo).'),
+  transportType: z.string().describe("The type of transport needed (e.g., cargo). Currently we only support 'cargo'."),
   origin: z.string().describe('The origin location of the transport.'),
   destination: z.string().describe('The destination location of the transport.'),
   dates: z.string().describe('The desired dates for the transport.'),
