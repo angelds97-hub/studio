@@ -25,12 +25,13 @@ import {
   Loader2,
   ShieldAlert,
   Send,
-  PlusCircle,
   History,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { UserProfile } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+
 
 type Comanda = {
   id: string;
@@ -168,6 +169,8 @@ export default function ComandesPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const [selectedService, setSelectedService] = useState<string>('');
+
 
   useEffect(() => {
     const storedUser = localStorage.getItem('loggedInUser');
@@ -228,11 +231,27 @@ export default function ComandesPage() {
     const form = event.currentTarget;
     const formData = new FormData(form);
     const tipusDeServei = formData.get('tipus-de-servei') as string;
-    const origen = formData.get('origen') as string;
-    const desti = formData.get('desti') as string;
-    const descripcio = formData.get('descripcio') as string;
 
-    const detalls = `SERVEI: ${tipusDeServei} | ORIGEN: ${origen} | DESTÍ: ${desti} | CÀRREGA: ${descripcio}`;
+    const detailsParts: string[] = [];
+    detailsParts.push(`SERVEI: ${tipusDeServei}`);
+    
+    if (tipusDeServei === 'Transport') {
+        const origen = formData.get('origen') as string;
+        const desti = formData.get('desti') as string;
+        detailsParts.push(`ORIGEN: ${origen}`);
+        detailsParts.push(`DESTÍ: ${desti}`);
+    }
+
+    const descripcio = formData.get('descripcio') as string;
+    
+    let descLabel = 'DESCRIPCIÓ';
+    if (tipusDeServei === 'Transport') descLabel = 'CÀRREGA';
+    if (tipusDeServei === 'Emmagatzematge') descLabel = 'DETALLS';
+    if (tipusDeServei === 'Consultoria') descLabel = 'CONSULTA';
+    
+    detailsParts.push(`${descLabel}: ${descripcio}`);
+
+    const detalls = detailsParts.join(' | ');
 
     const today = new Date();
     const data_solicitud = `${today
@@ -271,6 +290,7 @@ export default function ComandesPage() {
         description: 'La teva nova comanda ha estat registrada.',
       });
       form.reset();
+      setSelectedService('');
       await fetchComandes(profile); // Refresh the list
     } catch (e: any) {
       toast({
@@ -298,8 +318,35 @@ export default function ComandesPage() {
     );
   }
 
+  const getInitials = () => {
+    if (profile) {
+      return `${profile.firstName.charAt(0)}${profile.lastName.charAt(0)}`;
+    }
+    return 'U';
+  };
+
+
   return (
     <div className="space-y-8">
+
+      {profile && (
+        <Card className="bg-muted/50">
+          <CardHeader>
+            <CardTitle className="text-base font-semibold">Identificador de la Sol·licitud</CardTitle>
+            <CardDescription>Aquesta comanda es crearà en nom de:</CardDescription>
+          </CardHeader>
+          <CardContent className="flex items-center gap-4">
+            <Avatar>
+              <AvatarFallback>{getInitials()}</AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-medium">{profile.firstName} {profile.lastName}</p>
+              <p className="text-sm text-muted-foreground">{profile.email} ({profile.empresa})</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="font-headline text-2xl">
@@ -311,10 +358,9 @@ export default function ComandesPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
+            <div className="space-y-2">
                 <Label htmlFor="tipus-de-servei">Tipus de Servei</Label>
-                <Select name="tipus-de-servei" required>
+                <Select name="tipus-de-servei" required onValueChange={setSelectedService} value={selectedService}>
                   <SelectTrigger id="tipus-de-servei">
                     <SelectValue placeholder="Selecciona un servei" />
                   </SelectTrigger>
@@ -326,39 +372,55 @@ export default function ComandesPage() {
                     <SelectItem value="Consultoria">Consultoria</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
             </div>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="origen">Origen</Label>
-                <Input
-                  id="origen"
-                  name="origen"
-                  placeholder="Ex: Barcelona"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="desti">Destí</Label>
-                <Input
-                  id="desti"
-                  name="desti"
-                  placeholder="Ex: Lió"
-                  required
-                />
-              </div>
+            
+            {selectedService && (
+            <div className="space-y-6">
+                {selectedService === 'Transport' && (
+                <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="origen">Origen</Label>
+                        <Input
+                        id="origen"
+                        name="origen"
+                        placeholder="Ex: Barcelona"
+                        required
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="desti">Destí</Label>
+                        <Input
+                        id="desti"
+                        name="desti"
+                        placeholder="Ex: Lió"
+                        required
+                        />
+                    </div>
+                </div>
+                )}
+                
+                <div className="space-y-2">
+                    <Label htmlFor="descripcio">
+                        {selectedService === 'Transport' ? 'Descripció de la Càrrega' : 
+                         selectedService === 'Emmagatzematge' ? 'Detalls del Servei d\'Emmagatzematge' :
+                         'Descripció de la Consulta'}
+                    </Label>
+                    <Textarea
+                        id="descripcio"
+                        name="descripcio"
+                        placeholder={
+                            selectedService === 'Transport' ? 'Ex: 3 palets, 500kg, mides 120x80x100cm' :
+                            selectedService === 'Emmagatzematge' ? 'Ex: 5 palets europeus, 2 setmanes, material no perible' :
+                            'Ex: Necessito ajuda per optimitzar les meves rutes de distribució.'
+                        }
+                        required
+                        rows={4}
+                    />
+                </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="descripcio">Descripció de la Càrrega</Label>
-              <Textarea
-                id="descripcio"
-                name="descripcio"
-                placeholder="Ex: 3 palets, 500kg, mides 120x80x100cm"
-                required
-                rows={4}
-              />
-            </div>
-            <Button type="submit" disabled={isSubmitting}>
+            )}
+
+            <Button type="submit" disabled={isSubmitting || !selectedService}>
               {isSubmitting ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (

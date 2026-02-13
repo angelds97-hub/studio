@@ -1,5 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check } from "lucide-react";
+import { Check, Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function ServeisPage() {
   const serviceFeatures = [
@@ -41,6 +43,19 @@ export default function ServeisPage() {
           </Card>
         ))}
       </div>
+      
+      <section className="py-16 bg-secondary mt-12 rounded-lg">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold font-headline mb-4">A punt per començar?</h2>
+          <p className="text-muted-foreground max-w-xl mx-auto mb-8">Crea una sol·licitud de servei personalitzada en pocs minuts i rep una proposta adaptada a les teves necessitats.</p>
+          <Button size="lg" asChild>
+            <Link href="/comandes">
+              <Send className="mr-2 h-4 w-4" />
+              Sol·licitar Servei
+            </Link>
+          </Button>
+        </div>
+      </section>
     </div>
   );
 }
