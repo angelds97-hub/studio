@@ -37,6 +37,7 @@ type Comanda = {
   id: string;
   data_solicitud: string;
   usuari: string;
+  tipus?: string;
   detalls: string;
   estat: 'Pendent' | 'Aprovada' | 'Rebutjada';
 };
@@ -81,7 +82,7 @@ function ComandaCard({ comanda }: { comanda: Comanda }) {
         <div className="flex justify-between items-start">
           <div>
             <CardTitle className="text-lg">Comanda #{comanda.id}</CardTitle>
-            <CardDescription>{comanda.data_solicitud}</CardDescription>
+            <CardDescription>{comanda.data_solicitud}{comanda.tipus && ` - ${comanda.tipus}`}</CardDescription>
           </div>
           {getStatusBadge(comanda.estat)}
         </div>
@@ -233,7 +234,6 @@ export default function ComandesPage() {
     const tipusDeServei = formData.get('tipus-de-servei') as string;
 
     const detailsParts: string[] = [];
-    detailsParts.push(`SERVEI: ${tipusDeServei}`);
     
     if (tipusDeServei === 'Transport') {
         const origen = formData.get('origen') as string;
@@ -265,6 +265,7 @@ export default function ComandesPage() {
       id: `REQ-${Date.now()}`,
       data_solicitud: data_solicitud,
       usuari: profile.email,
+      tipus: tipusDeServei,
       detalls,
       estat: 'Pendent',
     };
