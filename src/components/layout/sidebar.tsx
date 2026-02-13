@@ -20,6 +20,7 @@ import {
   Users,
   ClipboardList,
   Folder,
+  ClipboardEdit,
 } from 'lucide-react';
 import type { UserProfile } from '@/lib/types';
 import { SheetClose } from '@/components/ui/sheet';
@@ -42,6 +43,7 @@ export function AppSidebar() {
     all: [{ href: '/dashboard', label: 'Panell', icon: LayoutDashboard }],
     administrador: [
       { href: '/solicituts', label: 'Sol·licituds', icon: FileText },
+      { href: '/comandes', label: 'Comandes', icon: ClipboardEdit },
       { href: '/dashboard/documents', label: 'Documents', icon: Folder },
       { href: '/dashboard/registre-enviaments', label: "Registre d'Enviaments", icon: ClipboardList},
       { href: '/dashboard/blog', label: 'Blog', icon: Newspaper },
@@ -49,6 +51,7 @@ export function AppSidebar() {
       { href: '/configuracio', label: 'Configuració', icon: Settings },
     ],
     treballador: [
+      { href: '/comandes', label: 'Comandes', icon: ClipboardEdit },
       { href: '/dashboard/documents', label: 'Documents', icon: Folder },
       { href: '/dashboard/registre-enviaments', label: "Registre d'Enviaments", icon: ClipboardList},
       { href: '/dashboard/blog', label: 'Blog', icon: Newspaper },
@@ -56,12 +59,14 @@ export function AppSidebar() {
     ],
     'client/proveidor': [
       { href: '/solicituts', label: 'Sol·licituds', icon: FileText },
+      { href: '/comandes', label: 'Comandes', icon: ClipboardEdit },
       { href: '/dashboard/documents', label: 'Documents', icon: Folder },
       { href: '/blog', label: 'Blog', icon: Newspaper },
       { href: '/configuracio', label: 'Configuració', icon: Settings },
     ],
      client: [
       { href: '/solicituts', label: 'Sol·licituds', icon: FileText },
+      { href: '/comandes', label: 'Comandes', icon: ClipboardEdit },
       { href: '/dashboard/documents', label: 'Documents', icon: Folder },
       { href: '/blog', label: 'Blog', icon: Newspaper },
       { href: '/configuracio', label: 'Configuració', icon: Settings },
