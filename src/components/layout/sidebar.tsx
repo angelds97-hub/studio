@@ -42,7 +42,6 @@ export function AppSidebar() {
   const navItems = {
     all: [{ href: '/dashboard', label: 'Panell', icon: LayoutDashboard }],
     administrador: [
-      { href: '/solicituts', label: 'Sol·licituds', icon: FileText },
       { href: '/comandes', label: 'Comandes', icon: ClipboardEdit },
       { href: '/dashboard/documents', label: 'Documents', icon: Folder },
       { href: '/dashboard/registre-enviaments', label: "Registre d'Enviaments", icon: ClipboardList},
@@ -58,14 +57,12 @@ export function AppSidebar() {
       { href: '/configuracio', label: 'Configuració', icon: Settings },
     ],
     'client/proveidor': [
-      { href: '/solicituts', label: 'Sol·licituds', icon: FileText },
       { href: '/comandes', label: 'Comandes', icon: ClipboardEdit },
       { href: '/dashboard/documents', label: 'Documents', icon: Folder },
       { href: '/blog', label: 'Blog', icon: Newspaper },
       { href: '/configuracio', label: 'Configuració', icon: Settings },
     ],
      client: [
-      { href: '/solicituts', label: 'Sol·licituds', icon: FileText },
       { href: '/comandes', label: 'Comandes', icon: ClipboardEdit },
       { href: '/dashboard/documents', label: 'Documents', icon: Folder },
       { href: '/blog', label: 'Blog', icon: Newspaper },

@@ -1,29 +1,5 @@
 import { FieldValue } from 'firebase/firestore';
 
-export type TransportRequest = {
-  id: string;
-  userProfileId: string;
-  requesterId: string;
-  transportType: 'càrrega';
-  origin: string;
-  destination: string;
-  dates: { from: string; to?: string };
-  specialRequirements?: string;
-  status: 'oberta' | 'assignada' | 'completada';
-};
-
-export type TransportOffer = {
-  id: string;
-  company: {
-    name: string;
-    logoUrl: string;
-    rating: number;
-  };
-  price: number;
-  estimatedArrival: Date;
-  vehicle: string;
-};
-
 export type User = {
   name: string;
   avatarUrl: string;

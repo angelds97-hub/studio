@@ -20,6 +20,7 @@ import {
   CheckCircle2,
   Folder,
   User as UserIcon,
+  ClipboardEdit,
 } from 'lucide-react';
 import Link from 'next/link';
 import type { UserProfile } from '@/lib/types';
@@ -35,7 +36,7 @@ const roleDashboardConfig = {
     links: [
       { href: '/dashboard/usuaris', label: 'Gestionar Usuaris', icon: Users },
       { href: '/dashboard/blog', label: 'Gestionar Blog', icon: Newspaper },
-      { href: '/solicituts', label: 'Veure Sol·licituds', icon: FileText },
+      { href: '/comandes', label: 'Gestionar Comandes', icon: ClipboardEdit },
       { href: '/dashboard/documents', label: 'Gestionar Documents', icon: Folder },
       { href: '/dashboard/perfil', label: 'El meu Perfil', icon: UserIcon },
     ],
@@ -56,14 +57,9 @@ const roleDashboardConfig = {
     description: 'Gestiona les teves sol·licituds i documents.',
     links: [
       {
-        href: '/solicituts/nova',
-        label: 'Nova Sol·licitud',
-        icon: PlusCircle,
-      },
-      {
-        href: '/solicituts',
-        label: 'Les meves Sol·licituds',
-        icon: FileText,
+        href: '/comandes',
+        label: 'Sol·licituds de Servei',
+        icon: ClipboardEdit,
       },
       {
         href: '/dashboard/documents',
@@ -79,14 +75,9 @@ const roleDashboardConfig = {
     description: 'Gestiona les teves sol·licituds i documents.',
     links: [
       {
-        href: '/solicituts/nova',
-        label: 'Nova Sol·licitud',
-        icon: PlusCircle,
-      },
-      {
-        href: '/solicituts',
-        label: 'Les meves Sol·licituds',
-        icon: FileText,
+        href: '/comandes',
+        label: 'Sol·licituds de Servei',
+        icon: ClipboardEdit,
       },
       {
         href: '/dashboard/documents',

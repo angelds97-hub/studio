@@ -1,4 +1,4 @@
-import type { TransportRequest, UserProfile, Notification, ActiveTransport, TransportOffer, WithId } from './types';
+import type { UserProfile, Notification, ActiveTransport, WithId } from './types';
 import { Truck, Users, CheckCircle, Bell } from 'lucide-react';
 import { subDays, addDays } from 'date-fns';
 
@@ -28,48 +28,6 @@ export const users: WithId<UserProfile>[] = [
   { id: 'user-4', firstName: 'Laura', lastName: 'Molins', email:'laura@test.com', role: 'client/proveidor', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user4/100/100', password: 'password4' },
   { id: 'user-5', firstName: 'Sergi', lastName: 'Brianso', email:'sergibrianso@gmail.com', role: 'treballador', creationDate: new Date().toISOString(), avatarUrl: 'https://picsum.photos/seed/user5/100/100', password: '123sergi' },
 ];
-
-// This is now used as mock data for pages that are not yet connected to Firestore.
-export const mockTransportRequests: (TransportRequest & {requesterId: string, offersCount: number})[] = [
-  {
-    id: 'req-1',
-    userProfileId: 'user-1',
-    requesterId: 'user-1',
-    transportType: 'càrrega',
-    origin: 'Barcelona',
-    destination: 'València',
-    dates: { from: new Date().toISOString(), to: addDays(new Date(), 3).toISOString() },
-    specialRequirements: 'Necessita refrigeració. Palets de fruita.',
-    status: 'oberta',
-    offersCount: 3,
-  },
-  {
-    id: 'req-3',
-    userProfileId: 'user-3',
-    requesterId: 'user-3',
-    transportType: 'càrrega',
-    origin: 'Tarragona',
-    destination: 'Madrid',
-    dates: { from: addDays(new Date(), 10).toISOString(), to: addDays(new Date(), 12).toISOString() },
-    specialRequirements: 'Material fràgil. Assegurança addicional requerida.',
-    status: 'assignada',
-    offersCount: 5,
-  },
-  {
-    id: 'req-4',
-    userProfileId: 'user-4',
-    requesterId: 'user-4',
-    transportType: 'càrrega',
-    origin: 'Sabadell',
-    destination: 'Saragossa',
-    dates: { from: subDays(new Date(), 2).toISOString(), to: subDays(new Date(), 1).toISOString() },
-    specialRequirements: 'Entrega urgent de paqueteria.',
-    status: 'completada',
-    offersCount: 2,
-  },
-];
-
-export const recentRequests = mockTransportRequests.slice(0, 4);
 
 export const activeTransports: ActiveTransport[] = [
     { id: 'tr-1', origin: 'Barcelona', destination: 'València', status: 'en trànsit', progress: 65 },
@@ -111,29 +69,3 @@ export const notifications: Notification[] = [
     date: subDays(new Date(), 3),
   },
 ];
-
-export const mockTransportOffers: { [key: string]: TransportOffer[] } = {
-  'req-1': [
-    {
-      id: 'offer-1-1',
-      company: { name: 'Transports Velocs', logoUrl: 'https://picsum.photos/seed/logo1/100/100', rating: 4.8 },
-      price: 450,
-      estimatedArrival: addDays(new Date(), 2),
-      vehicle: 'Camió refrigerat Volvo FH',
-    },
-    {
-      id: 'offer-1-2',
-      company: { name: 'Logística Global', logoUrl: 'https://picsum.photos/seed/logo2/100/100', rating: 4.5 },
-      price: 480,
-      estimatedArrival: addDays(new Date(), 2),
-      vehicle: 'Iveco Stralis amb control de temperatura',
-    },
-    {
-      id: 'offer-1-3',
-      company: { name: 'Càrrega Ràpida', logoUrl: 'https://picsum.photos/seed/logo3/100/100', rating: 4.2 },
-      price: 430,
-      estimatedArrival: addDays(new Date(), 3),
-      vehicle: 'Mercedes-Benz Actros',
-    },
-  ]
-};
